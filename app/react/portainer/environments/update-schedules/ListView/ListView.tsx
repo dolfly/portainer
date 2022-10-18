@@ -1,9 +1,5 @@
 import { Clock, Trash2 } from 'react-feather';
 
-import {
-  FeatureFlag,
-  useRedirectFeatureFlag,
-} from '@/react/portainer/feature-flags/useRedirectFeatureFlag';
 import { notifySuccess } from '@/portainer/services/notifications';
 import { confirmDeletionAsync } from '@/portainer/services/modal.service/confirm';
 import { withLimitToBE } from '@/react/hooks/useLimitToBE';
@@ -26,7 +22,6 @@ const useStore = createStore(storageKey);
 export default withLimitToBE(ListView);
 
 export function ListView() {
-  useRedirectFeatureFlag(FeatureFlag.EdgeRemoteUpdate);
   const listQuery = useList(true);
   const store = useStore();
 
