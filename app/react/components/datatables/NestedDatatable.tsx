@@ -4,6 +4,7 @@ import {
   useSortBy,
   Column,
   TableState,
+  usePagination,
 } from 'react-table';
 
 import { Table } from './Table';
@@ -46,7 +47,8 @@ export function NestedDatatable<D extends Record<string, unknown>>({
       getRowId,
     },
     useFilters,
-    useSortBy
+    useSortBy,
+    usePagination
   );
 
   return (
