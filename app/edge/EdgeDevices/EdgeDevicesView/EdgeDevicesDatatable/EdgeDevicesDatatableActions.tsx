@@ -1,5 +1,5 @@
 import { useRouter } from '@uirouter/react';
-import { Plus, Trash2 } from 'react-feather';
+import { Plus, Trash2 } from 'lucide-react';
 
 import type { Environment } from '@/react/portainer/environments/types';
 import {

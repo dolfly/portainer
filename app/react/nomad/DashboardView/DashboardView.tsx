@@ -1,4 +1,4 @@
-import { List, Settings } from 'react-feather';
+import { List, Settings } from 'lucide-react';
 
 import { useEnvironmentId } from '@/react/hooks/useEnvironmentId';
 import Tachometer from '@/assets/ico/tachometer.svg?c';

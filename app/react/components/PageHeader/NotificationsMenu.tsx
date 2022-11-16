@@ -9,7 +9,7 @@ import { UISrefProps, useSref } from '@uirouter/react';
 import Moment from 'moment';
 import { useEffect, useState } from 'react';
 import { useStore } from 'zustand';
-import { AlertCircle, Bell, CheckCircle, Trash2 } from 'react-feather';
+import { AlertCircle, Bell, CheckCircle, Trash2 } from 'lucide-react';
 
 import { AutomationTestingProps } from '@/types';
 import { useUser } from '@/react/hooks/useUser';
@@ -70,7 +70,7 @@ export function NotificationsMenu() {
             'th-dark:text-gray-warm-7'
           )}
         >
-          <Icon icon={Bell} className="feather" />
+          <Icon icon={Bell} />
           <span className={badge ? notificationStyles.badge : ''} />
         </div>
       </MenuButton>

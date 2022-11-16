@@ -1,7 +1,7 @@
 import moment from 'moment';
 import _ from 'lodash-es';
 import filesize from 'filesize';
-import { Eye, EyeOff, Users, Cloud } from 'react-feather';
+import { Eye, EyeOff, Users, Cloud } from 'lucide-react';
 
 import Kubernetes2 from '@/assets/ico/kubernetes-2.svg?c';
 import DockerIcon from '@/assets/ico/vendor/docker-icon.svg?c';

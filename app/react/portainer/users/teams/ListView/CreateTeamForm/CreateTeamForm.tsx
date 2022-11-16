@@ -1,7 +1,7 @@
 import { Formik, Field, Form } from 'formik';
 import { useMutation, useQueryClient } from 'react-query';
 import { useReducer } from 'react';
-import { Plus } from 'react-feather';
+import { Plus } from 'lucide-react';
 
 import { Icon } from '@/react/components/Icon';
 import { User } from '@/portainer/users/types';

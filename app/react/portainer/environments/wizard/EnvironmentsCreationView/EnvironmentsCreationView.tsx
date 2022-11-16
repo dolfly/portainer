@@ -2,7 +2,7 @@ import { useCurrentStateAndParams, useRouter } from '@uirouter/react';
 import { useState } from 'react';
 import _ from 'lodash';
 import clsx from 'clsx';
-import { ArrowLeft, ArrowRight } from 'react-feather';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 import { notifyError } from '@/portainer/services/notifications';
 import {

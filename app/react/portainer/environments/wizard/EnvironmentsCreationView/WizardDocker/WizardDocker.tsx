@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Zap, Cloud } from 'react-feather';
+import { Zap, Cloud } from 'lucide-react';
 
 import { Environment } from '@/react/portainer/environments/types';
 import { commandsTabs } from '@/react/edge/components/EdgeScriptForm/scripts';
