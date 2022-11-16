@@ -16,9 +16,7 @@ import cubes from '@/assets/ico/cubes.svg?c';
 import dataflow from '@/assets/ico/dataflow-1.svg?c';
 import dataflow2 from '@/assets/ico/dataflow-2.svg?c';
 import expand from '@/assets/ico/expand.svg?c';
-import filecode from '@/assets/ico/file-code.svg?c';
 import filesignature from '@/assets/ico/file-signature.svg?c';
-import fileupload from '@/assets/ico/file-upload.svg?c';
 import flask from '@/assets/ico/flask.svg?c';
 import git from '@/assets/ico/git.svg?c';
 import hacker from '@/assets/ico/hacker.svg?c';
@@ -91,9 +89,7 @@ export const SvgIcons = {
   cubes,
   dockericon,
   expand,
-  filecode,
   filesignature,
-  fileupload,
   flask,
   git,
   hacker,
