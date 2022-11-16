@@ -19,7 +19,6 @@ import expand from '@/assets/ico/expand.svg?c';
 import filesignature from '@/assets/ico/file-signature.svg?c';
 import flask from '@/assets/ico/flask.svg?c';
 import git from '@/assets/ico/git.svg?c';
-import hacker from '@/assets/ico/hacker.svg?c';
 import heartbeat from '@/assets/ico/heartbeat.svg?c';
 import kubernetes2 from '@/assets/ico/kubernetes-2.svg?c';
 import laptop from '@/assets/ico/laptop.svg?c';
@@ -35,13 +34,11 @@ import restore from '@/assets/ico/restore.svg?c';
 import restorewindow from '@/assets/ico/restore-window.svg?c';
 import rocket from '@/assets/ico/rocket.svg?c';
 import route from '@/assets/ico/route.svg?c';
-import share from '@/assets/ico/share.svg?c';
 import sort from '@/assets/ico/sort.svg?c';
 import subscription from '@/assets/ico/subscription.svg?c';
 import tachometer from '@/assets/ico/tachometer.svg?c';
 import tag from '@/assets/ico/tag-2.svg?c';
 import tag2 from '@/assets/ico/tags.svg?c';
-import tools from '@/assets/ico/tools.svg?c';
 import usercircle from '@/assets/ico/user-circle.svg?c';
 import userlock from '@/assets/ico/user-lock.svg?c';
 import Placeholder from '@/assets/ico/placeholder.svg?c'; // Placeholder is used when an icon name cant be matched
@@ -92,7 +89,6 @@ export const SvgIcons = {
   filesignature,
   flask,
   git,
-  hacker,
   heartbeat,
   kubernetes2,
   laptop,
@@ -109,13 +105,11 @@ export const SvgIcons = {
   restorewindow,
   rocket,
   route,
-  share,
   sort,
   subscription,
   tachometer,
   tag,
   tag2,
-  tools,
   usercircle,
   userlock,
   aws,
