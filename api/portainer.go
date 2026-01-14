@@ -2449,3 +2449,18 @@ const (
 	HelmInstallStatusFailed       HelmInstallStatus = "failed"
 	HelmInstallStatusUninstalling HelmInstallStatus = "uninstalling"
 )
+
+func DefaultEndpointSecuritySettings() EndpointSecuritySettings {
+	return EndpointSecuritySettings{
+		AllowBindMountsForRegularUsers:            false,
+		AllowContainerCapabilitiesForRegularUsers: false,
+		AllowDeviceMappingForRegularUsers:         false,
+		AllowHostNamespaceForRegularUsers:         false,
+		AllowPrivilegedModeForRegularUsers:        false,
+		AllowSysctlSettingForRegularUsers:         false,
+		AllowVolumeBrowserForRegularUsers:         false,
+		EnableHostManagementFeatures:              false,
+
+		AllowStackManagementForRegularUsers: true,
+	}
+}
