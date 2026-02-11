@@ -11,16 +11,25 @@ import { KubectlShellView } from './KubectlShellView';
 
 // Mock modules first
 vi.mock('xterm', () => ({
-  Terminal: vi.fn(() => ({
-    open: vi.fn(),
-    setOption: vi.fn(),
-    focus: vi.fn(),
-    writeln: vi.fn(),
-    writeUtf8: vi.fn(),
-    onData: vi.fn(),
-    onKey: vi.fn(),
-    dispose: vi.fn(),
-  })),
+  Terminal: vi.fn(
+    class {
+      open = vi.fn();
+
+      setOption = vi.fn();
+
+      focus = vi.fn();
+
+      writeln = vi.fn();
+
+      writeUtf8 = vi.fn();
+
+      onData = vi.fn();
+
+      onKey = vi.fn();
+
+      dispose = vi.fn();
+    }
+  ),
 }));
 
 vi.mock('xterm/lib/addons/fit/fit', () => ({
@@ -70,9 +79,9 @@ beforeEach(() => {
   };
 
   // Mock Terminal constructor to return our mock instance
-  vi.mocked(Terminal).mockImplementation(
-    () => mockTerminalInstance as Terminal
-  );
+  vi.mocked(Terminal).mockImplementation(function (this: Terminal) {
+    Object.assign(this, mockTerminalInstance);
+  });
 
   // Create mock WebSocket instance
   mockWebSocket = {
@@ -83,7 +92,17 @@ beforeEach(() => {
     readyState: WebSocket.OPEN,
   };
 
-  global.WebSocket = vi.fn(() => mockWebSocket) as unknown as typeof WebSocket;
+  global.WebSocket = vi.fn(function (this: WebSocket) {
+    this.send = mockWebSocket.send;
+    this.close = mockWebSocket.close;
+    this.addEventListener = mockWebSocket.addEventListener;
+    this.removeEventListener = mockWebSocket.removeEventListener;
+    Object.defineProperty(this, 'readyState', {
+      get: () => mockWebSocket.readyState,
+      configurable: true,
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }) as any;
 
   // Reset window methods
   Object.defineProperty(window, 'location', {
