@@ -103,9 +103,12 @@ module.exports = {
     },
     compress: true,
     port: 8999,
-    proxy: {
-      '/api': 'http://localhost:9000',
-    },
+    proxy: [
+      {
+        context: ['/api'],
+        target: 'http://localhost:9000',
+      },
+    ],
     open: true,
     devMiddleware: {
       writeToDisk: true,
