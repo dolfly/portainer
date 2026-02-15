@@ -46,7 +46,13 @@ module.exports = {
               relativeTo: projectRoot + '/',
             },
           },
-          { loader: 'html-loader' },
+          {
+            loader: 'html-loader',
+            options: {
+              esModule: false, // Keep CommonJS format for ngtemplate-loader compatibility
+              minimize: false, // Match old behavior, disable auto-minification
+            },
+          },
         ],
       },
 
