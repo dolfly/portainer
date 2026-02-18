@@ -116,9 +116,7 @@ export function UpdateNamespaceForm() {
           <WidgetBody>
             <Formik
               initialValues={initialValues}
-              onSubmit={(values) =>
-                handleSubmit(values, user.Username)
-              }
+              onSubmit={(values) => handleSubmit(values, user.Username)}
               validateOnMount
               validationSchema={getNamespaceValidationSchema(
                 memoryLimit,
@@ -141,10 +139,7 @@ export function UpdateNamespaceForm() {
     </div>
   );
 
-  async function handleSubmit(
-    values: NamespaceFormValues,
-    userName: string,
-  ) {
+  async function handleSubmit(values: NamespaceFormValues, userName: string) {
     const createNamespacePayload: NamespacePayload =
       transformFormValuesToNamespacePayload(values, userName);
     const updateRegistriesPayload = createUpdateRegistriesPayload({
