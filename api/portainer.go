@@ -558,11 +558,14 @@ type (
 	}
 
 	PolicyChartStatus struct {
-		ChartName   string            `json:"chartName"`
-		Fingerprint string            `json:"fingerprint"`
-		Status      HelmInstallStatus `json:"status"`
-		Message     string            `json:"message"`
-		Namespace   string            `json:"namespace"`
+		// EnvironmentID is the endpoint this status belongs to.
+		// Stored so that ReadAll can group statuses by endpoint without parsing keys.
+		EnvironmentID EndpointID        `json:"environmentID,omitempty"`
+		ChartName     string            `json:"chartName"`
+		Fingerprint   string            `json:"fingerprint"`
+		Status        HelmInstallStatus `json:"status"`
+		Message       string            `json:"message"`
+		Namespace     string            `json:"namespace"`
 		// Unix timestamp
 		LastAttemptTime int64 `json:"lastAttemptTime"`
 	}
