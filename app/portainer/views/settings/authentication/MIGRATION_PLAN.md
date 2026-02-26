@@ -153,7 +153,7 @@ BE-6604 (Parent: Authentication Settings Migration)
 
 ### [BE-12593: LDAP Settings](https://linear.app/portainer/issue/BE-12593) (Parent Issue)
 
-- [ ] PR 3: [BE-12585](https://linear.app/portainer/issue/BE-12585) AutoUserProvisionToggle → shared component
+- [x] PR 3: [BE-12585](https://linear.app/portainer/issue/BE-12585) AutoUserProvisionToggle → shared component
 - **LDAP Shared Components** (Parallel - No Dependencies)
   - [ ] PR 4: [BE-12586](https://linear.app/portainer/issue/BE-12586) LdapSettingsDnBuilder
   - [ ] PR 5: [BE-12587](https://linear.app/portainer/issue/BE-12587) LdapSettingsGroupDnBuilder
@@ -189,31 +189,6 @@ BE-6604 (Parent: Authentication Settings Migration)
 
 - [ ] PR 19: [BE-12601](https://linear.app/portainer/issue/BE-12601) AuthenticationView container (Formik) - **Blocked by BE-12593, BE-12596, BE-12600**
 - [ ] PR 20: [BE-12602](https://linear.app/portainer/issue/BE-12602) Complete React migration - **Blocked by PR 19**
-
-## Current PR: PR 2 - Completed ✅
-
-**What was implemented:**
-
-- Created `AuthenticationMethodSelector.tsx` component in both CE and EE
-- Component wraps BoxSelector with authentication method options
-- Registered component via react2angular bridge in `portainer/react/components/settings.ts`
-- Updated Angular templates (`settingsAuthentication.html`) to use `<authentication-method-selector>`
-- Added comprehensive unit tests with 8 test cases covering all authentication methods
-- Tests use `userEvent`, `toBeVisible()`, and proper accessibility queries
-
-**Files changed:**
-
-- `package/server-ce/app/react/portainer/settings/AuthenticationView/AuthenticationMethodSelector.tsx` (new)
-- `package/server-ce/app/react/portainer/settings/AuthenticationView/AuthenticationMethodSelector.test.tsx` (new)
-- `package/server-ce/app/portainer/react/components/settings.ts` (modified)
-- `package/server-ce/app/portainer/views/settings/authentication/settingsAuthentication.html` (modified)
-- `package/server-ee/app/react/portainer/settings/AuthenticationView/AuthenticationMethodSelector.tsx` (new)
-- `package/server-ee/app/react/portainer/settings/AuthenticationView/AuthenticationMethodSelector.test.tsx` (new)
-- `package/server-ee/app/portainer/react/components/settings.ts` (modified)
-- `package/server-ee/app/portainer/views/settings/authentication/settingsAuthentication.html` (modified)
-
-**Integration:** Seamless - replaced `<box-selector>` with `<authentication-method-selector>` in templates
-**Status:** Completed ✅
 
 ## Linear Issue Comparison
 

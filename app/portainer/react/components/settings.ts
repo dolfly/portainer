@@ -14,6 +14,7 @@ import { HelmCertPanel } from '@/react/portainer/settings/SettingsView/HelmCertP
 import { HiddenContainersPanel } from '@/react/portainer/settings/SettingsView/HiddenContainersPanel/HiddenContainersPanel';
 import { SSLSettingsPanelWrapper } from '@/react/portainer/settings/SettingsView/SSLSettingsPanel/SSLSettingsPanel';
 import { AuthStyleField } from '@/react/portainer/settings/AuthenticationView/OAuth';
+import { AutoUserProvisionToggle } from '@/react/portainer/settings/AuthenticationView/AutoUserProvisionToggle/AutoUserProvisionToggle';
 
 export const settingsModule = angular
   .module('portainer.app.react.components.settings', [])
@@ -54,5 +55,14 @@ export const settingsModule = angular
       'tooltip',
       'readonly',
       'size',
+    ])
+  )
+  .component(
+    'autoUserProvisionToggle',
+    r2a(AutoUserProvisionToggle, [
+      'value',
+      'onChange',
+      'description',
+      'data-cy',
     ])
   ).name;
