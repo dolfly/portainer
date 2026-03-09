@@ -44,3 +44,16 @@ type WorkloadItem struct {
 	Desired   int         `json:"desired"`
 	Available int         `json:"available"`
 }
+
+// EdgeAlertRule is the agent-side representation of an AlertingRule.
+// It carries only the fields needed for local threshold evaluation.
+type EdgeAlertRule struct {
+	ID                int     `json:"id"`
+	Name              string  `json:"name"`
+	Enabled           bool    `json:"enabled"`
+	Severity          string  `json:"severity"`
+	MetricType        string  `json:"metric_type"`
+	Threshold         float64 `json:"threshold"`
+	ConditionOperator string  `json:"condition_operator"`
+	Duration          int     `json:"duration"`
+}
