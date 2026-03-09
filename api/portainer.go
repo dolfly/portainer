@@ -245,6 +245,7 @@ type (
 	PerformanceMetrics struct {
 		CPUUsage     float64 `json:"CPUUsage,omitempty"`
 		MemoryUsage  float64 `json:"MemoryUsage,omitempty"`
+		DiskUsage    float64 `json:"DiskUsage,omitempty"`
 		NetworkUsage float64 `json:"NetworkUsage,omitempty"`
 	}
 
