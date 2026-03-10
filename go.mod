@@ -25,7 +25,6 @@ require (
 	github.com/g07cha/defender v0.0.0-20180505193036-5665c627c814
 	github.com/go-git/go-git/v5 v5.17.0
 	github.com/go-ldap/ldap/v3 v3.4.1
-	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0

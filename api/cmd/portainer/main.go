@@ -55,7 +55,7 @@ import (
 	"github.com/portainer/portainer/pkg/libstack/compose"
 	"github.com/portainer/portainer/pkg/validate"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
 
@@ -119,7 +119,7 @@ func initDataStore(flags *portainer.CLIFlags, secretKey []byte, fileService port
 	}
 
 	if isNew {
-		instanceId, err := uuid.NewV4()
+		instanceId, err := uuid.NewRandom()
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed generating instance id")
 		}

@@ -18,7 +18,7 @@ import (
 	"github.com/portainer/portainer/pkg/libhttp/request"
 	"github.com/portainer/portainer/pkg/libhttp/response"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 )
 
 type endpointCreatePayload struct {
@@ -405,7 +405,7 @@ func (handler *Handler) createEdgeAgentEndpoint(tx dataservices.DataStoreTx, pay
 	}
 
 	if settings.EnforceEdgeID {
-		edgeID, err := uuid.NewV4()
+		edgeID, err := uuid.NewRandom()
 		if err != nil {
 			return nil, httperror.InternalServerError("Cannot generate the Edge ID", err)
 		}
