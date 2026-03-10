@@ -31,7 +31,7 @@ require (
 	github.com/gorilla/csrf v1.7.3
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
-	github.com/hashicorp/golang-lru v0.5.4
+	github.com/hashicorp/golang-lru v1.0.2
 	github.com/joho/godotenv v1.4.0
 	github.com/jpillora/chisel v1.10.0
 	github.com/klauspost/compress v1.18.2
