@@ -26,6 +26,8 @@ type endpointSettingsUpdatePayload struct {
 	AllowContainerCapabilitiesForRegularUsers *bool `json:"allowContainerCapabilitiesForRegularUsers" example:"true"`
 	// Whether non-administrator should be able to use sysctl settings
 	AllowSysctlSettingForRegularUsers *bool `json:"allowSysctlSettingForRegularUsers" example:"true"`
+	// Whether non-administrator should be able to use security-opt settings
+	AllowSecurityOptForRegularUsers *bool `json:"allowSecurityOptForRegularUsers" example:"true"`
 	// Whether host management features are enabled
 	EnableHostManagementFeatures *bool `json:"enableHostManagementFeatures" example:"true"`
 
@@ -111,6 +113,12 @@ func (handler *Handler) endpointSettingsUpdate(w http.ResponseWriter, r *http.Re
 		securitySettings.EnableHostManagementFeatures = *payload.EnableHostManagementFeatures
 	}
 
+	if payload.AllowSecurityOptForRegularUsers != nil {
+		securitySettings.AllowSecurityOptForRegularUsers = *payload.AllowSecurityOptForRegularUsers
+	}
+
+	endpoint.SecuritySettings = securitySettings
+
 	if payload.EnableGPUManagement != nil {
 		endpoint.EnableGPUManagement = *payload.EnableGPUManagement
 	}
@@ -118,8 +126,6 @@ func (handler *Handler) endpointSettingsUpdate(w http.ResponseWriter, r *http.Re
 	if payload.Gpus != nil {
 		endpoint.Gpus = payload.Gpus
 	}
-
-	endpoint.SecuritySettings = securitySettings
 
 	err = handler.DataStore.Endpoint().UpdateEndpoint(portainer.EndpointID(endpointID), endpoint)
 	if err != nil {
