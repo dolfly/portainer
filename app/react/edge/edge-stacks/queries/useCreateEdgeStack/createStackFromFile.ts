@@ -1,8 +1,8 @@
-import axios, { parseAxiosError } from 'Portainer/services/axios/axios';
+import axios, { parseAxiosError } from '@/portainer/services/axios/axios';
 import { RegistryId } from '@/react/portainer/registries/types/registry';
 import { Pair } from '@/react/portainer/settings/types';
 import { EdgeGroup } from '@/react/edge/edge-groups/types';
-import { json2formData } from 'Portainer/helpers/json';
+import { json2formData } from '@/portainer/helpers/json';
 
 import { DeploymentType, EdgeStack, StaggerConfig } from '../../types';
 import { buildUrl } from '../buildUrl';

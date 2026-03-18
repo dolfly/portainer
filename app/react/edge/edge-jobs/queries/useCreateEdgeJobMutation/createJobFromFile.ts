@@ -1,7 +1,7 @@
-import axios, { parseAxiosError } from 'Portainer/services/axios/axios';
+import axios, { parseAxiosError } from '@/portainer/services/axios/axios';
 import { EdgeGroup } from '@/react/edge/edge-groups/types';
 import { EnvironmentId } from '@/react/portainer/environments/types';
-import { json2formData } from 'Portainer/helpers/json';
+import { json2formData } from '@/portainer/helpers/json';
 
 import { EdgeJob } from '../../types';
 import { buildUrl } from '../build-url';

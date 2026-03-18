@@ -1,8 +1,8 @@
-import axios, { parseAxiosError } from 'Portainer/services/axios/axios';
+import axios, { parseAxiosError } from '@/portainer/services/axios/axios';
 import { EnvironmentId } from '@/react/portainer/environments/types';
 import { Registry } from '@/react/portainer/registries/types/registry';
 import PortainerError from '@/portainer/error';
-import { jsonObjectsToArrayHandler } from 'Portainer/helpers/json';
+import { jsonObjectsToArrayHandler } from '@/portainer/helpers/json';
 
 import { buildImageFullURI } from '../utils';
 import { withRegistryAuthHeader } from '../../proxy/queries/utils';

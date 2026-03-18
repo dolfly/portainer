@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { withGlobalError } from '@/react-tools/react-query';
-import axios, { parseAxiosError } from 'Portainer/services/axios/axios';
+import axios, { parseAxiosError } from '@/portainer/services/axios/axios';
 import { EnvironmentId } from '@/react/portainer/environments/types';
 
 import { queryKeys } from './query-keys';

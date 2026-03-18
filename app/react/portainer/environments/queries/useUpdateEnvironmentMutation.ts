@@ -10,7 +10,7 @@ import {
   EndpointChangeWindow,
   EnvironmentGroupId,
 } from '@/react/portainer/environments/types';
-import axios, { parseAxiosError } from 'Portainer/services/axios/axios';
+import axios, { parseAxiosError } from '@/portainer/services/axios/axios';
 import { TagId } from '@/portainer/tags/types';
 
 import { buildUrl } from '../environment.service/utils';

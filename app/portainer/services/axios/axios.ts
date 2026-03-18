@@ -15,8 +15,8 @@ import { loadProgressBar } from 'axios-progress-bar';
 import 'axios-progress-bar/dist/nprogress.css';
 import qs from 'qs';
 
-import PortainerError from 'Portainer/error';
-import { isAxiosError } from 'Portainer/services/axios/utils/isAxiosError';
+import PortainerError from '@/portainer/error';
+import { isAxiosError } from '@/portainer/services/axios/utils/isAxiosError';
 
 import {
   CACHE_DURATION,

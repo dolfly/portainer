@@ -1,4 +1,4 @@
-import { json2formData } from 'Portainer/helpers/json';
+import { json2formData } from '@/portainer/helpers/json';
 
 describe('json2formData', () => {
   it('should handle undefined and null values', () => {

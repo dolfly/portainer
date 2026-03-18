@@ -1,4 +1,4 @@
-import axios, { parseAxiosError } from 'Portainer/services/axios/axios';
+import axios, { parseAxiosError } from '@/portainer/services/axios/axios';
 
 import { Catalog } from './types/registry';
 
