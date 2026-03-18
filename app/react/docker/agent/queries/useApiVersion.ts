@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios, {
   isAxiosError,
   parseAxiosError,
-} from '@/portainer/services/axios';
+} from 'Portainer/services/axios/axios';
 import { EnvironmentId } from '@/react/portainer/environments/types';
 
 import { buildDockerProxyUrl } from '../../proxy/queries/buildDockerProxyUrl';

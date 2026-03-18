@@ -1,7 +1,7 @@
 import axios, {
   json2formData,
   parseAxiosError,
-} from '@/portainer/services/axios';
+} from 'Portainer/services/axios/axios';
 import { Pair } from '@/react/portainer/settings/types';
 import { EnvironmentId } from '@/react/portainer/environments/types';
 import { RegistryId } from '@/react/portainer/registries/types/registry';

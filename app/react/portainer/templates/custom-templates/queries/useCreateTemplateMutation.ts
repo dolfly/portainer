@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios, {
   json2formData,
   parseAxiosError,
-} from '@/portainer/services/axios';
+} from 'Portainer/services/axios/axios';
 import {
   mutationOptions,
   withGlobalError,

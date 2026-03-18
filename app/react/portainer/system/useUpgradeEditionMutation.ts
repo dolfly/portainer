@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import axios, {
   isAxiosError,
   parseAxiosError,
-} from '@/portainer/services/axios';
+} from 'Portainer/services/axios/axios';
 import { withError } from '@/react-tools/react-query';
 
 import { buildUrl } from './build-url';

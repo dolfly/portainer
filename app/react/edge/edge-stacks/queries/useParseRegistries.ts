@@ -4,7 +4,7 @@ import { RegistryId } from '@/react/portainer/registries/types/registry';
 import axios, {
   json2formData,
   parseAxiosError,
-} from '@/portainer/services/axios';
+} from 'Portainer/services/axios/axios';
 
 import { buildUrl } from './buildUrl';
 

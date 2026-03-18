@@ -1,4 +1,4 @@
-import { agentTargetHeader } from '@/portainer/services/axios';
+import { agentTargetHeader } from 'Portainer/services/axios/axios';
 import { RegistryId } from '@/react/portainer/registries/types/registry';
 
 /**

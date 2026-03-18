@@ -2,7 +2,7 @@ import axios, {
   parseAxiosError,
   json2formData,
   arrayToJson,
-} from '@/portainer/services/axios';
+} from 'Portainer/services/axios/axios';
 import {
   type EnvironmentGroupId,
   type Environment,

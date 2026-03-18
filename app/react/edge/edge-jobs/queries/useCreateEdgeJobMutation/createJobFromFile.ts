@@ -1,7 +1,7 @@
 import axios, {
   json2formData,
   parseAxiosError,
-} from '@/portainer/services/axios';
+} from 'Portainer/services/axios/axios';
 import { EdgeGroup } from '@/react/edge/edge-groups/types';
 import { EnvironmentId } from '@/react/portainer/environments/types';
 

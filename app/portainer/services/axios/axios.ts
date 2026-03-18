@@ -15,16 +15,16 @@ import { loadProgressBar } from 'axios-progress-bar';
 import 'axios-progress-bar/dist/nprogress.css';
 import qs from 'qs';
 
-import PortainerError from '@/portainer/error';
+import PortainerError from 'Portainer/error';
 
 import {
   CACHE_DURATION,
   dispatchCacheRefreshEventIfNeeded,
   portainerAgentManagerOperation,
   portainerAgentTargetHeader,
-} from './http-request.helper';
-import { dockerMaxAPIVersionInterceptor } from './dockerMaxApiVersionInterceptor';
-import { MAX_DOCKER_API_VERSION } from './dockerMaxApiVersion';
+} from '../http-request.helper';
+import { dockerMaxAPIVersionInterceptor } from '../dockerMaxApiVersionInterceptor';
+import { MAX_DOCKER_API_VERSION } from '../dockerMaxApiVersion';
 
 const portainerCacheHeader = 'X-Portainer-Cache';
 
