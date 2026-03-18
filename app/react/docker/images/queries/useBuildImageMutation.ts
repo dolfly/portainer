@@ -1,8 +1,6 @@
-import axios, {
-  jsonObjectsToArrayHandler,
-  parseAxiosError,
-} from 'Portainer/services/axios/axios';
+import axios, { parseAxiosError } from 'Portainer/services/axios/axios';
 import { EnvironmentId } from '@/react/portainer/environments/types';
+import { jsonObjectsToArrayHandler } from 'Portainer/helpers/json';
 
 import { buildDockerProxyUrl } from '../../proxy/queries/buildDockerProxyUrl';
 import { formatArrayQueryParamsForDockerAPI } from '../../proxy/queries/utils';

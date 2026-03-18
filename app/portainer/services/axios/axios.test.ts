@@ -1,4 +1,4 @@
-import { json2formData } from './axios';
+import { json2formData } from 'Portainer/helpers/json';
 
 describe('json2formData', () => {
   it('should handle undefined and null values', () => {

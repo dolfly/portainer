@@ -1,9 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import axios, {
-  json2formData,
-  parseAxiosError,
-} from 'Portainer/services/axios/axios';
+import axios, { parseAxiosError } from 'Portainer/services/axios/axios';
 import {
   mutationOptions,
   withGlobalError,
@@ -22,6 +19,7 @@ import { applyResourceControl } from '@/react/portainer/access-control/access-co
 import { useCurrentUser } from '@/react/hooks/useUser';
 import { UserId } from '@/portainer/users/types';
 import { saveGitCredentialsIfNeeded } from '@/react/portainer/account/git-credentials/queries/useCreateGitCredentialsMutation';
+import { json2formData } from 'Portainer/helpers/json';
 
 import { Platform } from '../../types';
 

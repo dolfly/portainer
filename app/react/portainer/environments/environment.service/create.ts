@@ -1,8 +1,4 @@
-import axios, {
-  parseAxiosError,
-  json2formData,
-  arrayToJson,
-} from 'Portainer/services/axios/axios';
+import axios, { parseAxiosError } from 'Portainer/services/axios/axios';
 import {
   type EnvironmentGroupId,
   type Environment,
@@ -11,6 +7,7 @@ import {
 } from '@/react/portainer/environments/types';
 import { type TagId } from '@/portainer/tags/types';
 import { EdgeAsyncIntervalsValues } from '@/react/edge/components/EdgeAsyncIntervalsForm';
+import { arrayToJson, json2formData } from 'Portainer/helpers/json';
 
 import { buildUrl } from './utils';
 
