@@ -15,6 +15,7 @@ import { HiddenContainersPanel } from '@/react/portainer/settings/SettingsView/H
 import { SSLSettingsPanelWrapper } from '@/react/portainer/settings/SettingsView/SSLSettingsPanel/SSLSettingsPanel';
 import { AuthStyleField } from '@/react/portainer/settings/AuthenticationView/OAuth';
 import { AutoUserProvisionToggle } from '@/react/portainer/settings/AuthenticationView/AutoUserProvisionToggle/AutoUserProvisionToggle';
+import { LdapSettingsTestLogin } from '@/react/portainer/settings/AuthenticationView/LDAPAuth/LdapSettingsTestLogin/LdapSettingsTestLogin';
 import { SessionLifetimeSelect } from '@/react/portainer/settings/AuthenticationView/SessionLifetimeSelect';
 
 export const settingsModule = angular
@@ -69,5 +70,14 @@ export const settingsModule = angular
       'onChange',
       'description',
       'data-cy',
+    ])
+  )
+  .component(
+    'ldapSettingsTestLogin',
+    r2a(withReactQuery(LdapSettingsTestLogin), [
+      'settings',
+      'limitedFeatureId',
+      'showBeIndicatorIfNeeded',
+      'isLimitedFeatureSelfContained',
     ])
   ).name;
