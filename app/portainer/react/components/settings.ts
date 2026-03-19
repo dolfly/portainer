@@ -17,6 +17,7 @@ import { AuthStyleField } from '@/react/portainer/settings/AuthenticationView/OA
 import { AutoUserProvisionToggle } from '@/react/portainer/settings/AuthenticationView/AutoUserProvisionToggle/AutoUserProvisionToggle';
 import { LdapSettingsTestLogin } from '@/react/portainer/settings/AuthenticationView/LDAPAuth/LdapSettingsTestLogin/LdapSettingsTestLogin';
 import { SessionLifetimeSelect } from '@/react/portainer/settings/AuthenticationView/SessionLifetimeSelect';
+import { LdapSecurityFieldset } from '@/react/portainer/settings/AuthenticationView/LDAPAuth/LdapSecurityFieldset/LdapSecurityFieldset';
 
 export const settingsModule = angular
   .module('portainer.app.react.components.settings', [])
@@ -79,5 +80,16 @@ export const settingsModule = angular
       'limitedFeatureId',
       'showBeIndicatorIfNeeded',
       'isLimitedFeatureSelfContained',
+    ])
+  )
+  .component(
+    'ldapSecurityFieldset',
+    r2a(LdapSecurityFieldset, [
+      'values',
+      'onChange',
+      'errors',
+      'uploadState',
+      'limitedFeatureId',
+      'title',
     ])
   ).name;

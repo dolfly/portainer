@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
-import axios, { parseAxiosError } from '@/portainer/services/axios/axios';
+import axios, { parseAxiosError } from '@/react/portainer/services/axios/axios';
 import { withGlobalError } from '@/react-tools/react-query';
 import { LDAPSettings } from '@/react/portainer/settings/types';
 
