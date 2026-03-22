@@ -43,13 +43,18 @@ export function InnerForm({
   return (
     <Form className="form-horizontal my-8">
       <FormSection title="Redeploy from git repository">
-        <InfoPanel
-          className="text-muted small"
-          url={gitConfig.URL}
-          type="stack"
-          configFilePath={gitConfig.ConfigFilePath}
-          additionalFiles={stack.AdditionalFiles || []}
-        />
+        <div className="row small">
+          <div className="col-sm-12">
+            <InfoPanel
+              type="stack"
+              currentDeployment={{
+                repositoryUrl: gitConfig.URL,
+                configFilePath: gitConfig.ConfigFilePath,
+                additionalFiles: stack.AdditionalFiles || [],
+              }}
+            />
+          </div>
+        </div>
 
         <AutoUpdateFieldset
           value={values.autoUpdate}

@@ -330,6 +330,12 @@ type (
 		FileVersion int `json:"FileVersion"`
 		// ConfigHash is the commit hash of the git repository used for deploying the stack
 		ConfigHash string `json:"ConfigHash,omitempty"`
+		// RepositoryURL is the git repository URL used for deploying the stack
+		RepositoryURL string `json:"RepositoryURL,omitempty"`
+		// ConfigFilePath is the path to the config file in the git repository used for deploying the stack
+		ConfigFilePath string `json:"ConfigFilePath,omitempty"`
+		// AdditionalFiles are the additional files used for deploying the stack
+		AdditionalFiles []string `json:"AdditionalFiles,omitempty"`
 	}
 
 	// EdgeStack represents an edge stack
@@ -1194,6 +1200,8 @@ type (
 		Option *StackOption `json:"Option"`
 		// The git config of this stack
 		GitConfig *gittypes.RepoConfig
+		// CurrentDeploymentInfo records the git repository state at the time of the last actual deployment.
+		CurrentDeploymentInfo *StackDeploymentInfo `json:"CurrentDeploymentInfo,omitempty"`
 		// Whether the stack is from a app template
 		FromAppTemplate bool `example:"false"`
 		// Kubernetes namespace if stack is a kube application

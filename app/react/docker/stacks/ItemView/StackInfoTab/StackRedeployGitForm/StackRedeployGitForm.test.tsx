@@ -95,10 +95,10 @@ vi.mock(
 );
 
 vi.mock('@/react/portainer/gitops/InfoPanel', () => ({
-  InfoPanel: vi.fn(({ url, configFilePath }) => (
+  InfoPanel: vi.fn(({ currentDeployment }) => (
     <div data-testid="info-panel">
-      <span>{url}</span>
-      <span>{configFilePath}</span>
+      <span>{currentDeployment?.repositoryUrl}</span>
+      <span>{currentDeployment?.configFilePath}</span>
     </div>
   )),
 }));

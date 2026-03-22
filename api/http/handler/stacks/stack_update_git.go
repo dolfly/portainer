@@ -138,6 +138,15 @@ func (handler *Handler) stackUpdateGit(w http.ResponseWriter, r *http.Request) *
 		deployments.StopAutoupdate(stack.ID, stack.AutoUpdate.JobID, handler.Scheduler)
 	}
 
+	if stack.CurrentDeploymentInfo == nil && stack.GitConfig != nil {
+		stack.CurrentDeploymentInfo = &portainer.StackDeploymentInfo{
+			RepositoryURL:   stack.GitConfig.URL,
+			ConfigFilePath:  stack.GitConfig.ConfigFilePath,
+			AdditionalFiles: stack.AdditionalFiles,
+			ConfigHash:      stack.GitConfig.ConfigHash,
+		}
+	}
+
 	//update retrieved stack data based on the payload
 	stack.GitConfig.ReferenceName = payload.RepositoryReferenceName
 	stack.GitConfig.TLSSkipVerify = payload.TLSSkipVerify

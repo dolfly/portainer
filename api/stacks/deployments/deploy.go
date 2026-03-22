@@ -128,6 +128,7 @@ func redeployWhenChangedSecondStage(
 
 		if updated {
 			stack.GitConfig.ConfigHash = newHash
+
 			stack.UpdateDate = time.Now().Unix()
 			gitCommitChangedOrForceUpdate = updated
 		}
@@ -139,6 +140,13 @@ func redeployWhenChangedSecondStage(
 
 	if !gitCommitChangedOrForceUpdate {
 		return nil
+	}
+
+	stack.CurrentDeploymentInfo = &portainer.StackDeploymentInfo{
+		RepositoryURL:   stack.GitConfig.URL,
+		ConfigFilePath:  stack.GitConfig.ConfigFilePath,
+		AdditionalFiles: stack.AdditionalFiles,
+		ConfigHash:      stack.GitConfig.ConfigHash,
 	}
 
 	registries, err := getUserRegistries(datastore, user, endpoint.ID)

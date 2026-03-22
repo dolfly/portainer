@@ -185,6 +185,13 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return httperror.BadRequest("Cannot find context user", errors.Wrap(err, "failed to fetch the user"))
 	}
+	stack.CurrentDeploymentInfo = &portainer.StackDeploymentInfo{
+		RepositoryURL:   stack.GitConfig.URL,
+		ConfigFilePath:  stack.GitConfig.ConfigFilePath,
+		AdditionalFiles: stack.AdditionalFiles,
+		ConfigHash:      stack.GitConfig.ConfigHash,
+	}
+
 	stack.UpdatedBy = user.Username
 	stack.UpdateDate = time.Now().Unix()
 	stack.Status = portainer.StackStatusActive
