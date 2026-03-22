@@ -130,8 +130,11 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 	payload.RepullImageAndRedeploy = payload.RepullImageAndRedeploy || payload.PullImage
 	stack.GitConfig.ReferenceName = payload.RepositoryReferenceName
 	stack.Env = payload.Env
-	if stack.Type == portainer.DockerSwarmStack {
-		stack.Option = &portainer.StackOption{Prune: payload.Prune}
+	if stack.Type == portainer.DockerSwarmStack || stack.Type == portainer.DockerComposeStack {
+		if stack.Option == nil {
+			stack.Option = &portainer.StackOption{}
+		}
+		stack.Option.Prune = payload.Prune
 	}
 
 	if stack.Type == portainer.KubernetesStack {
@@ -233,7 +236,9 @@ func (handler *Handler) deployStack(r *http.Request, stack *portainer.Stack, pul
 			return httperror.InternalServerError("Unable to retrieve info from request context", err)
 		}
 
-		deploymentConfiger, err = deployments.CreateComposeStackDeploymentConfig(securityContext, stack, endpoint, handler.DataStore, handler.FileService, handler.StackDeployer, pullImage, true)
+		prune := stack.Option != nil && stack.Option.Prune
+
+		deploymentConfiger, err = deployments.CreateComposeStackDeploymentConfig(securityContext, stack, endpoint, handler.DataStore, handler.FileService, handler.StackDeployer, prune, pullImage, true)
 		if err != nil {
 			return httperror.InternalServerError(err.Error(), err)
 		}

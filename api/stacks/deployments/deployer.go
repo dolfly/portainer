@@ -15,7 +15,7 @@ import (
 
 type BaseStackDeployer interface {
 	DeploySwarmStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune, pullImage bool) error
-	DeployComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, forcePullImage, forceRecreate bool) error
+	DeployComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune, forcePullImage, forceRecreate bool) error
 	DeployKubernetesStack(stack *portainer.Stack, endpoint *portainer.Endpoint, user *portainer.User) error
 }
 
@@ -61,7 +61,7 @@ func (d *stackDeployer) DeploySwarmStack(stack *portainer.Stack, endpoint *porta
 	return d.swarmStackManager.Deploy(stack, prune, pullImage, endpoint)
 }
 
-func (d *stackDeployer) DeployComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, forcePullImage, forceRecreate bool) error {
+func (d *stackDeployer) DeployComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune, forcePullImage, forceRecreate bool) error {
 	d.lock.Lock()
 	defer d.lock.Unlock()
 
@@ -77,6 +77,7 @@ func (d *stackDeployer) DeployComposeStack(stack *portainer.Stack, endpoint *por
 	return d.composeStackManager.Up(context.TODO(), stack, endpoint, portainer.ComposeUpOptions{
 		ComposeOptions: options,
 		ForceRecreate:  forceRecreate,
+		Prune:          prune,
 	})
 }
 

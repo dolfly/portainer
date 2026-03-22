@@ -34,7 +34,7 @@ const (
 
 type RemoteStackDeployer interface {
 	// compose
-	DeployRemoteComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, forcePullImage bool, forceRecreate bool) error
+	DeployRemoteComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune bool, forcePullImage bool, forceRecreate bool) error
 	UndeployRemoteComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint) error
 	StartRemoteComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry) error
 	StopRemoteComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint) error
@@ -50,6 +50,7 @@ func (d *stackDeployer) DeployRemoteComposeStack(
 	stack *portainer.Stack,
 	endpoint *portainer.Endpoint,
 	registries []portainer.Registry,
+	prune bool,
 	forcePullImage bool,
 	forceRecreate bool,
 ) error {
@@ -72,6 +73,7 @@ func (d *stackDeployer) DeployRemoteComposeStack(
 		unpackerCmdBuilderOptions{
 			forceRecreate: forceRecreate,
 			registries:    registries,
+			prune:         prune,
 		},
 	)
 }

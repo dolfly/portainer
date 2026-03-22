@@ -68,7 +68,7 @@ func (b *ComposeStackFileContentBuilder) Deploy(payload *StackPayload, endpoint 
 		return b
 	}
 
-	composeDeploymentConfig, err := deployments.CreateComposeStackDeploymentConfig(b.SecurityContext, b.stack, endpoint, b.dataStore, b.fileService, b.stackDeployer, false, false)
+	composeDeploymentConfig, err := deployments.CreateComposeStackDeploymentConfig(b.SecurityContext, b.stack, endpoint, b.dataStore, b.fileService, b.stackDeployer, false, false, false)
 	if err != nil {
 		b.err = err
 		return b

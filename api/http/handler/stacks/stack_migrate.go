@@ -199,6 +199,7 @@ func (handler *Handler) migrateComposeStack(r *http.Request, stack *portainer.St
 		handler.DataStore,
 		handler.FileService,
 		handler.StackDeployer,
+		true,
 		false,
 		false)
 	if err != nil {
