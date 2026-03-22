@@ -646,6 +646,19 @@ angular.module('portainer.kubernetes', ['portainer.app', registriesModule, custo
       },
     };
 
+    const serviceAccount = {
+      name: 'kubernetes.moreResources.serviceAccounts.serviceAccount',
+      url: '/serviceAccounts/:namespace/:name?tab',
+      views: {
+        'content@': {
+          component: 'serviceAccountView',
+        },
+      },
+      data: {
+        docs: '/user/kubernetes/more-resources/service-accounts',
+      },
+    };
+
     const clusterRoles = {
       name: 'kubernetes.moreResources.clusterRoles',
       url: '/clusterRoles?tab',
@@ -717,6 +730,7 @@ angular.module('portainer.kubernetes', ['portainer.app', registriesModule, custo
     $stateRegistryProvider.register(moreResources);
     $stateRegistryProvider.register(jobs);
     $stateRegistryProvider.register(serviceAccounts);
+    $stateRegistryProvider.register(serviceAccount);
     $stateRegistryProvider.register(clusterRoles);
     $stateRegistryProvider.register(roles);
   },

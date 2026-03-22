@@ -60,8 +60,8 @@ class KubernetesSecretController {
   }
 
   getRegistryId() {
-    const annotation = this.configuration?.Annotations?.find((a) => a.key === 'portainer.io/registry.id');
-    return annotation ? parseInt(annotation.value, 10) || undefined : undefined;
+    const id = this.configuration?.Annotations?.['portainer.io/registry.id'];
+    return id ? parseInt(id, 10) || undefined : undefined;
   }
 
   isSystemConfig() {
