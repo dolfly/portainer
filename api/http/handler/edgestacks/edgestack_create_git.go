@@ -34,8 +34,6 @@ type edgeStackFromGitRepositoryPayload struct {
 	RepositoryUsername string `example:"myGitUsername"`
 	// Password used in basic authentication. Required when RepositoryAuthentication is true.
 	RepositoryPassword string `example:"myGitPassword"`
-	// RepositoryAuthorizationType is the authorization type to use
-	RepositoryAuthorizationType gittypes.GitCredentialAuthType `example:"0"`
 	// Path to the Stack file inside the Git repository
 	FilePathInRepository string `example:"docker-compose.yml" default:"docker-compose.yml"`
 	// List of identifiers of EdgeGroups
@@ -128,9 +126,8 @@ func (handler *Handler) createEdgeStackFromGitRepository(r *http.Request, tx dat
 
 	if payload.RepositoryAuthentication {
 		repoConfig.Authentication = &gittypes.GitAuthentication{
-			Username:          payload.RepositoryUsername,
-			Password:          payload.RepositoryPassword,
-			AuthorizationType: payload.RepositoryAuthorizationType,
+			Username: payload.RepositoryUsername,
+			Password: payload.RepositoryPassword,
 		}
 	}
 
@@ -152,11 +149,9 @@ func (handler *Handler) storeManifestFromGitRepository(tx dataservices.DataStore
 	projectPath = handler.FileService.GetEdgeStackProjectPath(stackFolder)
 	repositoryUsername := ""
 	repositoryPassword := ""
-	repositoryAuthType := gittypes.GitCredentialAuthType_Basic
 	if repositoryConfig.Authentication != nil && repositoryConfig.Authentication.Password != "" {
 		repositoryUsername = repositoryConfig.Authentication.Username
 		repositoryPassword = repositoryConfig.Authentication.Password
-		repositoryAuthType = repositoryConfig.Authentication.AuthorizationType
 	}
 
 	if err := handler.GitService.CloneRepository(
@@ -165,7 +160,6 @@ func (handler *Handler) storeManifestFromGitRepository(tx dataservices.DataStore
 		repositoryConfig.ReferenceName,
 		repositoryUsername,
 		repositoryPassword,
-		repositoryAuthType,
 		repositoryConfig.TLSSkipVerify,
 	); err != nil {
 		return "", "", "", err

@@ -46,7 +46,6 @@ func (g *TestGitService) CloneRepository(
 	referenceName string,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	tlsSkipVerify bool,
 ) error {
 	time.Sleep(100 * time.Millisecond)
@@ -59,7 +58,6 @@ func (g *TestGitService) LatestCommitID(
 	referenceName,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	tlsSkipVerify bool,
 ) (string, error) {
 	return "", nil
@@ -84,7 +82,6 @@ func (g *InvalidTestGitService) CloneRepository(
 	refName,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	tlsSkipVerify bool,
 ) error {
 	return errors.New("simulate network error")
@@ -95,7 +92,6 @@ func (g *InvalidTestGitService) LatestCommitID(
 	referenceName,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	tlsSkipVerify bool,
 ) (string, error) {
 	return "", nil

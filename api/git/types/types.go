@@ -9,13 +9,6 @@ var (
 	ErrAuthenticationFailure  = errors.New("authentication failed, please ensure that the git credentials are correct")
 )
 
-type GitCredentialAuthType int
-
-const (
-	GitCredentialAuthType_Basic GitCredentialAuthType = iota
-	GitCredentialAuthType_Token
-)
-
 // RepoConfig represents a configuration for a repo
 type RepoConfig struct {
 	// The repo url
@@ -33,11 +26,10 @@ type RepoConfig struct {
 }
 
 type GitAuthentication struct {
-	Username          string
-	Password          string
-	AuthorizationType GitCredentialAuthType
+	Username string
+	Password string
 	// Git credentials identifier when the value is not 0
-	// When the value is 0, Username, Password, and Authtype are set without using saved credential
+	// When the value is 0, Username and Password are set without using saved credential
 	// This is introduced since 2.15.0
 	GitCredentialID int `example:"0"`
 }

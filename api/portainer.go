@@ -1647,7 +1647,6 @@ type (
 			referenceName,
 			username,
 			password string,
-			authType gittypes.GitCredentialAuthType,
 			tlsSkipVerify bool,
 		) error
 		LatestCommitID(
@@ -1655,14 +1654,12 @@ type (
 			referenceName,
 			username,
 			password string,
-			authType gittypes.GitCredentialAuthType,
 			tlsSkipVerify bool,
 		) (string, error)
 		ListRefs(
 			repositoryURL,
 			username,
 			password string,
-			authType gittypes.GitCredentialAuthType,
 			hardRefresh bool,
 			tlsSkipVerify bool,
 		) ([]string, error)
@@ -1671,7 +1668,6 @@ type (
 			referenceName,
 			username,
 			password string,
-			authType gittypes.GitCredentialAuthType,
 			dirOnly,
 			hardRefresh bool,
 			includeExts []string,

@@ -18,11 +18,10 @@ type fileResponse struct {
 }
 
 type repositoryFilePreviewPayload struct {
-	Repository        string                         `json:"repository" example:"https://github.com/openfaas/faas" validate:"required"`
-	Reference         string                         `json:"reference" example:"refs/heads/master"`
-	Username          string                         `json:"username" example:"myGitUsername"`
-	Password          string                         `json:"password" example:"myGitPassword"`
-	AuthorizationType gittypes.GitCredentialAuthType `json:"authorizationType"`
+	Repository string `json:"repository" example:"https://github.com/openfaas/faas" validate:"required"`
+	Reference  string `json:"reference" example:"refs/heads/master"`
+	Username   string `json:"username" example:"myGitUsername"`
+	Password   string `json:"password" example:"myGitPassword"`
 	// Path to file whose content will be read
 	TargetFile string `json:"targetFile" example:"docker-compose.yml"`
 	// TLSSkipVerify skips SSL verification when cloning the Git repository
@@ -76,7 +75,6 @@ func (handler *Handler) gitOperationRepoFilePreview(w http.ResponseWriter, r *ht
 		payload.Reference,
 		payload.Username,
 		payload.Password,
-		payload.AuthorizationType,
 		payload.TLSSkipVerify,
 	)
 	if err != nil {

@@ -45,8 +45,6 @@ type customTemplateUpdatePayload struct {
 	// Password used in basic authentication or token used in token authentication.
 	// Required when RepositoryAuthentication is true and RepositoryGitCredentialID is 0
 	RepositoryPassword string `example:"myGitPassword"`
-	// RepositoryAuthorizationType is the authorization type to use
-	RepositoryAuthorizationType gittypes.GitCredentialAuthType `example:"0"`
 	// GitCredentialID used to identify the bound git credential. Required when RepositoryAuthentication
 	// is true and RepositoryUsername/RepositoryPassword are not provided
 	RepositoryGitCredentialID int `example:"0"`
@@ -184,15 +182,12 @@ func (handler *Handler) customTemplateUpdate(w http.ResponseWriter, r *http.Requ
 
 		repositoryUsername := ""
 		repositoryPassword := ""
-		repositoryAuthType := gittypes.GitCredentialAuthType_Basic
 		if payload.RepositoryAuthentication {
 			repositoryUsername = payload.RepositoryUsername
 			repositoryPassword = payload.RepositoryPassword
-			repositoryAuthType = payload.RepositoryAuthorizationType
 			gitConfig.Authentication = &gittypes.GitAuthentication{
-				Username:          payload.RepositoryUsername,
-				Password:          payload.RepositoryPassword,
-				AuthorizationType: payload.RepositoryAuthorizationType,
+				Username: payload.RepositoryUsername,
+				Password: payload.RepositoryPassword,
 			}
 		}
 
@@ -202,7 +197,6 @@ func (handler *Handler) customTemplateUpdate(w http.ResponseWriter, r *http.Requ
 			ReferenceName: gitConfig.ReferenceName,
 			Username:      repositoryUsername,
 			Password:      repositoryPassword,
-			AuthType:      repositoryAuthType,
 			TLSSkipVerify: gitConfig.TLSSkipVerify,
 		})
 		if err != nil {
@@ -216,7 +210,6 @@ func (handler *Handler) customTemplateUpdate(w http.ResponseWriter, r *http.Requ
 			gitConfig.ReferenceName,
 			repositoryUsername,
 			repositoryPassword,
-			repositoryAuthType,
 			gitConfig.TLSSkipVerify,
 		)
 		if err != nil {

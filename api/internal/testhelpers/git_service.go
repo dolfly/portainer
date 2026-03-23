@@ -2,7 +2,6 @@ package testhelpers
 
 import (
 	portainer "github.com/portainer/portainer/api"
-	gittypes "github.com/portainer/portainer/api/git/types"
 )
 
 type gitService struct {
@@ -24,7 +23,6 @@ func (g *gitService) CloneRepository(
 	referenceName,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	tlsSkipVerify bool,
 ) error {
 	return g.cloneErr
@@ -35,7 +33,6 @@ func (g *gitService) LatestCommitID(
 	referenceName,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	tlsSkipVerify bool,
 ) (string, error) {
 	return g.id, nil
@@ -45,7 +42,6 @@ func (g *gitService) ListRefs(
 	repositoryURL,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	hardRefresh bool,
 	tlsSkipVerify bool,
 ) ([]string, error) {
@@ -57,7 +53,6 @@ func (g *gitService) ListFiles(
 	referenceName,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	dirOnly,
 	hardRefresh bool,
 	includedExts []string,

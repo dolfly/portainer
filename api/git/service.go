@@ -7,8 +7,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	lru "github.com/hashicorp/golang-lru"
-	gittypes "github.com/portainer/portainer/api/git/types"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/singleflight"
 )
@@ -18,40 +20,18 @@ const (
 	repositoryCacheTTL  = 5 * time.Minute
 )
 
-// baseOption provides a minimum group of information to operate a git repository, like git-remote
-type baseOption struct {
-	repositoryUrl string
-	username      string
-	password      string
-	authType      gittypes.GitCredentialAuthType
-	tlsSkipVerify bool
-}
-
-// fetchOption allows to specify the reference name of the target repository
-type fetchOption struct {
-	baseOption
-	referenceName string
-	dirOnly       bool
-}
-
-// cloneOption allows to add a history truncated to the specified number of commits
-type cloneOption struct {
-	fetchOption
-	depth int
-}
-
-type repoManager interface {
-	download(ctx context.Context, dst string, opt cloneOption) error
-	latestCommitID(ctx context.Context, opt fetchOption) (string, error)
-	listRefs(ctx context.Context, opt baseOption) ([]string, error)
-	listFiles(ctx context.Context, opt fetchOption) ([]string, error)
+type RepoManager interface {
+	Download(ctx context.Context, dst string, opt *git.CloneOptions) error
+	LatestCommitID(ctx context.Context, repositoryUrl, referenceName string, opt *git.ListOptions) (string, error)
+	ListRefs(ctx context.Context, repositoryUrl string, opt *git.ListOptions) ([]string, error)
+	ListFiles(ctx context.Context, dirOnly bool, opt *git.CloneOptions) ([]string, error)
 }
 
 // Service represents a service for managing Git.
 type Service struct {
 	shutdownCtx  context.Context
-	azure        repoManager
-	git          repoManager
+	azure        RepoManager
+	git          RepoManager
 	timerStopped bool
 	mut          sync.Mutex
 
@@ -131,38 +111,31 @@ func (service *Service) CloneRepository(
 	referenceName,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	tlsSkipVerify bool,
 ) error {
-	options := cloneOption{
-		fetchOption: fetchOption{
-			baseOption: baseOption{
-				repositoryUrl: repositoryURL,
-				username:      username,
-				password:      password,
-				authType:      authType,
-				tlsSkipVerify: tlsSkipVerify,
-			},
-			referenceName: referenceName,
-		},
-		depth: 1,
+	gitOptions := &git.CloneOptions{
+		URL:             repositoryURL,
+		Depth:           1,
+		InsecureSkipTLS: tlsSkipVerify,
+		Auth:            GetBasicAuth(username, password),
+		Tags:            git.NoTags,
 	}
 
-	return service.cloneRepository(destination, options)
+	if referenceName != "" {
+		gitOptions.ReferenceName = plumbing.ReferenceName(referenceName)
+	}
+
+	return service.repoManager(repositoryURL).Download(context.TODO(), destination, gitOptions)
 }
 
-func (service *Service) repoManager(options baseOption) repoManager {
+func (service *Service) repoManager(repositoryURL string) RepoManager {
 	repoManager := service.git
 
-	if isAzureUrl(options.repositoryUrl) {
+	if IsAzureUrl(repositoryURL) {
 		repoManager = service.azure
 	}
 
 	return repoManager
-}
-
-func (service *Service) cloneRepository(destination string, options cloneOption) error {
-	return service.repoManager(options.baseOption).download(context.TODO(), destination, options)
 }
 
 // LatestCommitID returns SHA1 of the latest commit of the specified reference
@@ -171,21 +144,14 @@ func (service *Service) LatestCommitID(
 	referenceName,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	tlsSkipVerify bool,
 ) (string, error) {
-	options := fetchOption{
-		baseOption: baseOption{
-			repositoryUrl: repositoryURL,
-			username:      username,
-			password:      password,
-			authType:      authType,
-			tlsSkipVerify: tlsSkipVerify,
-		},
-		referenceName: referenceName,
+	listOptions := &git.ListOptions{
+		Auth:            GetBasicAuth(username, password),
+		InsecureSkipTLS: tlsSkipVerify,
 	}
 
-	return service.repoManager(options.baseOption).latestCommitID(context.TODO(), options)
+	return service.repoManager(repositoryURL).LatestCommitID(context.TODO(), repositoryURL, referenceName, listOptions)
 }
 
 // ListRefs will list target repository's references without cloning the repository
@@ -193,7 +159,6 @@ func (service *Service) ListRefs(
 	repositoryURL,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	hardRefresh bool,
 	tlsSkipVerify bool,
 ) ([]string, error) {
@@ -218,15 +183,12 @@ func (service *Service) ListRefs(
 		}
 	}
 
-	options := baseOption{
-		repositoryUrl: repositoryURL,
-		username:      username,
-		password:      password,
-		authType:      authType,
-		tlsSkipVerify: tlsSkipVerify,
+	options := &git.ListOptions{
+		Auth:            GetBasicAuth(username, password),
+		InsecureSkipTLS: tlsSkipVerify,
 	}
 
-	refs, err := service.repoManager(options).listRefs(context.TODO(), options)
+	refs, err := service.repoManager(repositoryURL).ListRefs(context.TODO(), repositoryURL, options)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +209,6 @@ func (service *Service) ListFiles(
 	referenceName,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	dirOnly,
 	hardRefresh bool,
 	includedExts []string,
@@ -259,7 +220,6 @@ func (service *Service) ListFiles(
 		username,
 		password,
 		strconv.FormatBool(tlsSkipVerify),
-		strconv.Itoa(int(authType)),
 		strconv.FormatBool(dirOnly),
 	)
 
@@ -269,7 +229,6 @@ func (service *Service) ListFiles(
 			referenceName,
 			username,
 			password,
-			authType,
 			dirOnly,
 			hardRefresh,
 			tlsSkipVerify,
@@ -284,7 +243,6 @@ func (service *Service) listFiles(
 	referenceName,
 	username,
 	password string,
-	authType gittypes.GitCredentialAuthType,
 	dirOnly,
 	hardRefresh bool,
 	tlsSkipVerify bool,
@@ -295,7 +253,6 @@ func (service *Service) listFiles(
 		username,
 		password,
 		strconv.FormatBool(tlsSkipVerify),
-		strconv.Itoa(int(authType)),
 		strconv.FormatBool(dirOnly),
 	)
 
@@ -313,19 +270,18 @@ func (service *Service) listFiles(
 		}
 	}
 
-	options := fetchOption{
-		baseOption: baseOption{
-			repositoryUrl: repositoryURL,
-			username:      username,
-			password:      password,
-			authType:      authType,
-			tlsSkipVerify: tlsSkipVerify,
-		},
-		referenceName: referenceName,
-		dirOnly:       dirOnly,
+	cloneOption := &git.CloneOptions{
+		URL:             repositoryURL,
+		NoCheckout:      true,
+		Depth:           1,
+		SingleBranch:    true,
+		ReferenceName:   plumbing.ReferenceName(referenceName),
+		Auth:            GetBasicAuth(username, password),
+		InsecureSkipTLS: tlsSkipVerify,
+		Tags:            git.NoTags,
 	}
 
-	files, err := service.repoManager(options.baseOption).listFiles(context.TODO(), options)
+	files, err := service.repoManager(repositoryURL).ListFiles(context.TODO(), dirOnly, cloneOption)
 	if err != nil {
 		return nil, err
 	}
@@ -379,4 +335,18 @@ func filterFiles(paths []string, includedExts []string) []string {
 	}
 
 	return includedFiles
+}
+
+func GetBasicAuth(username, password string) *githttp.BasicAuth {
+	if password != "" {
+		if username == "" {
+			username = "token"
+		}
+
+		return &githttp.BasicAuth{
+			Username: username,
+			Password: password,
+		}
+	}
+	return nil
 }

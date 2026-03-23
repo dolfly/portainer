@@ -19,11 +19,9 @@ var (
 func DownloadGitRepository(config gittypes.RepoConfig, gitService portainer.GitService, getProjectPath func() string) (string, error) {
 	username := ""
 	password := ""
-	authType := gittypes.GitCredentialAuthType_Basic
 	if config.Authentication != nil {
 		username = config.Authentication.Username
 		password = config.Authentication.Password
-		authType = config.Authentication.AuthorizationType
 	}
 
 	projectPath := getProjectPath()
@@ -33,7 +31,6 @@ func DownloadGitRepository(config gittypes.RepoConfig, gitService portainer.GitS
 		config.ReferenceName,
 		username,
 		password,
-		authType,
 		config.TLSSkipVerify,
 	)
 	if err != nil {
@@ -51,7 +48,6 @@ func DownloadGitRepository(config gittypes.RepoConfig, gitService portainer.GitS
 		config.ReferenceName,
 		username,
 		password,
-		authType,
 		config.TLSSkipVerify,
 	)
 	if err != nil {

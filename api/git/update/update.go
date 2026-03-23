@@ -34,7 +34,6 @@ func UpdateGitObject(gitService portainer.GitService, objId string, gitConfig *g
 		gitConfig.ReferenceName,
 		username,
 		password,
-		gittypes.GitCredentialAuthType_Basic,
 		gitConfig.TLSSkipVerify,
 	)
 	if err != nil {
@@ -69,7 +68,6 @@ func UpdateGitObject(gitService portainer.GitService, objId string, gitConfig *g
 		cloneParams.auth = &gitAuth{
 			username: username,
 			password: password,
-			authType: gitConfig.Authentication.AuthorizationType,
 		}
 	}
 
@@ -97,7 +95,6 @@ type cloneRepositoryParameters struct {
 }
 
 type gitAuth struct {
-	authType gittypes.GitCredentialAuthType
 	username string
 	password string
 }
@@ -110,7 +107,6 @@ func cloneGitRepository(gitService portainer.GitService, cloneParams *cloneRepos
 			cloneParams.ref,
 			cloneParams.auth.username,
 			cloneParams.auth.password,
-			cloneParams.auth.authType,
 			cloneParams.tlsSkipVerify,
 		)
 	}
@@ -121,7 +117,6 @@ func cloneGitRepository(gitService portainer.GitService, cloneParams *cloneRepos
 		cloneParams.ref,
 		"",
 		"",
-		gittypes.GitCredentialAuthType_Basic,
 		cloneParams.tlsSkipVerify,
 	)
 }

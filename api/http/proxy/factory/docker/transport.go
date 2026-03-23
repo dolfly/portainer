@@ -17,7 +17,6 @@ import (
 	portainer "github.com/portainer/portainer/api"
 	"github.com/portainer/portainer/api/dataservices"
 	"github.com/portainer/portainer/api/docker/client"
-	gittypes "github.com/portainer/portainer/api/git/types"
 	"github.com/portainer/portainer/api/http/proxy/factory/utils"
 	"github.com/portainer/portainer/api/http/security"
 	"github.com/portainer/portainer/api/internal/authorization"
@@ -449,7 +448,6 @@ func (transport *Transport) updateDefaultGitBranch(request *http.Request) error 
 		"",
 		"",
 		"",
-		gittypes.GitCredentialAuthType_Basic,
 		false,
 	)
 	if err != nil {
