@@ -34,8 +34,8 @@ export function ServiceAccountDetailsWidget({ namespace, name }: Props) {
               className="[&_td:first-child]:w-2/5"
             >
               <DetailsRow label="Name">
-                {serviceAccount?.name}{' '}
-                {serviceAccount?.isSystem && <SystemBadge />}
+                {serviceAccount?.name}
+                {serviceAccount?.isSystem && <SystemBadge className="ml-1" />}
               </DetailsRow>
               <DetailsRow label="Namespace">
                 <Link
@@ -45,19 +45,25 @@ export function ServiceAccountDetailsWidget({ namespace, name }: Props) {
                 >
                   {namespace}
                 </Link>
-                {serviceAccount?.isSystem && <SystemBadge />}
+                {serviceAccount?.isSystem && <SystemBadge className="ml-1" />}
               </DetailsRow>
               <DetailsRow label="Creation date">
                 {serviceAccount?.creationDate
                   ? new Date(serviceAccount.creationDate).toLocaleString()
                   : '-'}
               </DetailsRow>
-              <DetailsRow label="Automount token">
+              <DetailsRow
+                label={
+                  <>
+                    Automount token
+                    <Tooltip message="Controls whether pods automatically receive an API token for cluster access. Disabling this reduces attack surface for workloads that don't need Kubernetes API access. Individual pods can still override this setting." />
+                  </>
+                }
+              >
                 <span className="flex items-center">
                   {serviceAccount?.automountServiceAccountToken === false
                     ? 'Disabled'
                     : 'Enabled'}
-                  <Tooltip message="Controls whether pods automatically receive an API token for cluster access. Disabling this reduces attack surface for workloads that don't need Kubernetes API access. Individual pods can still override this setting." />
                 </span>
               </DetailsRow>
 
@@ -198,6 +204,8 @@ function ImagePullSecretBadge({
                 params={{ id: registry.Id }}
                 className="!text-inherit underline"
                 data-cy={`registry-link-${registry.Id}`}
+                rel="noopener noreferrer"
+                target="_blank"
               >
                 {registry.Name}
               </Link>

@@ -668,8 +668,9 @@ type (
 
 	// EndpointPostInitMigrations
 	EndpointPostInitMigrations struct {
-		MigrateIngresses bool `json:"MigrateIngresses"`
-		MigrateGPUs      bool `json:"MigrateGPUs"`
+		MigrateIngresses         bool `json:"MigrateIngresses"`
+		MigrateGPUs              bool `json:"MigrateGPUs"`
+		MigrateRegistrySASecrets bool `json:"MigrateRegistrySASecrets"`
 	}
 
 	// Extension represents a deprecated Portainer extension
@@ -1793,6 +1794,8 @@ type (
 		// ServiceAccount
 		GetServiceAccounts(namespace string) ([]models.K8sServiceAccount, error)
 		DeleteServiceAccounts(reqs models.K8sServiceAccountDeleteRequests) error
+		AddImagePullSecretToServiceAccount(namespace, serviceAccountName, secretName string) error
+		RemoveImagePullSecretFromServiceAccount(namespace, serviceAccountName, secretName string) error
 		SetupUserServiceAccount(int, []int, bool) error
 		GetPortainerUserServiceAccount(tokendata *TokenData) (*corev1.ServiceAccount, error)
 		GetServiceAccountBearerToken(userID int) (string, error)

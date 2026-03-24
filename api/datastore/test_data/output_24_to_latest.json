@@ -80,7 +80,8 @@
       "Name": "local",
       "PostInitMigrations": {
         "MigrateGPUs": true,
-        "MigrateIngresses": true
+        "MigrateIngresses": true,
+        "MigrateRegistrySASecrets": false
       },
       "PublicURL": "",
       "SecuritySettings": {

@@ -261,6 +261,53 @@ func (kcl *KubeClient) removeNamespaceAccessForServiceAccount(serviceAccountName
 	return err
 }
 
+func (kcl *KubeClient) AddImagePullSecretToServiceAccount(namespace, serviceAccountName, secretName string) error {
+	sa, err := kcl.cli.CoreV1().ServiceAccounts(namespace).Get(context.TODO(), serviceAccountName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, ref := range sa.ImagePullSecrets {
+		if ref.Name == secretName {
+			return nil
+		}
+	}
+
+	sa.ImagePullSecrets = append(sa.ImagePullSecrets, corev1.LocalObjectReference{Name: secretName})
+
+	_, err = kcl.cli.CoreV1().ServiceAccounts(namespace).Update(context.TODO(), sa, metav1.UpdateOptions{})
+	return err
+}
+
+func (kcl *KubeClient) RemoveImagePullSecretFromServiceAccount(namespace, serviceAccountName, secretName string) error {
+	sa, err := kcl.cli.CoreV1().ServiceAccounts(namespace).Get(context.TODO(), serviceAccountName, metav1.GetOptions{})
+	if err != nil {
+		if k8serrors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+
+	updated := sa.ImagePullSecrets[:0]
+	changed := false
+	for _, ref := range sa.ImagePullSecrets {
+		if ref.Name == secretName {
+			changed = true
+			continue
+		}
+		updated = append(updated, ref)
+	}
+
+	if !changed {
+		return nil
+	}
+
+	sa.ImagePullSecrets = updated
+
+	_, err = kcl.cli.CoreV1().ServiceAccounts(namespace).Update(context.TODO(), sa, metav1.UpdateOptions{})
+	return err
+}
+
 func (kcl *KubeClient) ensureNamespaceAccessForServiceAccount(serviceAccountName, namespace string) error {
 	roleBindingName := namespaceClusterRoleBindingName(namespace, kcl.instanceID)
 
