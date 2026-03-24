@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
 import { ResourceControlViewModel } from '@/react/portainer/access-control/models/ResourceControlViewModel';
-import { useIsStandAlone } from '@/react/docker/proxy/queries/useInfo';
+import { useIsStandalone } from '@/react/docker/proxy/queries/useInfo';
 import { Environment } from '@/react/portainer/environments/types';
 
 import { ContainerListViewModel, ContainerStatus } from './types';
@@ -101,7 +101,7 @@ function createStatus(state = '', statusText = ''): ContainerStatus {
 }
 
 export function useShowGPUsColumn(environment: Environment | undefined) {
-  const isDockerStandalone = useIsStandAlone(environment?.Id);
+  const isDockerStandalone = useIsStandalone(environment?.Id);
   const enableGPUManagement = !!environment?.EnableGPUManagement;
   return isDockerStandalone && enableGPUManagement;
 }

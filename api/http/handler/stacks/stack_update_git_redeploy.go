@@ -5,6 +5,7 @@ import (
 	"time"
 
 	portainer "github.com/portainer/portainer/api"
+	"github.com/portainer/portainer/api/dataservices"
 	"github.com/portainer/portainer/api/git"
 	httperrors "github.com/portainer/portainer/api/http/errors"
 	"github.com/portainer/portainer/api/http/security"
@@ -193,7 +194,9 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 	stack.UpdateDate = time.Now().Unix()
 	stack.Status = portainer.StackStatusActive
 
-	if err := handler.DataStore.Stack().Update(stack.ID, stack); err != nil {
+	if err := handler.DataStore.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return tx.Stack().Update(stack.ID, stack)
+	}); err != nil {
 		return httperror.InternalServerError("Unable to persist the stack changes inside the database", errors.Wrap(err, "failed to update the stack"))
 	}
 

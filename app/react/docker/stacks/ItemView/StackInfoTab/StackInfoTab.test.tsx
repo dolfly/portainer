@@ -13,7 +13,6 @@ vi.mock('@/react/hooks/useEnvironmentId', () => ({
   useEnvironmentId: vi.fn(() => 1),
 }));
 
-// Mock the child components to isolate testing
 vi.mock('./AssociateStackForm', () => ({
   AssociateStackForm: vi.fn(() => (
     <div data-cy="associate-stack-form">AssociateStackForm</div>
@@ -30,10 +29,8 @@ vi.mock('./StackDuplicationForm/StackDuplicationForm', () => ({
   )),
 }));
 
-vi.mock('./StackRedeployGitForm/StackRedeployGitForm', () => ({
-  StackRedeployGitForm: vi.fn(() => (
-    <div data-cy="stack-redeploy-git-form">StackRedeployGitForm</div>
-  )),
+vi.mock('@/react/portainer/gitops/InfoPanel', () => ({
+  InfoPanel: vi.fn(() => <div data-cy="info-panel">InfoPanel</div>),
 }));
 
 beforeEach(() => {
@@ -130,9 +127,7 @@ describe('conditional form rendering', () => {
     expect(
       screen.queryByTestId('stack-duplication-form')
     ).not.toBeInTheDocument();
-    expect(
-      screen.queryByTestId('stack-redeploy-git-form')
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId('info-panel')).not.toBeInTheDocument();
   });
 
   it('should not render AssociateStackForm when only isOrphanedRunning is true', () => {
@@ -151,7 +146,7 @@ describe('conditional form rendering', () => {
     expect(screen.getByTestId('stack-duplication-form')).toBeVisible();
   });
 
-  it('should render StackRedeployGitForm when stack has GitConfig and is not from template', async () => {
+  it('should render InfoPanel and edit button when stack has GitConfig and is not from template', async () => {
     const mockStack = createMockStack({
       GitConfig: {
         URL: 'https://github.com/test/repo',
@@ -169,11 +164,12 @@ describe('conditional form rendering', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId('stack-redeploy-git-form')).toBeVisible();
+      expect(screen.getByTestId('info-panel')).toBeVisible();
+      expect(screen.getByText('Edit Git settings')).toBeVisible();
     });
   });
 
-  it('should not render StackRedeployGitForm when stack is from app template', () => {
+  it('should not render InfoPanel when stack is from app template', () => {
     const mockStack = createMockStack({
       GitConfig: {
         URL: 'https://github.com/test/repo',
@@ -190,12 +186,10 @@ describe('conditional form rendering', () => {
       isRegular: true,
     });
 
-    expect(
-      screen.queryByTestId('stack-redeploy-git-form')
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId('info-panel')).not.toBeInTheDocument();
   });
 
-  it('should not render StackRedeployGitForm when stack has no GitConfig', () => {
+  it('should not render InfoPanel when stack has no GitConfig', () => {
     const mockStack = createMockStack({
       GitConfig: undefined,
     });
@@ -205,9 +199,7 @@ describe('conditional form rendering', () => {
       isRegular: true,
     });
 
-    expect(
-      screen.queryByTestId('stack-redeploy-git-form')
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId('info-panel')).not.toBeInTheDocument();
   });
 
   it('should render StackDuplicationForm when stack is regular and not orphaned', () => {
@@ -243,14 +235,12 @@ describe('conditional form rendering', () => {
     expect(
       screen.queryByTestId('stack-duplication-form')
     ).not.toBeInTheDocument();
-    expect(
-      screen.queryByTestId('stack-redeploy-git-form')
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId('info-panel')).not.toBeInTheDocument();
   });
 });
 
 describe('git and duplication form combination', () => {
-  it('should render both StackRedeployGitForm and StackDuplicationForm when conditions met', async () => {
+  it('should render both InfoPanel and StackDuplicationForm when conditions met', async () => {
     const mockStack = createMockStack({
       GitConfig: {
         URL: 'https://github.com/test/repo',
@@ -268,7 +258,7 @@ describe('git and duplication form combination', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId('stack-redeploy-git-form')).toBeVisible();
+      expect(screen.getByTestId('info-panel')).toBeVisible();
       expect(screen.getByTestId('stack-duplication-form')).toBeVisible();
     });
   });

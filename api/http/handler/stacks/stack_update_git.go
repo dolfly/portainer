@@ -5,6 +5,7 @@ import (
 	"time"
 
 	portainer "github.com/portainer/portainer/api"
+	"github.com/portainer/portainer/api/dataservices"
 	gittypes "github.com/portainer/portainer/api/git/types"
 	"github.com/portainer/portainer/api/git/update"
 	httperrors "github.com/portainer/portainer/api/http/errors"
@@ -22,6 +23,9 @@ type stackGitUpdatePayload struct {
 	AutoUpdate               *portainer.AutoUpdateSettings
 	Env                      []portainer.Pair
 	Prune                    bool
+	RepositoryURL            string
+	ConfigFilePath           string
+	AdditionalFiles          []string
 	RepositoryReferenceName  string
 	RepositoryAuthentication bool
 	RepositoryUsername       string
@@ -149,6 +153,15 @@ func (handler *Handler) stackUpdateGit(w http.ResponseWriter, r *http.Request) *
 	//update retrieved stack data based on the payload
 	stack.GitConfig.ReferenceName = payload.RepositoryReferenceName
 	stack.GitConfig.TLSSkipVerify = payload.TLSSkipVerify
+	if payload.RepositoryURL != "" {
+		stack.GitConfig.URL = payload.RepositoryURL
+	}
+	if payload.ConfigFilePath != "" {
+		stack.GitConfig.ConfigFilePath = payload.ConfigFilePath
+	}
+	if payload.AdditionalFiles != nil {
+		stack.AdditionalFiles = payload.AdditionalFiles
+	}
 	stack.AutoUpdate = payload.AutoUpdate
 	stack.Env = payload.Env
 	stack.UpdatedBy = user.Username
@@ -194,7 +207,9 @@ func (handler *Handler) stackUpdateGit(w http.ResponseWriter, r *http.Request) *
 	}
 
 	// Save the updated stack to DB
-	if err := handler.DataStore.Stack().Update(stack.ID, stack); err != nil {
+	if err := handler.DataStore.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return tx.Stack().Update(stack.ID, stack)
+	}); err != nil {
 		return httperror.InternalServerError("Unable to persist the stack changes inside the database", err)
 	}
 
