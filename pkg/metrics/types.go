@@ -1,5 +1,20 @@
 package metrics
 
+const (
+	// AlertRuleIDLabel is the Prometheus label key used to correlate alerts
+	// with their Portainer alert rule ID across agent and server packages.
+	AlertRuleIDLabel = "alert_rule_id"
+
+	ClusterCPUUsageCoresMetric           = "portainer_edge_agent_cluster_cpu_usage_cores"
+	ClusterCPUCapacityCoresMetric        = "portainer_edge_agent_cluster_cpu_capacity_cores"
+	ClusterMemoryWorkingSetBytesMetric   = "portainer_edge_agent_cluster_memory_working_set_bytes"
+	ClusterMemoryCapacityBytesMetric     = "portainer_edge_agent_cluster_memory_capacity_bytes"
+	ClusterFilesystemUsedBytesMetric     = "portainer_edge_agent_cluster_filesystem_used_bytes"
+	ClusterFilesystemCapacityBytesMetric = "portainer_edge_agent_cluster_filesystem_capacity_bytes"
+	ClusterNetworkReceiveBytesMetric     = "portainer_edge_agent_cluster_network_receive_bytes_total"
+	ClusterNetworkTransmitBytesMetric    = "portainer_edge_agent_cluster_network_transmit_bytes_total"
+)
+
 // EdgeAlertBatch is the generic envelope pushed by edge agents.
 type EdgeAlertBatch struct {
 	EnvironmentName string       `json:"environment_name"`
@@ -45,15 +60,40 @@ type WorkloadItem struct {
 	Available int         `json:"available"`
 }
 
-// EdgeAlertRule is the agent-side representation of an AlertingRule.
-// It carries only the fields needed for local threshold evaluation.
+type AlertRuleStateType string
+
+const (
+	AlertRuleStateOK      AlertRuleStateType = "ok"
+	AlertRuleStatePending AlertRuleStateType = "pending"
+	AlertRuleStateFiring  AlertRuleStateType = "firing"
+)
+
+// EdgeAlertRuleState represents the evaluation state of a single alert rule on an edge agent.
+type EdgeAlertRuleState struct {
+	RuleID         int                `json:"rule_id"`
+	State          AlertRuleStateType `json:"state"`
+	LastEvaluation int64              `json:"last_evaluation,omitempty"` // unix milliseconds
+	LastError      string             `json:"last_error,omitempty"`
+}
+
+// EdgeAlertState is the aggregate alert evaluation state reported by an edge agent.
+type EdgeAlertState struct {
+	Rules             []EdgeAlertRuleState `json:"rules"`
+	ConfigReloadError string               `json:"config_reload_error,omitempty"`
+}
+
+// EdgeAlertRule is the agent-side representation of a compiled alert rule.
+// The server generates and stores the PromQL expression at rule-write time;
+// the agent is a pure evaluator with no rule-type logic.
 type EdgeAlertRule struct {
-	ID                int     `json:"id"`
-	Name              string  `json:"name"`
-	Enabled           bool    `json:"enabled"`
-	Severity          string  `json:"severity"`
-	MetricType        string  `json:"metric_type"`
-	Threshold         float64 `json:"threshold"`
-	ConditionOperator string  `json:"condition_operator"`
-	Duration          int     `json:"duration"`
+	ID                 int     `json:"id"`
+	Name               string  `json:"name"`
+	Enabled            bool    `json:"enabled"`
+	Severity           string  `json:"severity"`
+	MetricType         string  `json:"metric_type"`
+	Threshold          float64 `json:"threshold"`
+	ConditionOperator  string  `json:"condition_operator"`
+	Duration           int     `json:"duration"`
+	PromqlExpr         string  `json:"promql_expr"`
+	ForDurationMinutes int     `json:"for_duration_minutes,omitempty"`
 }

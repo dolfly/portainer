@@ -1971,6 +1971,8 @@ const (
 	PortainerAgentPublicKeyHeader = "X-PortainerAgent-PublicKey"
 	// PortainerAgentKubernetesSATokenHeader represent the name of the header containing a Kubernetes SA token
 	PortainerAgentKubernetesSATokenHeader = "X-PortainerAgent-SA-Token"
+	// HTTPAlertStateHeaderName is the name of the header used to transmit edge alert evaluation state
+	HTTPAlertStateHeaderName = "X-PortainerAgent-AlertState"
 	// PortainerAgentSignatureMessage represents the message used to create a digital signature
 	// to be used when communicating with an agent
 	PortainerAgentSignatureMessage = "Portainer-App"
