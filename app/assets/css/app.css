@@ -38,16 +38,29 @@ body {
 
 html,
 body,
-#page-wrapper,
-#content-wrapper,
-.page-content,
-#view {
+#page-wrapper {
   height: 100%;
   width: 100%;
   overflow-y: initial;
 }
 
+#content-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  width: 100%;
+  overflow-y: initial;
+}
+
+.page-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  overflow-y: initial;
+}
+
 #view {
+  flex: 1 0 auto;
   position: relative;
 }
 
