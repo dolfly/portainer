@@ -1,6 +1,7 @@
 package stacks
 
 import (
+	"cmp"
 	"net/http"
 	"time"
 
@@ -162,6 +163,9 @@ func (handler *Handler) stackUpdateGit(w http.ResponseWriter, r *http.Request) *
 	if payload.AdditionalFiles != nil {
 		stack.AdditionalFiles = payload.AdditionalFiles
 	}
+
+	stack.EntryPoint = cmp.Or(payload.ConfigFilePath, stack.EntryPoint)
+
 	stack.AutoUpdate = payload.AutoUpdate
 	stack.Env = payload.Env
 	stack.UpdatedBy = user.Username
