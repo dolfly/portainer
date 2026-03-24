@@ -13,7 +13,7 @@
   reload="true"
 ></page-header>
 
-<kubernetes-view-loading view-ready="ctrl.state.viewReady"></kubernetes-view-loading>
+<kubernetes-view-loading class="my-auto" view-ready="ctrl.state.viewReady"></kubernetes-view-loading>
 
 <information-panel ng-if="!ctrl.state.getMetrics" title-text="Unable to retrieve node metrics">
   <span class="small text-muted vertical-center">
