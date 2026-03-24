@@ -7,7 +7,7 @@ export function parseDN(
   dn: string | undefined,
   domainSuffix: string
 ): DnEntry[] {
-  const regex = /(\w+)=([a-zA-Z0-9_ ]*),?/;
+  const regex = /(\w+)=([a-zA-Z0-9_ -]*),?/;
   const ouValues: DnEntry[] = [];
   let left = dn || '';
   let match = left.match(regex);

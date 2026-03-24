@@ -11,9 +11,6 @@ import { InputListActionButtons } from '@@/form-components/InputList/ActionButto
 
 import { DnEntry } from './ldap-dn-utils';
 
-export type { DnEntry };
-export { parseDN, buildDN } from './ldap-dn-utils';
-
 const typeOptions = [
   { label: 'OU Name', value: 'ou' },
   { label: 'Folder Name', value: 'cn' },
