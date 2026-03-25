@@ -563,10 +563,7 @@ func (transport *Transport) restrictedResourceOperation(request *http.Request, r
 		return nil, err
 	}
 
-	userTeamIDs := make([]portainer.TeamID, 0)
-	for _, membership := range teamMemberships {
-		userTeamIDs = append(userTeamIDs, membership.TeamID)
-	}
+	userTeamIDs := authorization.TeamIDs(teamMemberships)
 
 	resourceControls, err := transport.dataStore.ResourceControl().ReadAll()
 	if err != nil {
@@ -886,12 +883,7 @@ func (transport *Transport) createOperationContext(request *http.Request) (*rest
 		return nil, err
 	}
 
-	userTeamIDs := make([]portainer.TeamID, 0)
-	for _, membership := range teamMemberships {
-		userTeamIDs = append(userTeamIDs, membership.TeamID)
-	}
-
-	operationContext.userTeamIDs = userTeamIDs
+	operationContext.userTeamIDs = authorization.TeamIDs(teamMemberships)
 
 	return operationContext, nil
 }
