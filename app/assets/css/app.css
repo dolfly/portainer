@@ -66,13 +66,13 @@ body,
   position: relative;
 }
 
-#view > .ng-isolate-scope {
+#view > * {
   display: flex;
   flex-direction: column;
 }
 /* some angular views have multiple child elements, so only apply the flex styles to the only child */
 /* ensure that the parent page containers (from the router) stretch to fit available space */
-#view > :only-child.ng-isolate-scope {
+#view > :only-child:not([class]) {
   flex: 1 0 auto;
 }
 
