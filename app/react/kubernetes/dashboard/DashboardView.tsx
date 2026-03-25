@@ -49,7 +49,7 @@ export function DashboardView() {
           queryClient.invalidateQueries(['environments', environmentId])
         }
       />
-      <div className="col-sm-12 flex flex-col gap-y-5 mb-4">
+      <div className="col-sm-12 flex flex-col gap-y-5">
         <EnvironmentInfo />
         <DashboardGrid>
           <DashboardItem

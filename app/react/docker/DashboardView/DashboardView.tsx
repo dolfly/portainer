@@ -46,7 +46,7 @@ export function DashboardView() {
     <>
       <PageHeader title="Dashboard" breadcrumbs="Environment summary" reload />
 
-      <div className="mx-4 space-y-6 mb-4">
+      <div className="mx-4 space-y-6">
         <InfoPanels isAgent={isAgentEnvironment(env.Type)} />
 
         <DashboardGrid>
@@ -116,6 +116,8 @@ export function DashboardView() {
           )}
         </DashboardGrid>
       </div>
+
+      <div className="pt-6" />
     </>
   );
 

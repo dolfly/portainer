@@ -29,7 +29,7 @@ export function DashboardView() {
     <>
       <PageHeader title="Home" breadcrumbs={[{ label: 'Dashboard' }]} reload />
 
-      <div className="mx-4 mb-4">
+      <div className="mx-4">
         {subscriptionsQuery.data && (
           <DashboardGrid>
             <DashboardItem
