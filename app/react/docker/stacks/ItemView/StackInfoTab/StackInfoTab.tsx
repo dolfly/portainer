@@ -142,11 +142,11 @@ export function StackInfoTab({
                 </>
               )}
 
-              {isRegular && (
+              {isRegular && !!stackFileContent && (
                 <StackDuplicationForm
                   yamlError={yamlError}
                   currentEnvironmentId={environmentId}
-                  originalFileContent={stackFileContent || ''}
+                  originalFileContent={stackFileContent}
                   stack={stack}
                 />
               )}

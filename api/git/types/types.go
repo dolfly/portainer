@@ -15,7 +15,8 @@ type RepoConfig struct {
 	URL string `example:"https://github.com/portainer/portainer.git"`
 	// The reference name
 	ReferenceName string `example:"refs/heads/branch_name"`
-	// Path to where the config file is in this url/refName
+	// ConfigFilePath is the path to the config file within the repository.
+	// NOTE: For stacks, this mirrors Stack.EntryPoint and the two are kept in sync by stackUpdateGit.
 	ConfigFilePath string `example:"docker-compose.yml"`
 	// Git credentials
 	Authentication *GitAuthentication

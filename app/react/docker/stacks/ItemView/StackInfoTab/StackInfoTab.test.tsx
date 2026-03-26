@@ -136,6 +136,7 @@ describe('conditional form rendering', () => {
       stack: mockStack,
       isOrphanedRunning: true,
       isOrphaned: false,
+      stackFileContent: 'content',
     });
 
     // isOrphanedRunning alone doesn't trigger the form, only isOrphaned does
@@ -202,15 +203,30 @@ describe('conditional form rendering', () => {
     expect(screen.queryByTestId('info-panel')).not.toBeInTheDocument();
   });
 
-  it('should render StackDuplicationForm when stack is regular and not orphaned', () => {
+  it('should render StackDuplicationForm when stack is regular and not orphaned and content is available', () => {
     const mockStack = createMockStack();
     renderComponent({
       stack: mockStack,
       isRegular: true,
       isOrphaned: false,
+      stackFileContent: 'content',
     });
 
     expect(screen.getByTestId('stack-duplication-form')).toBeVisible();
+  });
+
+  it('should not render StackDuplicationForm when content is not available', () => {
+    const mockStack = createMockStack();
+    renderComponent({
+      stack: mockStack,
+      isRegular: true,
+      isOrphaned: false,
+      stackFileContent: '',
+    });
+
+    expect(
+      screen.queryByTestId('stack-duplication-form')
+    ).not.toBeInTheDocument();
   });
 
   it('should not render StackDuplicationForm when stack is not regular', () => {
@@ -255,6 +271,7 @@ describe('git and duplication form combination', () => {
       stack: mockStack,
       isRegular: true,
       isOrphaned: false,
+      stackFileContent: 'content',
     });
 
     await waitFor(() => {

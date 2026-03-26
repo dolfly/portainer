@@ -1175,7 +1175,10 @@ type (
 		EndpointID EndpointID `json:"EndpointId" example:"1"`
 		// Cluster identifier of the Swarm cluster where the stack is deployed
 		SwarmID string `json:"SwarmId" example:"jpofkc0i9uo9wtx1zesuk649w"`
-		// Path to the Stack file
+		// EntryPoint is the path to the config file relative to the project root.
+		// NOTE: For git stacks this mirrors GitConfig.ConfigFilePath and the two are kept in sync
+		// by stackUpdateGit. The deploy command builder (compose_unpacker_cmd_builder) uses this
+		// field directly; Kubernetes deploy and git clone operations use GitConfig.ConfigFilePath.
 		EntryPoint string `json:"EntryPoint" example:"docker-compose.yml"`
 		// A list of environment(endpoint) variables used during stack deployment
 		Env []Pair `json:"Env"`
