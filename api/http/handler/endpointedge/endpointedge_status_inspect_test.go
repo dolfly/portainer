@@ -107,7 +107,7 @@ func mustSetupHandler(t *testing.T) *Handler {
 	}
 
 	handler := NewHandler(
-		security.NewRequestBouncer(store, jwtService, apiKeyService),
+		security.NewRequestBouncer(t.Context(), store, jwtService, apiKeyService),
 		store,
 		fs,
 		chisel.NewService(store, shutdownCtx, nil),

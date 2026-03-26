@@ -4,8 +4,9 @@ import (
 	"context"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
+
+	"github.com/portainer/portainer/pkg/schedule"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -29,11 +30,9 @@ type RepoManager interface {
 
 // Service represents a service for managing Git.
 type Service struct {
-	shutdownCtx  context.Context
-	azure        RepoManager
-	git          RepoManager
-	timerStopped bool
-	mut          sync.Mutex
+	shutdownCtx context.Context
+	azure       RepoManager
+	git         RepoManager
 
 	cacheEnabled bool
 	// Cache the result of repository refs, key is repository URL
@@ -52,25 +51,26 @@ func newService(ctx context.Context, cacheSize int, cacheTTL time.Duration) *Ser
 		shutdownCtx:  ctx,
 		azure:        NewAzureClient(),
 		git:          NewGitClient(false),
-		timerStopped: false,
 		cacheEnabled: cacheSize > 0,
 	}
 
-	if service.cacheEnabled {
-		var err error
-		service.repoRefCache, err = lru.New(cacheSize)
-		if err != nil {
-			log.Debug().Err(err).Msg("failed to create ref cache")
-		}
+	if !service.cacheEnabled {
+		return service
+	}
 
-		service.repoFileCache, err = lru.New(cacheSize)
-		if err != nil {
-			log.Debug().Err(err).Msg("failed to create file cache")
-		}
+	var err error
+	service.repoRefCache, err = lru.New(cacheSize)
+	if err != nil {
+		log.Debug().Err(err).Msg("failed to create ref cache")
+	}
 
-		if cacheTTL > 0 {
-			go service.startCacheCleanTimer(cacheTTL)
-		}
+	service.repoFileCache, err = lru.New(cacheSize)
+	if err != nil {
+		log.Debug().Err(err).Msg("failed to create file cache")
+	}
+
+	if cacheTTL > 0 {
+		go service.startCacheCleanTimer(cacheTTL)
 	}
 
 	return service
@@ -78,29 +78,7 @@ func newService(ctx context.Context, cacheSize int, cacheTTL time.Duration) *Ser
 
 // startCacheCleanTimer starts a timer to purge caches periodically
 func (service *Service) startCacheCleanTimer(d time.Duration) {
-	ticker := time.NewTicker(d)
-
-	for {
-		select {
-		case <-ticker.C:
-			service.purgeCache()
-
-		case <-service.shutdownCtx.Done():
-			ticker.Stop()
-			service.mut.Lock()
-			service.timerStopped = true
-			service.mut.Unlock()
-			return
-		}
-	}
-}
-
-// timerHasStopped shows the CacheClean timer state with thread-safe way
-func (service *Service) timerHasStopped() bool {
-	service.mut.Lock()
-	defer service.mut.Unlock()
-	ret := service.timerStopped
-	return ret
+	schedule.RunOnInterval(service.shutdownCtx, d, service.purgeCache, nil)
 }
 
 // CloneRepository clones a git repository using the specified URL in the specified
@@ -338,15 +316,16 @@ func filterFiles(paths []string, includedExts []string) []string {
 }
 
 func GetBasicAuth(username, password string) *githttp.BasicAuth {
-	if password != "" {
-		if username == "" {
-			username = "token"
-		}
-
-		return &githttp.BasicAuth{
-			Username: username,
-			Password: password,
-		}
+	if password == "" {
+		return nil
 	}
-	return nil
+
+	if username == "" {
+		username = "token"
+	}
+
+	return &githttp.BasicAuth{
+		Username: username,
+		Password: password,
+	}
 }

@@ -340,19 +340,6 @@ func TestService_purgeCacheByTTL_Github(t *testing.T) {
 	assert.Equal(t, 0, service.repoFileCache.Len())
 }
 
-func TestService_canStopCacheCleanTimer_whenContextDone(t *testing.T) {
-	timeout := 10 * time.Millisecond
-	deadlineCtx, cancel := context.WithDeadline(context.TODO(), time.Now().Add(10*timeout))
-	defer cancel()
-
-	service := NewService(deadlineCtx)
-	assert.False(t, service.timerHasStopped(), "timer should not be stopped")
-
-	<-time.After(20 * timeout)
-
-	assert.True(t, service.timerHasStopped(), "timer should be stopped")
-}
-
 func TestService_HardRefresh_ListRefs_GitHub(t *testing.T) {
 	ensureIntegrationTest(t)
 

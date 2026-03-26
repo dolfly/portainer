@@ -183,7 +183,7 @@ func Test_customTemplateGitFetch(t *testing.T) {
 	jwtService, err := jwt.NewService("1h", store)
 	require.NoError(t, err, "Error initiating jwt service")
 
-	requestBouncer := security.NewRequestBouncer(store, jwtService, nil)
+	requestBouncer := security.NewRequestBouncer(t.Context(), store, jwtService, nil)
 
 	gitService := &TestGitService{
 		targetFilePath: filepath.Join(template1.ProjectPath, template1.GitConfig.ConfigFilePath),

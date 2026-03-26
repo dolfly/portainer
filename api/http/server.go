@@ -121,7 +121,7 @@ type Server struct {
 func (server *Server) Start() error {
 	kubernetesTokenCacheManager := server.KubernetesTokenCacheManager
 
-	requestBouncer := security.NewRequestBouncer(server.DataStore, server.JWTService, server.APIKeyService)
+	requestBouncer := security.NewRequestBouncer(server.ShutdownCtx, server.DataStore, server.JWTService, server.APIKeyService)
 	if !server.CSP {
 		requestBouncer.DisableCSP()
 	}
