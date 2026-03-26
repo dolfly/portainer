@@ -1,7 +1,7 @@
 import _ from 'lodash-es';
 import angular from 'angular';
 import PortainerError from '@/portainer/error';
-import KubernetesEventConverter from 'Kubernetes/converters/event';
+import KubernetesEventConverter from '@/kubernetes/converters/event';
 
 class KubernetesEventService {
   /* @ngInject */

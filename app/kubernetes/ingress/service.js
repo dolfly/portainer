@@ -1,7 +1,7 @@
 import _ from 'lodash-es';
 import angular from 'angular';
 import PortainerError from '@/portainer/error';
-import { KubernetesCommonParams } from 'Kubernetes/models/common/params';
+import { KubernetesCommonParams } from '@/kubernetes/models/common/params';
 import { KubernetesIngressConverter } from './converter';
 
 /* @ngInject */

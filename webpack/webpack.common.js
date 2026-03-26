@@ -203,7 +203,6 @@ module.exports = {
     alias: {
       '@@': path.resolve(projectRoot, 'app/react/components'),
       '@': path.resolve(projectRoot, 'app'),
-      Kubernetes: path.resolve(projectRoot, 'app/kubernetes'),
       'lodash-es': 'lodash',
       'yaml-schema': path.resolve(projectRoot, 'node_modules/codemirror-json-schema/dist/yaml'),
     },

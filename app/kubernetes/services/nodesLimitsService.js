@@ -1,6 +1,6 @@
 import angular from 'angular';
 import PortainerError from '@/portainer/error';
-import { KubernetesNodesLimits } from 'Kubernetes/models/nodes-limits/models';
+import { KubernetesNodesLimits } from '@/kubernetes/models/nodes-limits/models';
 
 class KubernetesNodesLimitsService {
   /* @ngInject */

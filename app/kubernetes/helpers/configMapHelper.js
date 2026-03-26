@@ -1,6 +1,6 @@
 import _ from 'lodash-es';
 
-import { KubernetesPortainerConfigMapAccessKey } from 'Kubernetes/models/config-map/models';
+import { KubernetesPortainerConfigMapAccessKey } from '@/kubernetes/models/config-map/models';
 import { UserAccessViewModel, TeamAccessViewModel } from '@/portainer/models/access';
 
 class KubernetesConfigMapHelper {

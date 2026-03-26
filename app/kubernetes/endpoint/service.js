@@ -1,7 +1,7 @@
 import _ from 'lodash-es';
 import angular from 'angular';
 import PortainerError from '@/portainer/error';
-import KubernetesEndpointConverter from 'Kubernetes/endpoint/converter';
+import KubernetesEndpointConverter from '@/kubernetes/endpoint/converter';
 
 class KubernetesEndpointService {
   /* @ngInject */

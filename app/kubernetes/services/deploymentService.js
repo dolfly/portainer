@@ -1,7 +1,7 @@
 import angular from 'angular';
 import PortainerError from '@/portainer/error';
-import { KubernetesCommonParams } from 'Kubernetes/models/common/params';
-import KubernetesDeploymentConverter from 'Kubernetes/converters/deployment';
+import { KubernetesCommonParams } from '@/kubernetes/models/common/params';
+import KubernetesDeploymentConverter from '@/kubernetes/converters/deployment';
 
 class KubernetesDeploymentService {
   /* @ngInject */
