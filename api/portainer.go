@@ -371,6 +371,8 @@ type (
 		Atomic bool `json:"Atomic" example:"true"`
 		// Timeout for Helm operations (equivalent to helm --timeout flag)
 		Timeout string `json:"Timeout,omitempty" example:"5m0s"`
+		// Namespace to deploy the Helm chart into
+		Namespace string `json:"Namespace,omitempty" example:"default"`
 	}
 
 	EdgeStackStatusForEnv struct {
