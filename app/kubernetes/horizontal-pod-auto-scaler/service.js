@@ -1,6 +1,6 @@
 import angular from 'angular';
 import _ from 'lodash-es';
-import PortainerError from 'Portainer/error';
+import PortainerError from '@/portainer/error';
 import { KubernetesCommonParams } from 'Kubernetes/models/common/params';
 import { KubernetesHorizontalPodAutoScalerConverter } from './converter';
 

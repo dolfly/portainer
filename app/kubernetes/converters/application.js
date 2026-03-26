@@ -25,7 +25,7 @@ import KubernetesStatefulSetConverter from 'Kubernetes/converters/statefulSet';
 import KubernetesPodConverter from 'Kubernetes/pod/converter';
 import KubernetesServiceConverter from 'Kubernetes/converters/service';
 import KubernetesPersistentVolumeClaimConverter from 'Kubernetes/converters/persistentVolumeClaim';
-import PortainerError from 'Portainer/error';
+import PortainerError from '@/portainer/error';
 import { KubernetesIngressHelper } from 'Kubernetes/ingress/helper';
 import KubernetesCommonHelper from 'Kubernetes/helpers/commonHelper';
 import { KubernetesConfigurationKinds } from 'Kubernetes/models/configuration/models';

@@ -1,6 +1,6 @@
 import _ from 'lodash-es';
 import angular from 'angular';
-import PortainerError from 'Portainer/error';
+import PortainerError from '@/portainer/error';
 import KubernetesEventConverter from 'Kubernetes/converters/event';
 
 class KubernetesEventService {

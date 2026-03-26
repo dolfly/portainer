@@ -1,6 +1,6 @@
 import _ from 'lodash-es';
 import angular from 'angular';
-import PortainerError from 'Portainer/error';
+import PortainerError from '@/portainer/error';
 
 import { KubernetesApplicationDeploymentTypes, KubernetesApplicationTypes } from 'Kubernetes/models/application/models/appConstants';
 import KubernetesApplicationHelper from 'Kubernetes/helpers/application';

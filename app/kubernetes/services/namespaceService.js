@@ -1,5 +1,5 @@
 import angular from 'angular';
-import PortainerError from 'Portainer/error';
+import PortainerError from '@/portainer/error';
 import { KubernetesCommonParams } from 'Kubernetes/models/common/params';
 import KubernetesNamespaceConverter from 'Kubernetes/converters/namespace';
 import KubernetesNamespaceHelper from 'Kubernetes/helpers/namespaceHelper';
