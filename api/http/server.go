@@ -63,6 +63,7 @@ import (
 	"github.com/portainer/portainer/api/internal/upgrade"
 	k8s "github.com/portainer/portainer/api/kubernetes"
 	"github.com/portainer/portainer/api/kubernetes/cli"
+	motdservice "github.com/portainer/portainer/api/motd"
 	"github.com/portainer/portainer/api/pendingactions"
 	"github.com/portainer/portainer/api/platform"
 	"github.com/portainer/portainer/api/scheduler"
@@ -217,7 +218,10 @@ func (server *Server) Start() error {
 	ldapHandler.FileService = server.FileService
 	ldapHandler.LDAPService = server.LDAPService
 
-	var motdHandler = motd.NewHandler(requestBouncer)
+	motdSvc := motdservice.NewService(portainer.MessageOfTheDayURL)
+	motdSvc.Start(server.ShutdownCtx)
+
+	var motdHandler = motd.NewHandler(requestBouncer, motdSvc)
 
 	var registryHandler = registries.NewHandler(requestBouncer)
 	registryHandler.DataStore = server.DataStore
