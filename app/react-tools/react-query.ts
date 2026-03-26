@@ -8,6 +8,8 @@ import {
 } from '@tanstack/react-query';
 
 import { notifyError } from '@/portainer/services/notifications';
+import { isAxiosError } from '@/portainer/services/axios/utils/isAxiosError';
+import { parseAxiosError } from '@/portainer/services/axios/axios';
 
 /**
  * @deprecated for `useQuery` ONLY. Use `withGlobalError`.
@@ -21,7 +23,7 @@ import { notifyError } from '@/portainer/services/notifications';
 export function withError(fallbackMessage?: string, title = 'Failure') {
   return {
     onError(error: unknown) {
-      notifyError(title, error as Error, fallbackMessage);
+      handleError(error, { title, message: fallbackMessage });
     },
   };
 }
@@ -104,14 +106,30 @@ export function createQueryClient() {
 }
 
 function handleError(error: unknown, errorMeta?: unknown) {
-  if (errorMeta && typeof errorMeta === 'object') {
-    const { title = 'Failure', message } = errorMeta as {
-      title?: string;
-      message?: string;
-    };
+  const meta = extractErrorMeta(errorMeta);
 
-    notifyError(title, error as Error, message);
+  const parsedError = isAxiosError(error)
+    ? parseAxiosError(error, meta?.message ?? '')
+    : error;
+
+  notifyError(meta?.title || 'Failure', parsedError, meta?.message);
+}
+
+function extractErrorMeta(errorMeta?: unknown) {
+  if (!errorMeta || typeof errorMeta !== 'object') {
+    return undefined;
   }
+
+  let title = '';
+  if ('title' in errorMeta && typeof errorMeta.title === 'string') {
+    title = errorMeta.title;
+  }
+  let message = '';
+  if ('message' in errorMeta && typeof errorMeta.message === 'string') {
+    message = errorMeta.message;
+  }
+
+  return { title, message };
 }
 
 export const queryClient = createQueryClient();

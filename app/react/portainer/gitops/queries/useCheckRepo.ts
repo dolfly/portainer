@@ -1,10 +1,11 @@
 import { AxiosError } from 'axios';
 import { useQuery } from '@tanstack/react-query';
 
-import axios, {
+import axios from '@/react/portainer/services/axios/axios';
+import {
   isDefaultResponse,
   parseAxiosError,
-} from '@/portainer/services/axios/axios';
+} from '@/react/portainer/services/axios/utils/parseAxiosError';
 
 interface Creds {
   username?: string;
