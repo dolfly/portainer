@@ -1,5 +1,5 @@
 import _ from 'lodash-es';
-import { PorImageRegistryModel } from 'Docker/models/porImageRegistry';
+import { PorImageRegistryModel } from '@/docker/models/porImageRegistry';
 import { RegistryTypes } from 'Portainer/models/registryTypes';
 import { RegistryCreateRequest, RegistryViewModel } from 'Portainer/models/registry';
 import { DockerHubViewModel } from 'Portainer/models/dockerhub';
