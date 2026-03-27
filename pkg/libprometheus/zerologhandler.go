@@ -49,7 +49,7 @@ func slogToZerologLevel(l slog.Level) zerolog.Level {
 	}
 }
 
-// newZerologSlogger returns an *slog.Logger that writes through zerolog.
-func newZerologSlogger() *slog.Logger {
+// NewZerologSlogger returns an *slog.Logger that writes through zerolog.
+func NewZerologSlogger() *slog.Logger {
 	return slog.New(zerologHandler{})
 }

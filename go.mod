@@ -26,7 +26,6 @@ require (
 	github.com/go-git/go-billy/v5 v5.8.0
 	github.com/go-git/go-git/v5 v5.17.0
 	github.com/go-ldap/ldap/v3 v3.4.1
-	github.com/go-openapi/strfmt v0.25.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
@@ -44,7 +43,6 @@ require (
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/alertmanager v0.31.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2
 	github.com/prometheus/common v0.67.5
@@ -181,6 +179,7 @@ require (
 	github.com/go-openapi/jsonreference v0.21.4 // indirect
 	github.com/go-openapi/loads v0.23.2 // indirect
 	github.com/go-openapi/spec v0.22.3 // indirect
+	github.com/go-openapi/strfmt v0.25.0 // indirect
 	github.com/go-openapi/swag v0.25.4 // indirect
 	github.com/go-openapi/swag/cmdutils v0.25.4 // indirect
 	github.com/go-openapi/swag/conv v0.25.4 // indirect
@@ -283,6 +282,7 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/prometheus/alertmanager v0.31.1 // indirect
 	github.com/prometheus/client_golang v1.23.2 // indirect
 	github.com/prometheus/client_golang/exp v0.0.0-20260108101519-fb0838f53562 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect

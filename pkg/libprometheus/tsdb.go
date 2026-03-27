@@ -20,7 +20,7 @@ type TSDBConfig struct {
 
 // OpenTSDB opens a Prometheus TSDB with the given configuration.
 func OpenTSDB(cfg TSDBConfig) (*tsdb.DB, error) {
-	return tsdb.Open(cfg.DataDir, newZerologSlogger(), cfg.Registry, &tsdb.Options{
+	return tsdb.Open(cfg.DataDir, NewZerologSlogger(), cfg.Registry, &tsdb.Options{
 		RetentionDuration: cfg.RetentionDuration.Milliseconds(),
 		NoLockfile:        cfg.NoLockfile,
 	}, nil)
@@ -53,7 +53,7 @@ func NewInMemoryTSDB(reg prometheusreg.Registerer) (*InMemoryDB, error) {
 		return nil, fmt.Errorf("create in-memory TSDB dir: %w", err)
 	}
 
-	db, err := tsdb.Open(dir, newZerologSlogger(), reg, &tsdb.Options{
+	db, err := tsdb.Open(dir, NewZerologSlogger(), reg, &tsdb.Options{
 		RetentionDuration: inMemoryTSDBRetention.Milliseconds(),
 		NoLockfile:        true,
 	}, nil)

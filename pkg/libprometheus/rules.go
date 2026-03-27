@@ -31,7 +31,7 @@ func NewRuleManager(cfg RuleManagerConfig) *rules.Manager {
 		Queryable:  cfg.Queryable,
 		NotifyFunc: cfg.NotifyFunc,
 		Context:    cfg.Context,
-		Logger:     newZerologSlogger(),
+		Logger:     NewZerologSlogger(),
 		Registerer: cfg.Registerer,
 	})
 }
