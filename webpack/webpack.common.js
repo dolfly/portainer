@@ -149,8 +149,6 @@ module.exports = {
       'window.jQuery': 'jquery',
       'window.moment': 'moment',
       moment: 'moment',
-      'window.jsyaml': 'js-yaml',
-      jsyaml: 'js-yaml',
     }),
     new MiniCssExtractPlugin({
       filename: '[name].[contenthash].css',
