@@ -34,6 +34,42 @@ func setup(t *testing.T) string {
 	return bareRepoDir
 }
 
+func Test_checkGitError(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		expected error
+	}{
+		{
+			name:     "exact repository not found",
+			err:      errors.New("repository not found"),
+			expected: gittypes.ErrIncorrectRepositoryURL,
+		},
+		{
+			name:     "repository not found with html body",
+			err:      errors.New("repository not found: <html><body>404 Not Found</body></html>"),
+			expected: gittypes.ErrIncorrectRepositoryURL,
+		},
+		{
+			name:     "authentication required",
+			err:      errors.New("authentication required"),
+			expected: gittypes.ErrAuthenticationFailure,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := checkGitError(tt.err)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+
+	t.Run("other error is unchanged", func(t *testing.T) {
+		err := errors.New("some other git error")
+		assert.EqualError(t, checkGitError(err), "some other git error")
+	})
+}
+
 func Test_ClonePublicRepository_Shallow(t *testing.T) {
 	service := Service{git: NewGitClient(true)} // no need for http client since the test access the repo via file system.
 	repositoryURL := setup(t)

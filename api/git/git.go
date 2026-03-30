@@ -143,7 +143,7 @@ func (c *gitClient) ListFiles(ctx context.Context, dirOnly bool, opt *git.CloneO
 
 func checkGitError(err error) error {
 	errMsg := err.Error()
-	if errMsg == "repository not found" {
+	if strings.Contains(errMsg, "repository not found") {
 		return gittypes.ErrIncorrectRepositoryURL
 	} else if errMsg == "authentication required" {
 		return gittypes.ErrAuthenticationFailure
