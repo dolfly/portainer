@@ -8,8 +8,8 @@ import {
 } from '@tanstack/react-query';
 
 import { notifyError } from '@/portainer/services/notifications';
-import { isAxiosError } from '@/portainer/services/axios/utils/isAxiosError';
-import { parseAxiosError } from '@/portainer/services/axios/axios';
+import { isAxiosError } from '@/react/portainer/services/axios/utils/isAxiosError';
+import { parseAxiosError } from '@/react/portainer/services/axios/utils/parseAxiosError';
 
 /**
  * @deprecated for `useQuery` ONLY. Use `withGlobalError`.
@@ -108,6 +108,11 @@ export function createQueryClient() {
 function handleError(error: unknown, errorMeta?: unknown) {
   const meta = extractErrorMeta(errorMeta);
 
+  // suppress error when `meta.error` is falsy
+  if (!meta) {
+    return;
+  }
+
   const parsedError = isAxiosError(error)
     ? parseAxiosError(error, meta?.message ?? '')
     : error;
@@ -116,8 +121,12 @@ function handleError(error: unknown, errorMeta?: unknown) {
 }
 
 function extractErrorMeta(errorMeta?: unknown) {
+  if (typeof errorMeta === 'boolean' && !errorMeta) {
+    return errorMeta;
+  }
+
   if (!errorMeta || typeof errorMeta !== 'object') {
-    return undefined;
+    return { title: '', message: '' };
   }
 
   let title = '';
