@@ -1,6 +1,7 @@
 package stacks
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -162,7 +163,7 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 		TLSSkipVerify: stack.GitConfig.TLSSkipVerify,
 	}
 
-	clean, err := git.CloneWithBackup(handler.GitService, handler.FileService, cloneOptions)
+	clean, err := git.CloneWithBackup(context.TODO(), handler.GitService, handler.FileService, cloneOptions)
 	if err != nil {
 		return httperror.InternalServerError("Unable to clone git repository directory", err)
 	}
@@ -173,7 +174,7 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 		return err
 	}
 
-	newHash, err := handler.GitService.LatestCommitID(stack.GitConfig.URL, stack.GitConfig.ReferenceName, repositoryUsername, repositoryPassword, stack.GitConfig.TLSSkipVerify)
+	newHash, err := handler.GitService.LatestCommitID(context.TODO(), stack.GitConfig.URL, stack.GitConfig.ReferenceName, repositoryUsername, repositoryPassword, stack.GitConfig.TLSSkipVerify)
 	if err != nil {
 		return httperror.InternalServerError("Unable get latest commit id", errors.WithMessagef(err, "failed to fetch latest commit id of the stack %v", stack.ID))
 	}
@@ -270,7 +271,7 @@ func (handler *Handler) deployStack(r *http.Request, stack *portainer.Stack, pul
 		return httperror.InternalServerError("Unsupported stack", errors.Errorf("unsupported stack type: %v", stack.Type))
 	}
 
-	if err := deploymentConfiger.Deploy(); err != nil {
+	if err := deploymentConfiger.Deploy(context.TODO()); err != nil {
 		return httperror.InternalServerError(err.Error(), err)
 	}
 

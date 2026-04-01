@@ -1,7 +1,6 @@
 package git
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,7 +20,7 @@ func TestService_ClonePublicRepository_Azure(t *testing.T) {
 	ensureIntegrationTest(t)
 
 	pat := getRequiredValue(t, "AZURE_DEVOPS_PAT")
-	service := NewService(context.TODO())
+	service := NewService(t.Context())
 
 	type args struct {
 		repositoryURLFormat string
@@ -60,6 +59,7 @@ func TestService_ClonePublicRepository_Azure(t *testing.T) {
 			dst := t.TempDir()
 			repositoryUrl := fmt.Sprintf(tt.args.repositoryURLFormat, tt.args.password)
 			err := service.CloneRepository(
+				t.Context(),
 				dst,
 				repositoryUrl,
 				tt.args.referenceName,
@@ -77,11 +77,12 @@ func TestService_ClonePrivateRepository_Azure(t *testing.T) {
 	ensureIntegrationTest(t)
 
 	pat := getRequiredValue(t, "AZURE_DEVOPS_PAT")
-	service := NewService(context.TODO())
+	service := NewService(t.Context())
 
 	dst := t.TempDir()
 
 	err := service.CloneRepository(
+		t.Context(),
 		dst,
 		privateAzureRepoURL,
 		"refs/heads/main",
@@ -97,9 +98,10 @@ func TestService_LatestCommitID_Azure(t *testing.T) {
 	ensureIntegrationTest(t)
 
 	pat := getRequiredValue(t, "AZURE_DEVOPS_PAT")
-	service := NewService(context.TODO())
+	service := NewService(t.Context())
 
 	id, err := service.LatestCommitID(
+		t.Context(),
 		privateAzureRepoURL,
 		"refs/heads/main",
 		"",
@@ -115,9 +117,10 @@ func TestService_ListRefs_Azure(t *testing.T) {
 
 	accessToken := getRequiredValue(t, "AZURE_DEVOPS_PAT")
 	username := getRequiredValue(t, "AZURE_DEVOPS_USERNAME")
-	service := NewService(context.TODO())
+	service := NewService(t.Context())
 
 	refs, err := service.ListRefs(
+		t.Context(),
 		privateAzureRepoURL,
 		username,
 		accessToken,
@@ -133,13 +136,13 @@ func TestService_ListRefs_Azure_Concurrently(t *testing.T) {
 
 	accessToken := getRequiredValue(t, "AZURE_DEVOPS_PAT")
 	username := getRequiredValue(t, "AZURE_DEVOPS_USERNAME")
-	service := newService(context.TODO(), repositoryCacheSize, 200*time.Millisecond)
+	service := newService(t.Context(), repositoryCacheSize, 200*time.Millisecond)
 
 	go func() {
-		_, _ = service.ListRefs(privateAzureRepoURL, username, accessToken, false, false)
+		_, _ = service.ListRefs(t.Context(), privateAzureRepoURL, username, accessToken, false, false)
 	}()
 
-	_, err := service.ListRefs(privateAzureRepoURL, username, accessToken, false, false)
+	_, err := service.ListRefs(t.Context(), privateAzureRepoURL, username, accessToken, false, false)
 	require.NoError(t, err)
 
 	time.Sleep(2 * time.Second)
@@ -162,7 +165,7 @@ func TestService_ListFiles_Azure(t *testing.T) {
 		matchedCount int
 	}
 
-	service := newService(context.TODO(), 0, 0)
+	service := newService(t.Context(), 0, 0)
 	accessToken := getRequiredValue(t, "AZURE_DEVOPS_PAT")
 	username := getRequiredValue(t, "AZURE_DEVOPS_USERNAME")
 
@@ -273,6 +276,7 @@ func TestService_ListFiles_Azure(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			paths, err := service.ListFiles(
+				t.Context(),
 				tt.args.repositoryUrl,
 				tt.args.referenceName,
 				tt.args.username,
@@ -303,10 +307,11 @@ func TestService_ListFiles_Azure_Concurrently(t *testing.T) {
 
 	accessToken := getRequiredValue(t, "AZURE_DEVOPS_PAT")
 	username := getRequiredValue(t, "AZURE_DEVOPS_USERNAME")
-	service := newService(context.TODO(), repositoryCacheSize, 200*time.Millisecond)
+	service := newService(t.Context(), repositoryCacheSize, 200*time.Millisecond)
 
 	go func() {
 		_, _ = service.ListFiles(
+			t.Context(),
 			privateAzureRepoURL,
 			"refs/heads/main",
 			username,
@@ -319,6 +324,7 @@ func TestService_ListFiles_Azure_Concurrently(t *testing.T) {
 	}()
 
 	_, err := service.ListFiles(
+		t.Context(),
 		privateAzureRepoURL,
 		"refs/heads/main",
 		username,

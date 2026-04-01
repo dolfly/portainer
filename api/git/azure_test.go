@@ -311,7 +311,7 @@ func Test_azureDownloader_downloadZipFromAzureDevOps(t *testing.T) {
 					Password: tt.args.password,
 				}
 			}
-			_, err := a.downloadZipFromAzureDevOps(context.Background(), option)
+			_, err := a.downloadZipFromAzureDevOps(t.Context(), option)
 			require.Error(t, err)
 			assert.Equal(t, tt.want, zipRequestAuth)
 		})
@@ -367,7 +367,7 @@ func Test_azureDownloader_latestCommitID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			id, err := a.LatestCommitID(context.Background(), tt.args.repositoryUrl, tt.args.referenceName, &git.ListOptions{})
+			id, err := a.LatestCommitID(t.Context(), tt.args.repositoryUrl, tt.args.referenceName, &git.ListOptions{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("azureDownloader.latestCommitID() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -427,7 +427,7 @@ func Test_cloneRepository_azure(t *testing.T) {
 			git := &testRepoManager{}
 
 			s := &Service{azure: azure, git: git}
-			err := s.CloneRepository("", tt.url, "", "", "", false)
+			err := s.CloneRepository(t.Context(), "", tt.url, "", "", "", false)
 			require.NoError(t, err)
 
 			// if azure API is called, git isn't and vice versa
@@ -517,7 +517,7 @@ func Test_listRefs_azure(t *testing.T) {
 					Password: tt.args.password,
 				}
 			}
-			refs, err := client.ListRefs(context.TODO(), tt.args.repositoryUrl, option)
+			refs, err := client.ListRefs(t.Context(), tt.args.repositoryUrl, option)
 			if tt.expect.err == nil {
 				require.NoError(t, err)
 				if tt.expect.refsCount > 0 {
@@ -634,7 +634,7 @@ func Test_listFiles_azure(t *testing.T) {
 					Password: tt.args.password,
 				}
 			}
-			paths, err := client.ListFiles(context.TODO(), false, option)
+			paths, err := client.ListFiles(t.Context(), false, option)
 			if tt.expect.shouldFail {
 				require.Error(t, err)
 				if tt.expect.err != nil {

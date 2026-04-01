@@ -37,7 +37,6 @@ func (h *Handler) restore(w http.ResponseWriter, r *http.Request) *httperror.Han
 		return httperror.BadRequest("Cannot restore already initialized instance", errors.New("system already initialized"))
 	}
 	h.adminMonitor.Stop()
-	defer h.adminMonitor.Start()
 
 	var payload restorePayload
 	err = decodeForm(r, &payload)

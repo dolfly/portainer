@@ -1,7 +1,6 @@
 package git
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -77,7 +76,7 @@ func Test_ClonePublicRepository_Shallow(t *testing.T) {
 
 	dir := t.TempDir()
 	t.Logf("Cloning into %s", dir)
-	err := service.CloneRepository(dir, repositoryURL, referenceName, "", "", false)
+	err := service.CloneRepository(t.Context(), dir, repositoryURL, referenceName, "", "", false)
 	require.NoError(t, err)
 	assert.Equal(t, 1, getCommitHistoryLength(t, dir), "cloned repo has incorrect depth")
 }
@@ -89,7 +88,7 @@ func Test_ClonePublicRepository_NoGitDirectory(t *testing.T) {
 
 	dir := t.TempDir()
 	t.Logf("Cloning into %s", dir)
-	err := service.CloneRepository(dir, repositoryURL, referenceName, "", "", false)
+	err := service.CloneRepository(t.Context(), dir, repositoryURL, referenceName, "", "", false)
 	require.NoError(t, err)
 	assert.NoDirExists(t, filepath.Join(dir, ".git"))
 }
@@ -100,7 +99,7 @@ func Test_latestCommitID(t *testing.T) {
 	repositoryURL := setup(t)
 	referenceName := "refs/heads/main"
 
-	id, err := service.LatestCommitID(repositoryURL, referenceName, "", "", false)
+	id, err := service.LatestCommitID(t.Context(), repositoryURL, referenceName, "", "", false)
 
 	require.NoError(t, err)
 	assert.Equal(t, "68dcaa7bd452494043c64252ab90db0f98ecf8d2", id)
@@ -111,7 +110,7 @@ func Test_ListRefs(t *testing.T) {
 
 	repositoryURL := setup(t)
 
-	fs, err := service.ListRefs(repositoryURL, "", "", false, false)
+	fs, err := service.ListRefs(t.Context(), repositoryURL, "", "", false, false)
 
 	require.NoError(t, err)
 	assert.Equal(t, []string{"refs/heads/main"}, fs)
@@ -124,6 +123,7 @@ func Test_ListFiles(t *testing.T) {
 	referenceName := "refs/heads/main"
 
 	fs, err := service.ListFiles(
+		t.Context(),
 		repositoryURL,
 		referenceName,
 		"",
@@ -240,7 +240,7 @@ func Test_listRefsPrivateRepository(t *testing.T) {
 					Password: tt.args.password,
 				}
 			}
-			refs, err := client.ListRefs(context.TODO(), tt.args.repositoryUrl, option)
+			refs, err := client.ListRefs(t.Context(), tt.args.repositoryUrl, option)
 			if tt.expect.err == nil {
 				require.NoError(t, err)
 				if tt.expect.refsCount > 0 {
@@ -358,7 +358,7 @@ func Test_listFilesPrivateRepository(t *testing.T) {
 					Password: tt.args.password,
 				}
 			}
-			paths, err := client.ListFiles(context.TODO(), false, option)
+			paths, err := client.ListFiles(t.Context(), false, option)
 			if tt.expect.shouldFail {
 				require.Error(t, err)
 				if tt.expect.err != nil {

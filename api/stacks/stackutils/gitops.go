@@ -1,6 +1,7 @@
 package stackutils
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -16,7 +17,7 @@ var (
 
 // DownloadGitRepository downloads the target git repository on the disk
 // The first return value represents the commit hash of the downloaded git repository
-func DownloadGitRepository(config gittypes.RepoConfig, gitService portainer.GitService, getProjectPath func() string) (string, error) {
+func DownloadGitRepository(ctx context.Context, config gittypes.RepoConfig, gitService portainer.GitService, getProjectPath func() string) (string, error) {
 	username := ""
 	password := ""
 	if config.Authentication != nil {
@@ -26,6 +27,7 @@ func DownloadGitRepository(config gittypes.RepoConfig, gitService portainer.GitS
 
 	projectPath := getProjectPath()
 	err := gitService.CloneRepository(
+		ctx,
 		projectPath,
 		config.URL,
 		config.ReferenceName,
@@ -44,6 +46,7 @@ func DownloadGitRepository(config gittypes.RepoConfig, gitService portainer.GitS
 	}
 
 	commitID, err := gitService.LatestCommitID(
+		ctx,
 		config.URL,
 		config.ReferenceName,
 		username,

@@ -2,6 +2,7 @@ package stacks
 
 import (
 	"cmp"
+	"context"
 	"net/http"
 	"time"
 
@@ -190,6 +191,7 @@ func (handler *Handler) stackUpdateGit(w http.ResponseWriter, r *http.Request) *
 		}
 
 		if _, err := handler.GitService.LatestCommitID(
+			context.TODO(),
 			stack.GitConfig.URL,
 			stack.GitConfig.ReferenceName,
 			stack.GitConfig.Authentication.Username,
@@ -203,7 +205,7 @@ func (handler *Handler) stackUpdateGit(w http.ResponseWriter, r *http.Request) *
 	}
 
 	if payload.AutoUpdate != nil && payload.AutoUpdate.Interval != "" {
-		if jobID, err := deployments.StartAutoupdate(stack.ID, stack.AutoUpdate.Interval, handler.Scheduler, handler.StackDeployer, handler.DataStore, handler.GitService); err != nil {
+		if jobID, err := deployments.StartAutoupdate(context.TODO(), stack.ID, stack.AutoUpdate.Interval, handler.Scheduler, handler.StackDeployer, handler.DataStore, handler.GitService); err != nil {
 			return err
 		} else {
 			stack.AutoUpdate.JobID = jobID

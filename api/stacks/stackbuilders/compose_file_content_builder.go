@@ -1,6 +1,7 @@
 package stackbuilders
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -63,7 +64,7 @@ func (b *ComposeStackFileContentBuilder) SetFileContent(payload *StackPayload) F
 	return b
 }
 
-func (b *ComposeStackFileContentBuilder) Deploy(payload *StackPayload, endpoint *portainer.Endpoint) FileContentMethodStackBuildProcess {
+func (b *ComposeStackFileContentBuilder) Deploy(ctx context.Context, payload *StackPayload, endpoint *portainer.Endpoint) FileContentMethodStackBuildProcess {
 	if b.hasError() {
 		return b
 	}
@@ -77,5 +78,5 @@ func (b *ComposeStackFileContentBuilder) Deploy(payload *StackPayload, endpoint 
 	b.deploymentConfiger = composeDeploymentConfig
 	b.stack.CreatedBy = b.deploymentConfiger.GetUsername()
 
-	return b.FileContentMethodStackBuilder.Deploy(payload, endpoint)
+	return b.FileContentMethodStackBuilder.Deploy(ctx, payload, endpoint)
 }

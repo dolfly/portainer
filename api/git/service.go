@@ -30,9 +30,8 @@ type RepoManager interface {
 
 // Service represents a service for managing Git.
 type Service struct {
-	shutdownCtx context.Context
-	azure       RepoManager
-	git         RepoManager
+	azure RepoManager
+	git   RepoManager
 
 	cacheEnabled bool
 	// Cache the result of repository refs, key is repository URL
@@ -48,7 +47,6 @@ func NewService(ctx context.Context) *Service {
 
 func newService(ctx context.Context, cacheSize int, cacheTTL time.Duration) *Service {
 	service := &Service{
-		shutdownCtx:  ctx,
 		azure:        NewAzureClient(),
 		git:          NewGitClient(false),
 		cacheEnabled: cacheSize > 0,
@@ -70,20 +68,16 @@ func newService(ctx context.Context, cacheSize int, cacheTTL time.Duration) *Ser
 	}
 
 	if cacheTTL > 0 {
-		go service.startCacheCleanTimer(cacheTTL)
+		go schedule.RunOnInterval(ctx, cacheTTL, service.purgeCache, nil)
 	}
 
 	return service
 }
 
-// startCacheCleanTimer starts a timer to purge caches periodically
-func (service *Service) startCacheCleanTimer(d time.Duration) {
-	schedule.RunOnInterval(service.shutdownCtx, d, service.purgeCache, nil)
-}
-
 // CloneRepository clones a git repository using the specified URL in the specified
 // destination folder.
 func (service *Service) CloneRepository(
+	ctx context.Context,
 	destination,
 	repositoryURL,
 	referenceName,
@@ -103,7 +97,7 @@ func (service *Service) CloneRepository(
 		gitOptions.ReferenceName = plumbing.ReferenceName(referenceName)
 	}
 
-	return service.repoManager(repositoryURL).Download(context.TODO(), destination, gitOptions)
+	return service.repoManager(repositoryURL).Download(ctx, destination, gitOptions)
 }
 
 func (service *Service) repoManager(repositoryURL string) RepoManager {
@@ -118,6 +112,7 @@ func (service *Service) repoManager(repositoryURL string) RepoManager {
 
 // LatestCommitID returns SHA1 of the latest commit of the specified reference
 func (service *Service) LatestCommitID(
+	ctx context.Context,
 	repositoryURL,
 	referenceName,
 	username,
@@ -129,11 +124,12 @@ func (service *Service) LatestCommitID(
 		InsecureSkipTLS: tlsSkipVerify,
 	}
 
-	return service.repoManager(repositoryURL).LatestCommitID(context.TODO(), repositoryURL, referenceName, listOptions)
+	return service.repoManager(repositoryURL).LatestCommitID(ctx, repositoryURL, referenceName, listOptions)
 }
 
 // ListRefs will list target repository's references without cloning the repository
 func (service *Service) ListRefs(
+	ctx context.Context,
 	repositoryURL,
 	username,
 	password string,
@@ -166,7 +162,7 @@ func (service *Service) ListRefs(
 		InsecureSkipTLS: tlsSkipVerify,
 	}
 
-	refs, err := service.repoManager(repositoryURL).ListRefs(context.TODO(), repositoryURL, options)
+	refs, err := service.repoManager(repositoryURL).ListRefs(ctx, repositoryURL, options)
 	if err != nil {
 		return nil, err
 	}
@@ -183,6 +179,7 @@ var singleflightGroup = &singleflight.Group{}
 // ListFiles will list all the files of the target repository with specific extensions.
 // If extension is not provided, it will list all the files under the target repository
 func (service *Service) ListFiles(
+	ctx context.Context,
 	repositoryURL,
 	referenceName,
 	username,
@@ -203,6 +200,7 @@ func (service *Service) ListFiles(
 
 	fs, err, _ := singleflightGroup.Do(repoKey, func() (any, error) {
 		return service.listFiles(
+			ctx,
 			repositoryURL,
 			referenceName,
 			username,
@@ -217,6 +215,7 @@ func (service *Service) ListFiles(
 }
 
 func (service *Service) listFiles(
+	ctx context.Context,
 	repositoryURL,
 	referenceName,
 	username,
@@ -259,7 +258,7 @@ func (service *Service) listFiles(
 		Tags:            git.NoTags,
 	}
 
-	files, err := service.repoManager(repositoryURL).ListFiles(context.TODO(), dirOnly, cloneOption)
+	files, err := service.repoManager(repositoryURL).ListFiles(ctx, dirOnly, cloneOption)
 	if err != nil {
 		return nil, err
 	}

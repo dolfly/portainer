@@ -1,6 +1,7 @@
 package stacks
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"time"
@@ -264,7 +265,7 @@ func (handler *Handler) updateComposeStack(tx dataservices.DataStoreTx, r *http.
 	}
 
 	// Deploy the stack
-	if err := composeDeploymentConfig.Deploy(); err != nil {
+	if err := composeDeploymentConfig.Deploy(context.TODO()); err != nil {
 		if rollbackErr := handler.FileService.RollbackStackFile(stackFolder, stack.EntryPoint); rollbackErr != nil {
 			log.Warn().Err(rollbackErr).Msg("rollback stack file error")
 		}
@@ -340,7 +341,7 @@ func (handler *Handler) updateSwarmStack(tx dataservices.DataStoreTx, r *http.Re
 	}
 
 	// Deploy the stack
-	if err := swarmDeploymentConfig.Deploy(); err != nil {
+	if err := swarmDeploymentConfig.Deploy(context.TODO()); err != nil {
 		if rollbackErr := handler.FileService.RollbackStackFile(stackFolder, stack.EntryPoint); rollbackErr != nil {
 			log.Warn().Err(rollbackErr).Msg("rollback stack file error")
 		}

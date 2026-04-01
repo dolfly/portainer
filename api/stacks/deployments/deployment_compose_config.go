@@ -1,6 +1,7 @@
 package deployments
 
 import (
+	"context"
 	"fmt"
 
 	portainer "github.com/portainer/portainer/api"
@@ -68,7 +69,7 @@ func (config *ComposeStackDeploymentConfig) GetUsername() string {
 	return ""
 }
 
-func (config *ComposeStackDeploymentConfig) Deploy() error {
+func (config *ComposeStackDeploymentConfig) Deploy(ctx context.Context) error {
 	if config.FileService == nil || config.StackDeployer == nil {
 		log.Debug().Msg("file service or stack deployer is not initialized")
 		return errors.New("file service or stack deployer cannot be nil")
@@ -88,10 +89,10 @@ func (config *ComposeStackDeploymentConfig) Deploy() error {
 	}
 
 	if stackutils.IsRelativePathStack(config.stack) {
-		return config.StackDeployer.DeployRemoteComposeStack(config.stack, config.endpoint, config.registries, config.prune, config.forcePullImage, config.ForceCreate)
+		return config.StackDeployer.DeployRemoteComposeStack(ctx, config.stack, config.endpoint, config.registries, config.prune, config.forcePullImage, config.ForceCreate)
 	}
 
-	return config.StackDeployer.DeployComposeStack(config.stack, config.endpoint, config.registries, config.prune, config.forcePullImage, config.ForceCreate)
+	return config.StackDeployer.DeployComposeStack(ctx, config.stack, config.endpoint, config.registries, config.prune, config.forcePullImage, config.ForceCreate)
 }
 
 func (config *ComposeStackDeploymentConfig) GetResponse() string {

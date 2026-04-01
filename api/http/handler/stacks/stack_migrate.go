@@ -1,6 +1,7 @@
 package stacks
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -154,7 +155,7 @@ func (handler *Handler) stackMigrate(w http.ResponseWriter, r *http.Request) *ht
 
 	newName := stack.Name
 	stack.Name = oldName
-	if err := handler.deleteStack(securityContext.UserID, stack, endpoint); err != nil {
+	if err := handler.deleteStack(context.TODO(), securityContext.UserID, stack, endpoint); err != nil {
 		return httperror.InternalServerError(err.Error(), err)
 	}
 
@@ -207,7 +208,7 @@ func (handler *Handler) migrateComposeStack(r *http.Request, stack *portainer.St
 	}
 
 	// Deploy the stack
-	if err := composeDeploymentConfig.Deploy(); err != nil {
+	if err := composeDeploymentConfig.Deploy(context.TODO()); err != nil {
 		return httperror.InternalServerError(err.Error(), err)
 	}
 
@@ -234,7 +235,7 @@ func (handler *Handler) migrateSwarmStack(r *http.Request, stack *portainer.Stac
 	}
 
 	// Deploy the stack
-	if err := swarmDeploymentConfig.Deploy(); err != nil {
+	if err := swarmDeploymentConfig.Deploy(context.TODO()); err != nil {
 		return httperror.InternalServerError(err.Error(), err)
 	}
 

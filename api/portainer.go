@@ -1648,6 +1648,7 @@ type (
 	// GitService represents a service for managing Git
 	GitService interface {
 		CloneRepository(
+			ctx context.Context,
 			destination string,
 			repositoryURL,
 			referenceName,
@@ -1656,6 +1657,7 @@ type (
 			tlsSkipVerify bool,
 		) error
 		LatestCommitID(
+			ctx context.Context,
 			repositoryURL,
 			referenceName,
 			username,
@@ -1663,6 +1665,7 @@ type (
 			tlsSkipVerify bool,
 		) (string, error)
 		ListRefs(
+			ctx context.Context,
 			repositoryURL,
 			username,
 			password string,
@@ -1670,6 +1673,7 @@ type (
 			tlsSkipVerify bool,
 		) ([]string, error)
 		ListFiles(
+			ctx context.Context,
 			repositoryURL,
 			referenceName,
 			username,
@@ -1826,8 +1830,8 @@ type (
 
 	// KubernetesDeployer represents a service to deploy a manifest inside a Kubernetes environment(endpoint)
 	KubernetesDeployer interface {
-		Deploy(userID UserID, endpoint *Endpoint, manifestFiles []string, namespace string) (string, error)
-		Remove(userID UserID, endpoint *Endpoint, manifestFiles []string, namespace string) (string, error)
+		Deploy(ctx context.Context, userID UserID, endpoint *Endpoint, manifestFiles []string, namespace string) (string, error)
+		Remove(ctx context.Context, userID UserID, endpoint *Endpoint, manifestFiles []string, namespace string) (string, error)
 	}
 
 	// KubernetesSnapshotter represents a service used to create Kubernetes environment(endpoint) snapshots
@@ -1863,12 +1867,12 @@ type (
 
 	// Server defines the interface to serve the API
 	Server interface {
-		Start() error
+		Start(ctx context.Context) error
 	}
 
 	// SnapshotService represents a service for managing environment(endpoint) snapshots
 	SnapshotService interface {
-		Start()
+		Start(ctx context.Context)
 		SetSnapshotInterval(snapshotInterval string) error
 		SnapshotEndpoint(endpoint *Endpoint) error
 		FillSnapshotData(endpoint *Endpoint, includeRaw bool) error
@@ -1876,10 +1880,10 @@ type (
 
 	// SwarmStackManager represents a service to manage Swarm stacks
 	SwarmStackManager interface {
-		Login(registries []Registry, endpoint *Endpoint) error
-		Logout(endpoint *Endpoint) error
-		Deploy(stack *Stack, prune bool, pullImage bool, endpoint *Endpoint) error
-		Remove(stack *Stack, endpoint *Endpoint) error
+		Login(ctx context.Context, registries []Registry, endpoint *Endpoint) error
+		Logout(ctx context.Context, endpoint *Endpoint) error
+		Deploy(ctx context.Context, stack *Stack, prune bool, pullImage bool, endpoint *Endpoint) error
+		Remove(ctx context.Context, stack *Stack, endpoint *Endpoint) error
 		NormalizeStackName(name string) string
 	}
 )

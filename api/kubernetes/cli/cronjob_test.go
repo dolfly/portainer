@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"testing"
 
 	models "github.com/portainer/portainer/api/http/models/kubernetes"
@@ -49,7 +48,7 @@ func (kcl *KubeClient) TestFetchCronJobs(t *testing.T) {
 		kcl.cli = kfake.NewSimpleClientset()
 		kcl.instanceID = "test"
 
-		_, err := kcl.cli.BatchV1().CronJobs("default").Create(context.Background(), &batchv1.CronJob{
+		_, err := kcl.cli.BatchV1().CronJobs("default").Create(t.Context(), &batchv1.CronJob{
 			ObjectMeta: metav1.ObjectMeta{Name: "test-cronjob"},
 		}, metav1.CreateOptions{})
 		if err != nil {

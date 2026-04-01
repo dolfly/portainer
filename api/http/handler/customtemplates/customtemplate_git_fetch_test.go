@@ -2,6 +2,7 @@ package customtemplates
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"io/fs"
@@ -41,6 +42,7 @@ type TestGitService struct {
 }
 
 func (g *TestGitService) CloneRepository(
+	_ context.Context,
 	destination string,
 	repositoryURL,
 	referenceName string,
@@ -54,6 +56,7 @@ func (g *TestGitService) CloneRepository(
 }
 
 func (g *TestGitService) LatestCommitID(
+	_ context.Context,
 	repositoryURL,
 	referenceName,
 	username,
@@ -77,6 +80,7 @@ type InvalidTestGitService struct {
 }
 
 func (g *InvalidTestGitService) CloneRepository(
+	_ context.Context,
 	dest,
 	repoUrl,
 	refName,
@@ -88,6 +92,7 @@ func (g *InvalidTestGitService) CloneRepository(
 }
 
 func (g *InvalidTestGitService) LatestCommitID(
+	_ context.Context,
 	repositoryURL,
 	referenceName,
 	username,

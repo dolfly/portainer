@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"testing"
 
 	portainer "github.com/portainer/portainer/api"
@@ -42,12 +41,12 @@ func Test_GetServiceAccount(t *testing.T) {
 				Name: tokenData.Username,
 			},
 		}
-		_, err := k.cli.CoreV1().ServiceAccounts(portainerNamespace).Create(context.Background(), serviceAccount, metav1.CreateOptions{})
+		_, err := k.cli.CoreV1().ServiceAccounts(portainerNamespace).Create(t.Context(), serviceAccount, metav1.CreateOptions{})
 		if err != nil {
 			t.Errorf("failed to create service acount; err=%s", err)
 		}
 		defer func() {
-			err := k.cli.CoreV1().ServiceAccounts(portainerNamespace).Delete(context.Background(), serviceAccount.Name, metav1.DeleteOptions{})
+			err := k.cli.CoreV1().ServiceAccounts(portainerNamespace).Delete(t.Context(), serviceAccount.Name, metav1.DeleteOptions{})
 			require.NoError(t, err)
 		}()
 
@@ -78,12 +77,12 @@ func Test_GetServiceAccount(t *testing.T) {
 				Name: serviceAccountName,
 			},
 		}
-		_, err := k.cli.CoreV1().ServiceAccounts(portainerNamespace).Create(context.Background(), serviceAccount, metav1.CreateOptions{})
+		_, err := k.cli.CoreV1().ServiceAccounts(portainerNamespace).Create(t.Context(), serviceAccount, metav1.CreateOptions{})
 		if err != nil {
 			t.Errorf("failed to create service acount; err=%s", err)
 		}
 		defer func() {
-			err := k.cli.CoreV1().ServiceAccounts(portainerNamespace).Delete(context.Background(), serviceAccount.Name, metav1.DeleteOptions{})
+			err := k.cli.CoreV1().ServiceAccounts(portainerNamespace).Delete(t.Context(), serviceAccount.Name, metav1.DeleteOptions{})
 			require.NoError(t, err)
 		}()
 
@@ -192,7 +191,7 @@ func TestAddImagePullSecretToServiceAccount(t *testing.T) {
 		kcl := newKCL(defaultSA("ns-a"))
 		require.NoError(t, kcl.AddImagePullSecretToServiceAccount("ns-a", "default", "registry-1"))
 
-		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(context.Background(), "default", metav1.GetOptions{})
+		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(t.Context(), "default", metav1.GetOptions{})
 		require.NoError(t, err)
 		require.Len(t, sa.ImagePullSecrets, 1)
 		assert.Equal(t, "registry-1", sa.ImagePullSecrets[0].Name)
@@ -202,7 +201,7 @@ func TestAddImagePullSecretToServiceAccount(t *testing.T) {
 		kcl := newKCL(defaultSA("ns-a", "registry-1"))
 		require.NoError(t, kcl.AddImagePullSecretToServiceAccount("ns-a", "default", "registry-1"))
 
-		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(context.Background(), "default", metav1.GetOptions{})
+		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(t.Context(), "default", metav1.GetOptions{})
 		require.NoError(t, err)
 		assert.Len(t, sa.ImagePullSecrets, 1)
 	})
@@ -211,7 +210,7 @@ func TestAddImagePullSecretToServiceAccount(t *testing.T) {
 		kcl := newKCL(defaultSA("ns-a", "other-1", "other-2"))
 		require.NoError(t, kcl.AddImagePullSecretToServiceAccount("ns-a", "default", "registry-3"))
 
-		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(context.Background(), "default", metav1.GetOptions{})
+		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(t.Context(), "default", metav1.GetOptions{})
 		require.NoError(t, err)
 		require.Len(t, sa.ImagePullSecrets, 3)
 		assert.Equal(t, "other-1", sa.ImagePullSecrets[0].Name)
@@ -232,7 +231,7 @@ func TestAddImagePullSecretToServiceAccount(t *testing.T) {
 		kcl := newKCL(sa)
 		require.NoError(t, kcl.AddImagePullSecretToServiceAccount("ns-a", "custom", "registry-1"))
 
-		got, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(context.Background(), "custom", metav1.GetOptions{})
+		got, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(t.Context(), "custom", metav1.GetOptions{})
 		require.NoError(t, err)
 		require.Len(t, got.ImagePullSecrets, 1)
 		assert.Equal(t, "registry-1", got.ImagePullSecrets[0].Name)
@@ -259,7 +258,7 @@ func TestRemoveImagePullSecretFromServiceAccount(t *testing.T) {
 		kcl := newKCL(defaultSA("ns-a", "registry-1"))
 		require.NoError(t, kcl.RemoveImagePullSecretFromServiceAccount("ns-a", "default", "registry-1"))
 
-		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(context.Background(), "default", metav1.GetOptions{})
+		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(t.Context(), "default", metav1.GetOptions{})
 		require.NoError(t, err)
 		assert.Empty(t, sa.ImagePullSecrets)
 	})
@@ -268,7 +267,7 @@ func TestRemoveImagePullSecretFromServiceAccount(t *testing.T) {
 		kcl := newKCL(defaultSA("ns-a", "other-secret"))
 		require.NoError(t, kcl.RemoveImagePullSecretFromServiceAccount("ns-a", "default", "registry-1"))
 
-		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(context.Background(), "default", metav1.GetOptions{})
+		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(t.Context(), "default", metav1.GetOptions{})
 		require.NoError(t, err)
 		assert.Len(t, sa.ImagePullSecrets, 1)
 	})
@@ -277,7 +276,7 @@ func TestRemoveImagePullSecretFromServiceAccount(t *testing.T) {
 		kcl := newKCL(defaultSA("ns-a", "other-1", "registry-2", "other-3"))
 		require.NoError(t, kcl.RemoveImagePullSecretFromServiceAccount("ns-a", "default", "registry-2"))
 
-		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(context.Background(), "default", metav1.GetOptions{})
+		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(t.Context(), "default", metav1.GetOptions{})
 		require.NoError(t, err)
 		require.Len(t, sa.ImagePullSecrets, 2)
 		assert.Equal(t, "other-1", sa.ImagePullSecrets[0].Name)
@@ -301,7 +300,7 @@ func TestRemoveImagePullSecretFromServiceAccount(t *testing.T) {
 		kcl := newKCL(defaultSA("ns-a", "registry-1", "registry-1"))
 		require.NoError(t, kcl.RemoveImagePullSecretFromServiceAccount("ns-a", "default", "registry-1"))
 
-		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(context.Background(), "default", metav1.GetOptions{})
+		sa, err := kcl.cli.CoreV1().ServiceAccounts("ns-a").Get(t.Context(), "default", metav1.GetOptions{})
 		require.NoError(t, err)
 		assert.Empty(t, sa.ImagePullSecrets)
 	})
@@ -353,7 +352,7 @@ func TestGetServiceAccount_CreatesAndFetches(t *testing.T) {
 		sa := &v1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{Name: "fresh-sa", Namespace: "staging"},
 		}
-		_, err := kcl.cli.CoreV1().ServiceAccounts("staging").Create(context.Background(), sa, metav1.CreateOptions{})
+		_, err := kcl.cli.CoreV1().ServiceAccounts("staging").Create(t.Context(), sa, metav1.CreateOptions{})
 		require.NoError(t, err)
 
 		result, err := kcl.GetServiceAccount("staging", "fresh-sa")

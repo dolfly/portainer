@@ -1,6 +1,8 @@
 package testhelpers
 
 import (
+	"context"
+
 	portainer "github.com/portainer/portainer/api"
 )
 
@@ -18,6 +20,7 @@ func NewGitService(cloneErr error, id string) portainer.GitService {
 }
 
 func (g *gitService) CloneRepository(
+	_ context.Context,
 	destination,
 	repositoryURL,
 	referenceName,
@@ -29,6 +32,7 @@ func (g *gitService) CloneRepository(
 }
 
 func (g *gitService) LatestCommitID(
+	_ context.Context,
 	repositoryURL,
 	referenceName,
 	username,
@@ -39,6 +43,7 @@ func (g *gitService) LatestCommitID(
 }
 
 func (g *gitService) ListRefs(
+	_ context.Context,
 	repositoryURL,
 	username,
 	password string,
@@ -49,6 +54,7 @@ func (g *gitService) ListRefs(
 }
 
 func (g *gitService) ListFiles(
+	_ context.Context,
 	repositoryURL,
 	referenceName,
 	username,

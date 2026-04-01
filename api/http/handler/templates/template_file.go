@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"context"
 	"net/http"
 	"slices"
 
@@ -72,6 +73,7 @@ func (handler *Handler) templateFile(w http.ResponseWriter, r *http.Request) *ht
 	defer handler.cleanUp(projectPath)
 
 	if err := handler.GitService.CloneRepository(
+		context.TODO(),
 		projectPath,
 		template.Repository.URL,
 		"",

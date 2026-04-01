@@ -1,6 +1,10 @@
 package testhelpers
 
-import portainer "github.com/portainer/portainer/api"
+import (
+	"context"
+
+	portainer "github.com/portainer/portainer/api"
+)
 
 type TestStackDeployer struct {
 	DeployComposeCallCount int
@@ -12,50 +16,50 @@ func NewTestStackDeployer() *TestStackDeployer {
 	return &TestStackDeployer{}
 }
 
-func (d *TestStackDeployer) DeployComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune, forcePullImage, forceRecreate bool) error {
+func (d *TestStackDeployer) DeployComposeStack(_ context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune, forcePullImage, forceRecreate bool) error {
 	d.DeployComposeCallCount++
 	d.LastPrune = prune
 	return nil
 }
 
-func (d *TestStackDeployer) DeploySwarmStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune, pullImage bool) error {
+func (d *TestStackDeployer) DeploySwarmStack(_ context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune, pullImage bool) error {
 	d.DeploySwarmCallCount++
 	d.LastPrune = prune
 	return nil
 }
 
-func (d *TestStackDeployer) DeployKubernetesStack(stack *portainer.Stack, endpoint *portainer.Endpoint, user *portainer.User) error {
+func (d *TestStackDeployer) DeployKubernetesStack(_ context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint, user *portainer.User) error {
 	return nil
 }
 
-func (d *TestStackDeployer) DeployRemoteComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune, forcePullImage, forceRecreate bool) error {
+func (d *TestStackDeployer) DeployRemoteComposeStack(_ context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune, forcePullImage, forceRecreate bool) error {
 	return nil
 }
 
-func (d *TestStackDeployer) UndeployRemoteComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint) error {
+func (d *TestStackDeployer) UndeployRemoteComposeStack(_ context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint) error {
 	return nil
 }
 
-func (d *TestStackDeployer) StartRemoteComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry) error {
+func (d *TestStackDeployer) StartRemoteComposeStack(_ context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry) error {
 	return nil
 }
 
-func (d *TestStackDeployer) StopRemoteComposeStack(stack *portainer.Stack, endpoint *portainer.Endpoint) error {
+func (d *TestStackDeployer) StopRemoteComposeStack(_ context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint) error {
 	return nil
 }
 
-func (d *TestStackDeployer) DeployRemoteSwarmStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune, pullImage bool) error {
+func (d *TestStackDeployer) DeployRemoteSwarmStack(_ context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry, prune, pullImage bool) error {
 	return nil
 }
 
-func (d *TestStackDeployer) UndeployRemoteSwarmStack(stack *portainer.Stack, endpoint *portainer.Endpoint) error {
+func (d *TestStackDeployer) UndeployRemoteSwarmStack(_ context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint) error {
 	return nil
 }
 
-func (d *TestStackDeployer) StartRemoteSwarmStack(stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry) error {
+func (d *TestStackDeployer) StartRemoteSwarmStack(_ context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint, registries []portainer.Registry) error {
 	return nil
 }
 
-func (d *TestStackDeployer) StopRemoteSwarmStack(stack *portainer.Stack, endpoint *portainer.Endpoint) error {
+func (d *TestStackDeployer) StopRemoteSwarmStack(_ context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint) error {
 	return nil
 }

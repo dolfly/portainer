@@ -444,6 +444,7 @@ func (transport *Transport) updateDefaultGitBranch(request *http.Request) error 
 
 	repositoryURL := remote[:len(remote)-4]
 	latestCommitID, err := transport.gitService.LatestCommitID(
+		request.Context(),
 		repositoryURL,
 		"",
 		"",

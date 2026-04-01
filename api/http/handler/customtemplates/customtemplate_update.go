@@ -1,6 +1,7 @@
 package customtemplates
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -191,7 +192,7 @@ func (handler *Handler) customTemplateUpdate(w http.ResponseWriter, r *http.Requ
 			}
 		}
 
-		cleanBackup, err := git.CloneWithBackup(handler.GitService, handler.FileService, git.CloneOptions{
+		cleanBackup, err := git.CloneWithBackup(context.TODO(), handler.GitService, handler.FileService, git.CloneOptions{
 			ProjectPath:   customTemplate.ProjectPath,
 			URL:           gitConfig.URL,
 			ReferenceName: gitConfig.ReferenceName,
@@ -206,6 +207,7 @@ func (handler *Handler) customTemplateUpdate(w http.ResponseWriter, r *http.Requ
 		defer cleanBackup()
 
 		commitHash, err := handler.GitService.LatestCommitID(
+			context.TODO(),
 			gitConfig.URL,
 			gitConfig.ReferenceName,
 			repositoryUsername,

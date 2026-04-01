@@ -1,6 +1,7 @@
 package edgestacks
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -135,11 +136,11 @@ func (handler *Handler) createEdgeStackFromGitRepository(r *http.Request, tx dat
 	stack.CreatedBy = stackutils.SanitizeLabel(tokenData.Username)
 
 	return handler.edgeStacksService.PersistEdgeStack(tx, stack, func(stackFolder string, relatedEndpointIds []portainer.EndpointID) (composePath string, manifestPath string, projectPath string, err error) {
-		return handler.storeManifestFromGitRepository(tx, stackFolder, relatedEndpointIds, payload.DeploymentType, tokenData.ID, repoConfig)
+		return handler.storeManifestFromGitRepository(context.TODO(), tx, stackFolder, relatedEndpointIds, payload.DeploymentType, tokenData.ID, repoConfig)
 	})
 }
 
-func (handler *Handler) storeManifestFromGitRepository(tx dataservices.DataStoreTx, stackFolder string, relatedEndpointIds []portainer.EndpointID, deploymentType portainer.EdgeStackDeploymentType, currentUserID portainer.UserID, repositoryConfig gittypes.RepoConfig) (composePath, manifestPath, projectPath string, err error) {
+func (handler *Handler) storeManifestFromGitRepository(ctx context.Context, tx dataservices.DataStoreTx, stackFolder string, relatedEndpointIds []portainer.EndpointID, deploymentType portainer.EdgeStackDeploymentType, currentUserID portainer.UserID, repositoryConfig gittypes.RepoConfig) (composePath, manifestPath, projectPath string, err error) {
 	if hasWrongType, err := hasWrongEnvironmentType(tx.Endpoint(), relatedEndpointIds, deploymentType); err != nil {
 		return "", "", "", fmt.Errorf("unable to check for existence of non fitting environments: %w", err)
 	} else if hasWrongType {
@@ -155,6 +156,7 @@ func (handler *Handler) storeManifestFromGitRepository(tx dataservices.DataStore
 	}
 
 	if err := handler.GitService.CloneRepository(
+		ctx,
 		projectPath,
 		repositoryConfig.URL,
 		repositoryConfig.ReferenceName,

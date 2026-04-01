@@ -1,6 +1,7 @@
 package gitops
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -70,6 +71,7 @@ func (handler *Handler) gitOperationRepoFilePreview(w http.ResponseWriter, r *ht
 	}
 
 	err = handler.gitService.CloneRepository(
+		context.TODO(),
 		projectPath,
 		payload.Repository,
 		payload.Reference,

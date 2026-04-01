@@ -1,6 +1,7 @@
 package stacks
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -97,7 +98,7 @@ func (handler *Handler) createSwarmStackFromFileContent(w http.ResponseWriter, r
 		handler.StackDeployer)
 
 	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(swarmStackBuilder)
-	stack, httpErr := stackBuilderDirector.Build(&stackPayload, endpoint)
+	stack, httpErr := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint)
 	if httpErr != nil {
 		return httpErr
 	}
@@ -241,7 +242,7 @@ func (handler *Handler) createSwarmStackFromGitRepository(w http.ResponseWriter,
 		handler.StackDeployer)
 
 	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(swarmStackBuilder)
-	stack, httpErr := stackBuilderDirector.Build(&stackPayload, endpoint)
+	stack, httpErr := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint)
 	if httpErr != nil {
 		return httpErr
 	}
@@ -342,7 +343,7 @@ func (handler *Handler) createSwarmStackFromFileUpload(w http.ResponseWriter, r 
 		handler.StackDeployer)
 
 	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(swarmStackBuilder)
-	stack, httpErr := stackBuilderDirector.Build(&stackPayload, endpoint)
+	stack, httpErr := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint)
 	if httpErr != nil {
 		return httpErr
 	}

@@ -1,6 +1,7 @@
 package stacks
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"strconv"
@@ -81,6 +82,7 @@ func (handler *Handler) updateKubernetesStack(r *http.Request, stack *portainer.
 			}
 
 			if _, err := handler.GitService.LatestCommitID(
+				context.TODO(),
 				stack.GitConfig.URL,
 				stack.GitConfig.ReferenceName,
 				stack.GitConfig.Authentication.Username,
@@ -92,7 +94,7 @@ func (handler *Handler) updateKubernetesStack(r *http.Request, stack *portainer.
 		}
 
 		if payload.AutoUpdate != nil && payload.AutoUpdate.Interval != "" {
-			jobID, e := deployments.StartAutoupdate(stack.ID, stack.AutoUpdate.Interval, handler.Scheduler, handler.StackDeployer, handler.DataStore, handler.GitService)
+			jobID, e := deployments.StartAutoupdate(context.TODO(), stack.ID, stack.AutoUpdate.Interval, handler.Scheduler, handler.StackDeployer, handler.DataStore, handler.GitService)
 			if e != nil {
 				return e
 			}
@@ -145,7 +147,7 @@ func (handler *Handler) updateKubernetesStack(r *http.Request, stack *portainer.
 	// so if the deployment failed, the original file won't be over-written
 	stack.ProjectPath = tempFileDir
 
-	if _, err := handler.deployKubernetesStack(tokenData.ID, endpoint, stack, k.KubeAppLabels{
+	if _, err := handler.deployKubernetesStack(context.TODO(), tokenData.ID, endpoint, stack, k.KubeAppLabels{
 		StackID:   int(stack.ID),
 		StackName: stack.Name,
 		Owner:     stack.CreatedBy,
