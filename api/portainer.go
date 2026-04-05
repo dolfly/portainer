@@ -322,6 +322,15 @@ type (
 		Endpoints      []EndpointID `json:"Endpoints"`
 	}
 
+	// StackDeploymentStatus records one status transition in the current deployment lifecycle.
+	// The slice is reset at the start of each new deployment, so it represents the
+	// progression of the most recent deployment only (e.g. Deploying -> Active).
+	StackDeploymentStatus struct {
+		Status  StackStatus `json:"Status"`
+		Time    int64       `json:"Time"`
+		Message string      `json:"Message,omitempty"` // populated on Error entries
+	}
+
 	// StackDeploymentInfo records the information of a deployed stack
 	StackDeploymentInfo struct {
 		// Version is the version of the stack and also is the deployed version in edge agent
@@ -1212,6 +1221,9 @@ type (
 		FromAppTemplate bool `example:"false"`
 		// Kubernetes namespace if stack is a kube application
 		Namespace string `example:"default"`
+		// DeploymentStatus records the status progression of the current deployment.
+		// Cleared when a new deployment starts.
+		DeploymentStatus []StackDeploymentStatus `json:"DeploymentStatus,omitempty"`
 	}
 
 	// StackOption represents the options for stack deployment
@@ -2172,9 +2184,11 @@ const (
 
 // StackStatus represents a status for a stack
 const (
-	_ StackStatus = iota
-	StackStatusActive
-	StackStatusInactive
+	_                    StackStatus = iota
+	StackStatusActive                // 1 - deployed and running
+	StackStatusInactive              // 2 - intentionally stopped
+	StackStatusDeploying             // 3 - deployment in progress
+	StackStatusError                 // 4 - deployment failed
 )
 
 const (
