@@ -90,6 +90,7 @@ export function createQueryClient() {
     defaultOptions: {
       queries: {
         networkMode: 'offlineFirst',
+        staleTime: 20,
       },
     },
     mutationCache: new MutationCache({
@@ -121,12 +122,8 @@ function handleError(error: unknown, errorMeta?: unknown) {
 }
 
 function extractErrorMeta(errorMeta?: unknown) {
-  if (typeof errorMeta === 'boolean' && !errorMeta) {
-    return errorMeta;
-  }
-
   if (!errorMeta || typeof errorMeta !== 'object') {
-    return { title: '', message: '' };
+    return undefined;
   }
 
   let title = '';
