@@ -259,8 +259,5 @@ func InitializeEdgeEndpointRelation(endpoint *portainer.Endpoint, tx dataservice
 		EdgeStacks: make(map[portainer.EdgeStackID]bool),
 	}
 
-	if err := tx.EndpointRelation().Create(relation); err != nil {
-		return err
-	}
-	return nil
+	return tx.EndpointRelation().Create(relation)
 }

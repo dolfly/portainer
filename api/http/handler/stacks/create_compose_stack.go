@@ -212,10 +212,8 @@ func (payload *composeStackFromGitRepositoryPayload) Validate(r *http.Request) e
 	if payload.RepositoryAuthentication && len(payload.RepositoryPassword) == 0 {
 		return errors.New("Invalid repository credentials. Password must be specified when authentication is enabled")
 	}
-	if err := update.ValidateAutoUpdateSettings(payload.AutoUpdate); err != nil {
-		return err
-	}
-	return nil
+
+	return update.ValidateAutoUpdateSettings(payload.AutoUpdate)
 }
 
 // @id StackCreateDockerStandaloneRepository

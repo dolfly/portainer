@@ -149,10 +149,8 @@ func (payload *swarmStackFromGitRepositoryPayload) Validate(r *http.Request) err
 	if payload.RepositoryAuthentication && len(payload.RepositoryPassword) == 0 {
 		return errors.New("Invalid repository credentials. Password must be specified when authentication is enabled")
 	}
-	if err := update.ValidateAutoUpdateSettings(payload.AutoUpdate); err != nil {
-		return err
-	}
-	return nil
+
+	return update.ValidateAutoUpdateSettings(payload.AutoUpdate)
 }
 
 func createStackPayloadFromSwarmGitPayload(name, swarmID, repoUrl, repoReference, repoUsername, repoPassword string, repoAuthentication bool, composeFile string, additionalFiles []string, autoUpdate *portainer.AutoUpdateSettings, env []portainer.Pair, fromAppTemplate bool, repoSkipSSLVerify bool) stackbuilders.StackPayload {
