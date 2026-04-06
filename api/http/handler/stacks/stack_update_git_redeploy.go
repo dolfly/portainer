@@ -194,6 +194,10 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 	stack.UpdatedBy = user.Username
 	stack.UpdateDate = time.Now().Unix()
 	stack.Status = portainer.StackStatusActive
+	// TODO: move to async job when stack update becomes async
+	stack.DeploymentStatus = []portainer.StackDeploymentStatus{
+		{Status: portainer.StackStatusActive, Time: time.Now().Unix()},
+	}
 
 	if err := handler.DataStore.UpdateTx(func(tx dataservices.DataStoreTx) error {
 		return tx.Stack().Update(stack.ID, stack)

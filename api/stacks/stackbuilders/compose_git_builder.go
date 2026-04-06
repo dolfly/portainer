@@ -42,6 +42,8 @@ func (b *ComposeStackGitBuilder) SetUniqueInfo(payload *StackPayload) GitMethodS
 	if b.hasError() {
 		return b
 	}
+
+	b.GitMethodStackBuilder.SetUniqueInfo(payload)
 	b.stack.Name = payload.Name
 	b.stack.Type = portainer.DockerComposeStack
 	b.stack.EntryPoint = payload.ComposeFile
@@ -70,9 +72,4 @@ func (b *ComposeStackGitBuilder) Deploy(ctx context.Context, payload *StackPaylo
 	b.stack.CreatedBy = b.deploymentConfiger.GetUsername()
 
 	return b.GitMethodStackBuilder.Deploy(ctx, payload, endpoint)
-}
-
-func (b *ComposeStackGitBuilder) SetAutoUpdate(payload *StackPayload) GitMethodStackBuildProcess {
-	b.GitMethodStackBuilder.SetAutoUpdate(payload)
-	return b
 }

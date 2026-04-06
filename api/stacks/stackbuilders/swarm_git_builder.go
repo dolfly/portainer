@@ -42,6 +42,8 @@ func (b *SwarmStackGitBuilder) SetUniqueInfo(payload *StackPayload) GitMethodSta
 	if b.hasError() {
 		return b
 	}
+
+	b.GitMethodStackBuilder.SetUniqueInfo(payload)
 	b.stack.Name = payload.Name
 	b.stack.Type = portainer.DockerSwarmStack
 	b.stack.SwarmID = payload.SwarmID
@@ -72,9 +74,4 @@ func (b *SwarmStackGitBuilder) Deploy(ctx context.Context, payload *StackPayload
 	b.stack.CreatedBy = b.deploymentConfiger.GetUsername()
 
 	return b.GitMethodStackBuilder.Deploy(ctx, payload, endpoint)
-}
-
-func (b *SwarmStackGitBuilder) SetAutoUpdate(payload *StackPayload) GitMethodStackBuildProcess {
-	b.GitMethodStackBuilder.SetAutoUpdate(payload)
-	return b
 }

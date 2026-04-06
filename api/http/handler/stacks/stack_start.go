@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	portainer "github.com/portainer/portainer/api"
+	"github.com/portainer/portainer/api/dataservices"
 	httperrors "github.com/portainer/portainer/api/http/errors"
 	"github.com/portainer/portainer/api/http/security"
 	"github.com/portainer/portainer/api/stacks/deployments"
@@ -14,6 +16,8 @@ import (
 	httperror "github.com/portainer/portainer/pkg/libhttp/error"
 	"github.com/portainer/portainer/pkg/libhttp/request"
 	"github.com/portainer/portainer/pkg/libhttp/response"
+
+	"github.com/rs/zerolog/log"
 )
 
 // @id StackStart
@@ -29,7 +33,7 @@ import (
 // @failure 400 "Invalid request"
 // @failure 403 "Permission denied"
 // @failure 404 "Not found"
-// @failure 409 "Stack name is not unique"
+// @failure 409 "Stack is already active, deploying, or in error state"
 // @failure 500 "Server error"
 // @router /stacks/{id}/start [post]
 func (handler *Handler) stackStart(w http.ResponseWriter, r *http.Request) *httperror.HandlerError {
@@ -52,6 +56,25 @@ func (handler *Handler) stackStart(w http.ResponseWriter, r *http.Request) *http
 
 	if stack.Type == portainer.KubernetesStack {
 		return httperror.BadRequest("Starting a kubernetes stack is not supported", err)
+	}
+
+	// Check stack status before checking endpoint access to avoid unnecessary database
+	// calls in case of invalid stack status
+	switch stack.Status {
+	case portainer.StackStatusActive:
+		return httperror.Conflict("Unable to start stack", errors.New("Stack is already active"))
+	case portainer.StackStatusDeploying:
+		return httperror.Conflict("Unable to start stack", errors.New("Stack deployment is already in progress"))
+	case portainer.StackStatusError:
+		errMessage := "Stack is in error state"
+		if len(stack.DeploymentStatus) > 0 {
+			lastDeploymentStatus := stack.DeploymentStatus[len(stack.DeploymentStatus)-1]
+			if lastDeploymentStatus.Status == portainer.StackStatusError && lastDeploymentStatus.Message != "" {
+				errMessage = lastDeploymentStatus.Message
+			}
+		}
+
+		return httperror.Conflict("Unable to start stack", errors.New(errMessage))
 	}
 
 	endpointID, err := request.RetrieveNumericQueryParameter(r, "endpointId", false)
@@ -102,10 +125,6 @@ func (handler *Handler) stackStart(w http.ResponseWriter, r *http.Request) *http
 		return httperror.Forbidden("Access denied to resource", httperrors.ErrResourceAccessDenied)
 	}
 
-	if stack.Status == portainer.StackStatusActive {
-		return httperror.BadRequest("Stack is already active", errors.New("Stack is already active"))
-	}
-
 	if stack.AutoUpdate != nil && stack.AutoUpdate.Interval != "" {
 		deployments.StopAutoupdate(stack.ID, stack.AutoUpdate.JobID, handler.Scheduler)
 
@@ -117,14 +136,29 @@ func (handler *Handler) stackStart(w http.ResponseWriter, r *http.Request) *http
 		stack.AutoUpdate.JobID = jobID
 	}
 
-	err = handler.startStack(context.TODO(), stack, endpoint, securityContext)
-	if err != nil {
+	if err := handler.startStack(context.TODO(), stack, endpoint, securityContext); err != nil {
+		stack.Status = portainer.StackStatusError
+		stack.DeploymentStatus = append(stack.DeploymentStatus, portainer.StackDeploymentStatus{
+			Status:  portainer.StackStatusError,
+			Time:    time.Now().Unix(),
+			Message: err.Error(),
+		})
+		if err := handler.DataStore.UpdateTx(func(tx dataservices.DataStoreTx) error {
+			return tx.Stack().Update(stack.ID, stack)
+		}); err != nil {
+			log.Warn().Err(err).Str("context", "StackStart").Msg("Unable to update stack status after failed start attempt")
+		}
+
 		return httperror.InternalServerError("Unable to start stack", err)
 	}
 
 	stack.Status = portainer.StackStatusActive
-	err = handler.DataStore.Stack().Update(stack.ID, stack)
-	if err != nil {
+	stack.DeploymentStatus = []portainer.StackDeploymentStatus{
+		{Status: portainer.StackStatusActive, Time: time.Now().Unix()},
+	}
+	if err := handler.DataStore.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return tx.Stack().Update(stack.ID, stack)
+	}); err != nil {
 		return httperror.InternalServerError("Unable to update stack status", err)
 	}
 

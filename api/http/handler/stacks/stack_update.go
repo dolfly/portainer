@@ -172,6 +172,10 @@ func (handler *Handler) updateStackInTx(tx dataservices.DataStoreTx, r *http.Req
 	stack.UpdatedBy = user.Username
 	stack.UpdateDate = time.Now().Unix()
 	stack.Status = portainer.StackStatusActive
+	// TODO: move to async job when stack update becomes async
+	stack.DeploymentStatus = []portainer.StackDeploymentStatus{
+		{Status: portainer.StackStatusActive, Time: time.Now().Unix()},
+	}
 
 	if err := tx.Stack().Update(stack.ID, stack); err != nil {
 		return nil, httperror.InternalServerError("Unable to persist the stack changes inside the database", err)

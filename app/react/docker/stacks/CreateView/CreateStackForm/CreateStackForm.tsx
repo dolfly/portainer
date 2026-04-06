@@ -4,7 +4,6 @@ import { useState } from 'react';
 import uuidv4 from 'uuid/v4';
 
 import { EnvironmentId } from '@/react/portainer/environments/types';
-import { notifySuccess } from '@/portainer/services/notifications';
 import {
   useCreateStack,
   CreateStackPayload,
@@ -87,9 +86,13 @@ export function CreateStackForm({ environmentId, isSwarm, swarmId }: Props) {
     });
 
     createStackMutation.mutate(payload, {
-      onSuccess: () => {
-        notifySuccess('Success', 'Stack successfully deployed');
-        router.stateService.go('docker.stacks');
+      onSuccess: (stack) => {
+        router.stateService.go('docker.stacks.stack', {
+          name: stack.Name,
+          id: stack.Id,
+          type: stack.Type,
+          regular: 'true',
+        });
       },
     });
   }

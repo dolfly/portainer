@@ -52,6 +52,7 @@ func (b *KubernetesStackGitBuilder) SetUniqueInfo(payload *StackPayload) GitMeth
 		return b
 	}
 
+	b.GitMethodStackBuilder.SetUniqueInfo(payload)
 	b.stack.Type = portainer.KubernetesStack
 	b.stack.Namespace = payload.Namespace
 	b.stack.Name = payload.StackName
@@ -91,12 +92,6 @@ func (b *KubernetesStackGitBuilder) Deploy(ctx context.Context, payload *StackPa
 	b.deploymentConfiger = k8sDeploymentConfig
 
 	return b.GitMethodStackBuilder.Deploy(ctx, payload, endpoint)
-}
-
-func (b *KubernetesStackGitBuilder) SetAutoUpdate(payload *StackPayload) GitMethodStackBuildProcess {
-	b.GitMethodStackBuilder.SetAutoUpdate(payload)
-
-	return b
 }
 
 func (b *KubernetesStackGitBuilder) GetResponse() string {

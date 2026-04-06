@@ -7,7 +7,6 @@ import (
 	"time"
 
 	portainer "github.com/portainer/portainer/api"
-	"github.com/portainer/portainer/api/dataservices"
 	"github.com/portainer/portainer/api/filesystem"
 	gittypes "github.com/portainer/portainer/api/git/types"
 	"github.com/portainer/portainer/api/scheduler"
@@ -28,10 +27,8 @@ type GitMethodStackBuildProcess interface {
 	GetResponse() string
 	// Set git repository configuration
 	SetGitRepository(ctx context.Context, payload *StackPayload) GitMethodStackBuildProcess
-	// Set auto update setting
-	SetAutoUpdate(payload *StackPayload) GitMethodStackBuildProcess
-	UpdateStack(stack *portainer.Stack) (*portainer.Stack, error)
 	Error() error
+	EnableAutoUpdate(ctx context.Context, stack *portainer.Stack) error
 }
 
 type GitMethodStackBuilder struct {
@@ -45,14 +42,19 @@ func (b *GitMethodStackBuilder) SetGeneralInfo(payload *StackPayload, endpoint *
 	b.stack.ID = portainer.StackID(stackID)
 	b.stack.EndpointID = endpoint.ID
 	b.stack.AdditionalFiles = payload.AdditionalFiles
-	b.stack.Status = portainer.StackStatusActive
-	b.stack.CreationDate = time.Now().Unix()
+	now := time.Now().Unix()
+	b.stack.Status = portainer.StackStatusDeploying
+	b.stack.CreationDate = now
+	b.stack.DeploymentStatus = []portainer.StackDeploymentStatus{
+		{Status: portainer.StackStatusDeploying, Time: now},
+	}
 	b.stack.AutoUpdate = payload.AutoUpdate
 
 	return b
 }
 
 func (b *GitMethodStackBuilder) SetUniqueInfo(payload *StackPayload) GitMethodStackBuildProcess {
+	b.stack.AutoUpdate = payload.AutoUpdate
 	return b
 }
 
@@ -116,52 +118,25 @@ func (b *GitMethodStackBuilder) Deploy(ctx context.Context, payload *StackPayloa
 	return b
 }
 
-func (b *GitMethodStackBuilder) UpdateStack(stack *portainer.Stack) (*portainer.Stack, error) {
-	if b.hasError() {
-		return nil, b.err
-	}
-
-	b.stack = stack
-
-	// Ideally, we should replace b.dataStore with b.tx and manage the transaction
-	// at a higher layer. However, that would require significant changes to other
-	// logic unrelated to this builder.
-	// To keep this change focused and minimize the scope, we will retain b.dataStore
-	// and perform the update within a transaction here for now.
-	b.err = b.dataStore.UpdateTx(func(tx dataservices.DataStoreTx) error {
-		if err := tx.Stack().Update(b.stack.ID, b.stack); err != nil {
-			return fmt.Errorf("Unable to update the stack inside the database: %w", err)
-		}
-
-		return nil
-	})
-
-	return b.stack, b.err
-}
-
-func (b *GitMethodStackBuilder) SetAutoUpdate(payload *StackPayload) GitMethodStackBuildProcess {
-	if b.hasError() {
-		return b
-	}
-
-	if payload.AutoUpdate != nil && payload.AutoUpdate.Interval != "" {
-		jobID, err := deployments.StartAutoupdate(context.TODO(), b.stack.ID,
-			b.stack.AutoUpdate.Interval,
-			b.scheduler,
-			b.stackDeployer,
-			b.dataStore,
-			b.gitService)
-		if err != nil {
-			b.err = err
-			return b
-		}
-
-		b.stack.AutoUpdate.JobID = jobID
-	}
-
-	return b
-}
-
 func (b *GitMethodStackBuilder) GetResponse() string {
 	return ""
+}
+
+func (b *GitMethodStackBuilder) EnableAutoUpdate(ctx context.Context, stack *portainer.Stack) error {
+	if stack.AutoUpdate == nil || stack.AutoUpdate.Interval == "" {
+		return nil
+	}
+
+	jobID, err := deployments.StartAutoupdate(ctx, stack.ID,
+		stack.AutoUpdate.Interval,
+		b.scheduler,
+		b.stackDeployer,
+		b.dataStore,
+		b.gitService)
+	if err != nil {
+		return err
+	}
+
+	stack.AutoUpdate.JobID = jobID
+	return nil
 }

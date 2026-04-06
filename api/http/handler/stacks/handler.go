@@ -168,6 +168,10 @@ func (handler *Handler) checkUniqueStackNameInDocker(endpoint *portainer.Endpoin
 		return false, err
 	}
 
+	if handler.DockerClientFactory == nil {
+		return isUniqueStackName, nil
+	}
+
 	dockerClient, err := handler.DockerClientFactory.CreateClient(endpoint, "", nil)
 	if err != nil {
 		return false, err

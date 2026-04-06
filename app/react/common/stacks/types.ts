@@ -27,6 +27,14 @@ export enum StackType {
 export enum StackStatus {
   Active = 1,
   Inactive,
+  Deploying,
+  Error,
+}
+
+export interface StackDeploymentStatus {
+  Status: StackStatus;
+  Time: number;
+  Message?: string;
 }
 
 /**
@@ -60,6 +68,7 @@ export interface Stack {
   Env: EnvVar[] | null;
   ResourceControl?: ResourceControlResponse;
   Status: StackStatus;
+  DeploymentStatus?: StackDeploymentStatus[];
   ProjectPath: string;
   CreationDate: number;
   CreatedBy: string;

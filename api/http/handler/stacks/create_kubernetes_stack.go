@@ -171,7 +171,7 @@ func (handler *Handler) createKubernetesStackFromFileContent(w http.ResponseWrit
 		}
 	}
 
-	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(k8sStackBuilder)
+	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(handler.DataStore, k8sStackBuilder)
 	if _, err := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint); err != nil {
 		return err
 	}
@@ -244,7 +244,7 @@ func (handler *Handler) createKubernetesStackFromGitRepository(w http.ResponseWr
 		handler.KubernetesDeployer,
 		user)
 
-	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(k8sStackBuilder)
+	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(handler.DataStore, k8sStackBuilder)
 	if _, err := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint); err != nil {
 		return err
 	}
@@ -290,7 +290,7 @@ func (handler *Handler) createKubernetesStackFromManifestURL(w http.ResponseWrit
 		handler.KubernetesDeployer,
 		user)
 
-	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(k8sStackBuilder)
+	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(handler.DataStore, k8sStackBuilder)
 	if _, err := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint); err != nil {
 		return err
 	}

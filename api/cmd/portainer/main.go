@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	portainer "github.com/portainer/portainer/api"
 	"github.com/portainer/portainer/api/apikey"
@@ -570,6 +571,13 @@ func buildServer(flags *portainer.CLIFlags, shutdownCtx context.Context, shutdow
 		log.Fatal().Err(err).Msg("failure during post init migrations")
 	}
 
+	if err := dataStore.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return recoverStaleDeployingStacks(tx)
+	}); err != nil {
+		log.Info().Err(err).
+			Msg("Error recovering stale deploying stacks")
+	}
+
 	return &http.Server{
 		AuthorizationService:        authorizationService,
 		ReverseTunnelService:        reverseTunnelService,
@@ -640,4 +648,40 @@ func main() {
 
 		log.Info().Err(err).Msg("HTTP server exited")
 	}
+}
+
+// recoverStaleDeployingStacks resets any stack that was left in the Deploying state
+// (e.g. because the server was restarted mid-deployment) to the Error state so the
+// user can retry.
+func recoverStaleDeployingStacks(tx dataservices.DataStoreTx) error {
+	stacks, err := tx.Stack().ReadAll(func(s portainer.Stack) bool {
+		return s.Status == portainer.StackStatusDeploying
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, stack := range stacks {
+		stack.Status = portainer.StackStatusError
+		stack.DeploymentStatus = append(stack.DeploymentStatus, portainer.StackDeploymentStatus{
+			Status:  portainer.StackStatusError,
+			Time:    time.Now().Unix(),
+			Message: "Deployment interrupted by server restart",
+		})
+
+		if err := tx.Stack().Update(stack.ID, &stack); err != nil {
+			log.Warn().Err(err).
+				Int("stack_id", int(stack.ID)).
+				Str("context", "RecoverStaleDeployingStacks").
+				Msg("Unable to recover stale deploying stack")
+			continue
+		}
+		log.Debug().
+			Int("stack_id", int(stack.ID)).
+			Str("stack_name", stack.Name).
+			Str("context", "RecoverStaleDeployingStacks").
+			Msg("Recovered stale deploying stack to error state")
+	}
+
+	return nil
 }

@@ -33,8 +33,12 @@ func (b *FileUploadMethodStackBuilder) SetGeneralInfo(payload *StackPayload, end
 	stackID := b.dataStore.Stack().GetNextIdentifier()
 	b.stack.ID = portainer.StackID(stackID)
 	b.stack.EndpointID = endpoint.ID
-	b.stack.Status = portainer.StackStatusActive
-	b.stack.CreationDate = time.Now().Unix()
+	now := time.Now().Unix()
+	b.stack.Status = portainer.StackStatusDeploying
+	b.stack.CreationDate = now
+	b.stack.DeploymentStatus = []portainer.StackDeploymentStatus{
+		{Status: portainer.StackStatusDeploying, Time: now},
+	}
 
 	return b
 }
