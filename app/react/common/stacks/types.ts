@@ -57,7 +57,7 @@ export interface Stack {
   EndpointId: number;
   SwarmId: string;
   EntryPoint: string;
-  Env: EnvVar[];
+  Env: EnvVar[] | null;
   ResourceControl?: ResourceControlResponse;
   Status: StackStatus;
   ProjectPath: string;
