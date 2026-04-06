@@ -20,7 +20,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type stackGitRedployPayload struct {
+type stackGitRedeployPayload struct {
 	RepositoryReferenceName  string
 	RepositoryAuthentication bool
 	RepositoryUsername       string
@@ -36,7 +36,7 @@ type stackGitRedployPayload struct {
 	PullImage bool `example:"false"`
 }
 
-func (payload *stackGitRedployPayload) Validate(r *http.Request) error {
+func (payload *stackGitRedeployPayload) Validate(r *http.Request) error {
 	return nil
 }
 
@@ -51,7 +51,7 @@ func (payload *stackGitRedployPayload) Validate(r *http.Request) error {
 // @produce json
 // @param id path int true "Stack identifier"
 // @param endpointId query int false "Stacks created before version 1.18.0 might not have an associated environment(endpoint) identifier. Use this optional parameter to set the environment(endpoint) identifier used by the stack."
-// @param body body stackGitRedployPayload true "Git configs for pull and redeploy of a stack. **StackName** may only be populated for Kuberenetes stacks, and if specified with a blank string, it will be set to blank"
+// @param body body stackGitRedeployPayload true "Git configs for pull and redeploy of a stack. **StackName** may only be populated for Kuberenetes stacks, and if specified with a blank string, it will be set to blank"
 // @success 200 {object} portainer.Stack "Success"
 // @failure 400 "Invalid request"
 // @failure 403 "Permission denied"
@@ -123,7 +123,7 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 		return httperror.Forbidden(errMsg, errors.New(errMsg))
 	}
 
-	var payload stackGitRedployPayload
+	var payload stackGitRedeployPayload
 	if err := request.DecodeAndValidateJSONPayload(r, &payload); err != nil {
 		return httperror.BadRequest("Invalid request payload", err)
 	}
