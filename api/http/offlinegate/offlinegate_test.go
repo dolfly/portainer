@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"sync"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -89,6 +90,10 @@ func Test_waitingMiddleware_executesImmediately_whenNotLocked(t *testing.T) {
 }
 
 func Test_waitingMiddleware_waitsForTheLockToBeReleased(t *testing.T) {
+	synctest.Test(t, test_waitingMiddleware_waitsForTheLockToBeReleased)
+}
+
+func test_waitingMiddleware_waitsForTheLockToBeReleased(t *testing.T) {
 	// scenario:
 	// 1. create an gate and lock it
 	// 2. kick off a routing that will unlock the gate after 1 second

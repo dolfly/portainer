@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	portainer "github.com/portainer/portainer/api"
@@ -180,6 +181,10 @@ func TestWithEndpoints(t *testing.T) {
 }
 
 func TestLastCheckInDateIncreases(t *testing.T) {
+	synctest.Test(t, testLastCheckInDateIncreases)
+}
+
+func testLastCheckInDateIncreases(t *testing.T) {
 	handler := mustSetupHandler(t)
 
 	endpointID := portainer.EndpointID(56)

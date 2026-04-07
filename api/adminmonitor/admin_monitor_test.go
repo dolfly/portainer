@@ -2,6 +2,7 @@ package adminmonitor
 
 import (
 	"testing"
+	"testing/synctest"
 	"time"
 
 	portainer "github.com/portainer/portainer/api"
@@ -21,6 +22,10 @@ func Test_stopCouldBeCalledMultipleTimes(t *testing.T) {
 }
 
 func Test_startOrStopCouldBeCalledMultipleTimesConcurrently(t *testing.T) {
+	synctest.Test(t, test_startOrStopCouldBeCalledMultipleTimesConcurrently)
+}
+
+func test_startOrStopCouldBeCalledMultipleTimesConcurrently(t *testing.T) {
 	monitor := New(1*time.Minute, nil)
 
 	go monitor.Start(t.Context())

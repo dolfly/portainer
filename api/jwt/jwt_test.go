@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"testing"
+	"testing/synctest"
 	"time"
 
 	portainer "github.com/portainer/portainer/api"
@@ -85,6 +86,10 @@ func TestGenerationAndParsing(t *testing.T) {
 }
 
 func TestExpiration(t *testing.T) {
+	synctest.Test(t, testExpiration)
+}
+
+func testExpiration(t *testing.T) {
 	_, store := datastore.MustNewTestStore(t, true, false)
 
 	err := store.User().Create(&portainer.User{ID: 1})
