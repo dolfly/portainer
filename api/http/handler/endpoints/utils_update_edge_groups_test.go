@@ -12,6 +12,7 @@ import (
 )
 
 func Test_updateEdgeGroups(t *testing.T) {
+	t.Parallel()
 	createGroups := func(store *datastore.Store, names []string) ([]portainer.EdgeGroup, error) {
 		groups := make([]portainer.EdgeGroup, len(names))
 		for index, name := range names {

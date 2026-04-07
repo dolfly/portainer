@@ -157,6 +157,7 @@ func agentServer(t *testing.T) string {
 }
 
 func Test_redeployWhenChanged_FailsWhenCannotFindStack(t *testing.T) {
+	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	err := RedeployWhenChanged(t.Context(), 1, nil, store, nil)
@@ -165,6 +166,7 @@ func Test_redeployWhenChanged_FailsWhenCannotFindStack(t *testing.T) {
 }
 
 func Test_redeployWhenChanged_DoesNothingWhenNotAGitBasedStack(t *testing.T) {
+	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	admin := &portainer.User{ID: 1, Username: "admin"}
@@ -179,6 +181,7 @@ func Test_redeployWhenChanged_DoesNothingWhenNotAGitBasedStack(t *testing.T) {
 }
 
 func Test_redeployWhenChanged_DoesNothingWhenNoGitChanges(t *testing.T) {
+	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	tmpDir := t.TempDir()
@@ -243,6 +246,7 @@ func Test_redeployWhenChanged_FailsWhenCannotClone(t *testing.T) {
 }
 
 func Test_redeployWhenChanged(t *testing.T) {
+	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	tmpDir := t.TempDir()
@@ -298,6 +302,7 @@ func Test_redeployWhenChanged(t *testing.T) {
 }
 
 func Test_getUserRegistries(t *testing.T) {
+	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	endpointID := 123

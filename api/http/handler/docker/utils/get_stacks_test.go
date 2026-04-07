@@ -16,6 +16,7 @@ import (
 )
 
 func TestHandler_getDockerStacks(t *testing.T) {
+	t.Parallel()
 	is := require.New(t)
 
 	environment := &portainer.Endpoint{

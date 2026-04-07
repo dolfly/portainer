@@ -11,17 +11,20 @@ import (
 )
 
 func Test_stopWithoutStarting(t *testing.T) {
+	t.Parallel()
 	monitor := New(1*time.Minute, nil)
 	monitor.Stop()
 }
 
 func Test_stopCouldBeCalledMultipleTimes(t *testing.T) {
+	t.Parallel()
 	monitor := New(1*time.Minute, nil)
 	monitor.Stop()
 	monitor.Stop()
 }
 
 func Test_startOrStopCouldBeCalledMultipleTimesConcurrently(t *testing.T) {
+	t.Parallel()
 	synctest.Test(t, test_startOrStopCouldBeCalledMultipleTimesConcurrently)
 }
 
@@ -38,6 +41,7 @@ func test_startOrStopCouldBeCalledMultipleTimesConcurrently(t *testing.T) {
 }
 
 func Test_canStopStartedMonitor(t *testing.T) {
+	t.Parallel()
 	monitor := New(1*time.Minute, nil)
 	monitor.Start(t.Context())
 	assert.NotNil(t, monitor.cancellationFunc, "cancellation function is missing in started monitor")
@@ -47,6 +51,7 @@ func Test_canStopStartedMonitor(t *testing.T) {
 }
 
 func Test_start_shouldDisableInstanceAfterTimeout_ifNotInitialized(t *testing.T) {
+	t.Parallel()
 	timeout := 10 * time.Millisecond
 
 	datastore := i.NewDatastore(i.WithUsers([]portainer.User{}))

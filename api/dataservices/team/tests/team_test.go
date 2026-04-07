@@ -31,6 +31,7 @@ func (b *teamBuilder) createNew(name string) *portainer.Team {
 }
 
 func Test_teamByName(t *testing.T) {
+	t.Parallel()
 	t.Run("When store is empty should return ErrObjectNotFound", func(t *testing.T) {
 		_, store := datastore.MustNewTestStore(t, false, true)
 

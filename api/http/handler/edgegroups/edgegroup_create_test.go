@@ -16,6 +16,7 @@ import (
 )
 
 func TestEdgeGroupCreateHandler(t *testing.T) {
+	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	handler := NewHandler(testhelpers.NewTestRequestBouncer())
@@ -62,6 +63,7 @@ func TestEdgeGroupCreateHandler(t *testing.T) {
 }
 
 func TestEdgeGroupCreatePanic(t *testing.T) {
+	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	handler := NewHandler(testhelpers.NewTestRequestBouncer())

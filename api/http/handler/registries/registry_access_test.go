@@ -16,6 +16,7 @@ import (
 )
 
 func Test_RegistryAccess_RequiresAuthentication(t *testing.T) {
+	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)
 	registry := &portainer.Registry{
 		ID:   1,
@@ -37,6 +38,7 @@ func Test_RegistryAccess_RequiresAuthentication(t *testing.T) {
 }
 
 func Test_RegistryAccess_InvalidRegistryID(t *testing.T) {
+	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)
 	user := &portainer.User{ID: 1, Username: "test", Role: portainer.StandardUserRole}
 	err := store.User().Create(user)
@@ -57,6 +59,7 @@ func Test_RegistryAccess_InvalidRegistryID(t *testing.T) {
 }
 
 func Test_RegistryAccess_RegistryNotFound(t *testing.T) {
+	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	user := &portainer.User{ID: 1, Username: "test", Role: portainer.StandardUserRole}

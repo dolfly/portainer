@@ -15,6 +15,7 @@ import (
 )
 
 func Test_canLockAndUnlock(t *testing.T) {
+	t.Parallel()
 	o := NewOfflineGate()
 
 	unlock := o.Lock()
@@ -22,6 +23,7 @@ func Test_canLockAndUnlock(t *testing.T) {
 }
 
 func Test_hasToBeUnlockedToLockAgain(t *testing.T) {
+	t.Parallel()
 	// scenario:
 	// 1. first routine starts and locks the gate
 	// 2. first routine starts a second and wait for the second to start
@@ -62,6 +64,7 @@ func Test_hasToBeUnlockedToLockAgain(t *testing.T) {
 }
 
 func Test_waitingMiddleware_executesImmediately_whenNotLocked(t *testing.T) {
+	t.Parallel()
 	// scenario:
 	// 1. create an gate
 	// 2. kick off a waiting middleware that will release immediately as gate wasn't locked
@@ -90,6 +93,7 @@ func Test_waitingMiddleware_executesImmediately_whenNotLocked(t *testing.T) {
 }
 
 func Test_waitingMiddleware_waitsForTheLockToBeReleased(t *testing.T) {
+	t.Parallel()
 	synctest.Test(t, test_waitingMiddleware_waitsForTheLockToBeReleased)
 }
 
@@ -129,6 +133,7 @@ func test_waitingMiddleware_waitsForTheLockToBeReleased(t *testing.T) {
 }
 
 func Test_waitingMiddleware_mayTimeout_whenLockedForTooLong(t *testing.T) {
+	t.Parallel()
 	/*
 		scenario:
 		1. create an gate and lock it
@@ -155,6 +160,7 @@ func Test_waitingMiddleware_mayTimeout_whenLockedForTooLong(t *testing.T) {
 }
 
 func Test_waitingMiddleware_handlerPanics(t *testing.T) {
+	t.Parallel()
 	o := NewOfflineGate()
 
 	request := httptest.NewRequest(http.MethodPost, "/", nil)

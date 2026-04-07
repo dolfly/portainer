@@ -10,6 +10,7 @@ import (
 )
 
 func TestCustomTemplateCreateTx(t *testing.T) {
+	t.Parallel()
 	_, ds := datastore.MustNewTestStore(t, false, false)
 	require.NotNil(t, ds)
 

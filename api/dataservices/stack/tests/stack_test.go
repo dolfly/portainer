@@ -27,6 +27,7 @@ type stackBuilder struct {
 }
 
 func TestService_StackByWebhookID(t *testing.T) {
+	t.Parallel()
 	if testing.Short() {
 		t.Skip("skipping test in short mode. Normally takes ~1s to run.")
 	}
@@ -84,6 +85,7 @@ func (b *stackBuilder) createNewStack(webhookID string) portainer.Stack {
 }
 
 func Test_RefreshableStacks(t *testing.T) {
+	t.Parallel()
 	if testing.Short() {
 		t.Skip("skipping test in short mode. Normally takes ~1s to run.")
 	}
