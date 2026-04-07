@@ -22,6 +22,7 @@ import (
 	"golang.org/x/oauth2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 type (
@@ -1731,6 +1732,20 @@ type (
 		SetUserSessionDuration(userSessionDuration time.Duration)
 	}
 
+	// KubeExecParams holds parameters for KubeClient.StartExecProcess.
+	KubeExecParams struct {
+		Token         string
+		UseAdminToken bool
+		Namespace     string
+		PodName       string
+		ContainerName string
+		Command       []string
+		Stdin         io.Reader                       // bound to the exec process stdin
+		Stdout        io.Writer                       // receives exec process output
+		ResizeQueue   remotecommand.TerminalSizeQueue // nil if resize not needed
+		ErrChan       chan error
+	}
+
 	// KubeClient represents a service used to query a Kubernetes environment(endpoint)
 	KubeClient interface {
 		// Access
@@ -1763,7 +1778,7 @@ type (
 		GetEvents(namespace string, resourceId string) ([]models.K8sEvent, error)
 
 		// Exec
-		StartExecProcess(token string, useAdminToken bool, namespace, podName, containerName string, command []string, stdin io.Reader, stdout io.Writer, errChan chan error)
+		StartExecProcess(params KubeExecParams)
 
 		// ClusterRoleBinding
 		GetClusterRoleBindings() ([]models.K8sClusterRoleBinding, error)

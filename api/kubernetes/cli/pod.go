@@ -132,7 +132,7 @@ func (kcl *KubeClient) CreateUserShellPod(ctx context.Context, serviceAccountNam
 		Namespace:        shellPod.Namespace,
 		PodName:          shellPod.Name,
 		ContainerName:    shellPod.Spec.Containers[0].Name,
-		ShellExecCommand: "env COLUMNS=200 /bin/bash", // env COLUMNS dictates minimum width of the shell
+		ShellExecCommand: "env TERM=xterm-256color /bin/bash",
 	}
 
 	// Handle pod lifecycle/cleanup - terminate pod after maxPodKeepAlive or upon request (long-lived) cancellation
