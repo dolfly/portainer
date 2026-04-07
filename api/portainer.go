@@ -370,17 +370,35 @@ type (
 		CreatedBy string `example:"admin"`
 	}
 
-	// HelmConfig represents the Helm configuration for an edge stack
+	// HelmConfig represents the Helm configuration for an edge stack.
+	// Exactly one of ChartPath (git repo deployment) or ChartURL (Helm repo deployment) must be set.
 	HelmConfig struct {
-		// Path to a Helm chart folder for Helm git deployments
+		// ChartPath is the path to a Helm chart folder within the cloned git repository.
+		// Used exclusively for git repo helm deployments. Mutually exclusive with ChartURL.
 		ChartPath string `json:"ChartPath,omitempty" example:"charts/my-app"`
-		// Array of paths to Helm values YAML files for Helm git deployments
+		// ValuesFiles is a list of relative paths to Helm values YAML files within the cloned git repository.
+		// Used exclusively for git repo helm deployments.
 		ValuesFiles []string `json:"ValuesFiles,omitempty" example:"['values/prod.yaml', 'values/secrets.yaml']"`
-		// Enable automatic rollback on deployment failure (equivalent to helm --atomic flag)
+		// ChartURL is the URL of a Helm chart repository.
+		// Used exclusively for Helm repository deployments. Mutually exclusive with ChartPath.
+		ChartURL string `json:"ChartURL,omitempty" example:"https://charts.bitnami.com/bitnami"`
+		// ChartName is the name of the Helm chart within the repository.
+		// Required for Helm repository deployments.
+		ChartName string `json:"ChartName,omitempty" example:"nginx"`
+		// ChartVersion is the version of the Helm chart to deploy. Empty means latest.
+		// Used exclusively for Helm repository deployments.
+		ChartVersion string `json:"ChartVersion,omitempty" example:"15.0.0"`
+		// ValuesInline is the inline YAML string of Helm values.
+		// Used exclusively for Helm repository deployments.
+		ValuesInline string `json:"ValuesInline,omitempty" example:"replicaCount: 2"`
+		// Atomic enables automatic rollback on deployment failure (equivalent to helm --atomic).
+		// Used by both git repo and Helm repository deployments.
 		Atomic bool `json:"Atomic" example:"true"`
-		// Timeout for Helm operations (equivalent to helm --timeout flag)
+		// Timeout sets the deadline for Helm operations (equivalent to helm --timeout, e.g. "5m0s").
+		// Used by both git repo and Helm repository deployments.
 		Timeout string `json:"Timeout,omitempty" example:"5m0s"`
-		// Namespace to deploy the Helm chart into
+		// Namespace is the Kubernetes namespace to deploy the Helm chart into.
+		// Used by both git repo and Helm repository deployments.
 		Namespace string `json:"Namespace,omitempty" example:"default"`
 	}
 
