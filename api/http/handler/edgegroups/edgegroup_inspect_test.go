@@ -17,7 +17,7 @@ import (
 )
 
 func TestEdgeGroupInspectHandler(t *testing.T) {
-	_, store := datastore.MustNewTestStore(t, true, true)
+	_, store := datastore.MustNewTestStore(t, false, true)
 
 	handler := NewHandler(testhelpers.NewTestRequestBouncer())
 	handler.DataStore = store
@@ -70,7 +70,7 @@ func TestEdgeGroupInspectHandler(t *testing.T) {
 }
 
 func TestEmptyEdgeGroupInspectHandler(t *testing.T) {
-	_, store := datastore.MustNewTestStore(t, true, true)
+	_, store := datastore.MustNewTestStore(t, false, true)
 
 	handler := NewHandler(testhelpers.NewTestRequestBouncer())
 	handler.DataStore = store
@@ -109,7 +109,7 @@ func TestEmptyEdgeGroupInspectHandler(t *testing.T) {
 }
 
 func TestDynamicEdgeGroupInspectHandler(t *testing.T) {
-	_, store := datastore.MustNewTestStore(t, true, true)
+	_, store := datastore.MustNewTestStore(t, false, true)
 
 	handler := NewHandler(testhelpers.NewTestRequestBouncer())
 	handler.DataStore = store
@@ -176,7 +176,7 @@ func TestDynamicEdgeGroupInspectHandler(t *testing.T) {
 }
 
 func TestEdgeGroupInspectPanic(t *testing.T) {
-	_, store := datastore.MustNewTestStore(t, true, true)
+	_, store := datastore.MustNewTestStore(t, false, true)
 
 	handler := NewHandler(testhelpers.NewTestRequestBouncer())
 	handler.DataStore = store

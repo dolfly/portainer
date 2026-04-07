@@ -61,7 +61,7 @@ func Test_getEndpointTypes_failWhenEndpointDontExist(t *testing.T) {
 }
 
 func TestEdgeGroupListHandler(t *testing.T) {
-	_, store := datastore.MustNewTestStore(t, true, true)
+	_, store := datastore.MustNewTestStore(t, false, true)
 
 	handler := NewHandler(testhelpers.NewTestRequestBouncer())
 	handler.DataStore = store

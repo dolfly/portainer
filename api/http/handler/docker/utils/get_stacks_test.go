@@ -58,7 +58,7 @@ func TestHandler_getDockerStacks(t *testing.T) {
 		Type:       portainer.DockerComposeStack,
 	}
 
-	ok, store := datastore.MustNewTestStore(t, true, false)
+	ok, store := datastore.MustNewTestStore(t, false, false)
 	is.True(ok)
 
 	is.NoError(store.UpdateTx(func(tx dataservices.DataStoreTx) error {

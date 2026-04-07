@@ -25,7 +25,7 @@ func TestPingAgentPanic(t *testing.T) {
 		UserTrusted: true,
 	}
 
-	_, store := datastore.MustNewTestStore(t, true, true)
+	_, store := datastore.MustNewTestStore(t, false, true)
 
 	s := NewService(store, nil, nil)
 

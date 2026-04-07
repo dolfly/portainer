@@ -198,7 +198,7 @@ func Test_updateStackInTx(t *testing.T) {
 
 func TestStackUpdate(t *testing.T) {
 	t.Helper()
-	_, store := datastore.MustNewTestStore(t, true, true)
+	_, store := datastore.MustNewTestStore(t, false, true)
 
 	testDataPath := filepath.Join(t.TempDir())
 	fileService, err := filesystem.NewService(testDataPath, "")
@@ -324,7 +324,7 @@ type testUpdateStackPayload interface {
 func setupUpdateStackInTxTest[T testUpdateStackPayload](t *testing.T, stack *portainer.Stack, payload T) *updateStackInTxTestSetup {
 	t.Helper()
 
-	_, store := datastore.MustNewTestStore(t, true, true)
+	_, store := datastore.MustNewTestStore(t, false, true)
 
 	testDataPath := filepath.Join(t.TempDir())
 	fileService, err := filesystem.NewService(testDataPath, "")
