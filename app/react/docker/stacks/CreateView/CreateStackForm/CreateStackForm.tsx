@@ -11,6 +11,7 @@ import {
 import { useCurrentUser, useIsEdgeAdmin } from '@/react/hooks/useUser';
 import { defaultValues } from '@/react/portainer/access-control/utils';
 import { getDefaultModel } from '@/react/portainer/gitops/types';
+import { notifySuccess } from '@/portainer/services/notifications';
 
 import { FormValues } from './types';
 import { useValidationSchema } from './useValidationSchema';
@@ -87,6 +88,7 @@ export function CreateStackForm({ environmentId, isSwarm, swarmId }: Props) {
 
     createStackMutation.mutate(payload, {
       onSuccess: (stack) => {
+        notifySuccess('Success', 'Stack successfully created');
         router.stateService.go('docker.stacks.stack', {
           name: stack.Name,
           id: stack.Id,
