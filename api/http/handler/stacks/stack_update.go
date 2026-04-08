@@ -145,7 +145,7 @@ func (handler *Handler) updateStackInTx(tx dataservices.DataStoreTx, r *http.Req
 			return nil, httperror.InternalServerError("Unable to retrieve a resource control associated to the stack", err)
 		}
 
-		if access, err := handler.userCanAccessStack(securityContext, endpoint.ID, resourceControl); err != nil {
+		if access, err := handler.userCanAccessStack(securityContext, resourceControl); err != nil {
 			return nil, httperror.InternalServerError("Unable to verify user authorizations to validate stack access", err)
 		} else if !access {
 			return nil, httperror.Forbidden("Access denied to resource", httperrors.ErrResourceAccessDenied)

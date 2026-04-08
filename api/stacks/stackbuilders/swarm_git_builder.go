@@ -64,7 +64,7 @@ func (b *SwarmStackGitBuilder) Deploy(ctx context.Context, payload *StackPayload
 		return b
 	}
 
-	swarmDeploymentConfig, err := deployments.CreateSwarmStackDeploymentConfig(b.SecurityContext, b.stack, endpoint, b.dataStore, b.fileService, b.stackDeployer, false, true)
+	swarmDeploymentConfig, err := deployments.CreateSwarmStackDeploymentConfigTx(b.dataStore, b.SecurityContext, b.stack, endpoint, b.fileService, b.stackDeployer, false, true)
 	if err != nil {
 		b.err = err
 		return b

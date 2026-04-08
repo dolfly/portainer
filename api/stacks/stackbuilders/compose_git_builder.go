@@ -62,7 +62,7 @@ func (b *ComposeStackGitBuilder) Deploy(ctx context.Context, payload *StackPaylo
 		return b
 	}
 
-	composeDeploymentConfig, err := deployments.CreateComposeStackDeploymentConfig(b.SecurityContext, b.stack, endpoint, b.dataStore, b.fileService, b.stackDeployer, false, false, false)
+	composeDeploymentConfig, err := deployments.CreateComposeStackDeploymentConfigTx(b.dataStore, b.SecurityContext, b.stack, endpoint, b.fileService, b.stackDeployer, false, false, false)
 	if err != nil {
 		b.err = err
 		return b

@@ -2,7 +2,6 @@ package stackbuilders
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	portainer "github.com/portainer/portainer/api"
@@ -83,11 +82,7 @@ func (b *KubernetesStackGitBuilder) Deploy(ctx context.Context, payload *StackPa
 		Kind:      "git",
 	}
 
-	k8sDeploymentConfig, err := deployments.CreateKubernetesStackDeploymentConfig(b.stack, b.KuberneteDeployer, k8sAppLabel, b.user, endpoint)
-	if err != nil {
-		b.err = fmt.Errorf("failed to create temp kub deployment files: %w", err)
-		return b
-	}
+	k8sDeploymentConfig := deployments.CreateKubernetesStackDeploymentConfig(b.stack, b.KuberneteDeployer, k8sAppLabel, b.user, endpoint)
 
 	b.deploymentConfiger = k8sDeploymentConfig
 

@@ -52,7 +52,6 @@ import (
 	"github.com/portainer/portainer/pkg/featureflags"
 	"github.com/portainer/portainer/pkg/fips"
 	"github.com/portainer/portainer/pkg/libhelm"
-	libhelmtypes "github.com/portainer/portainer/pkg/libhelm/types"
 	"github.com/portainer/portainer/pkg/libstack/compose"
 	"github.com/portainer/portainer/pkg/validate"
 
@@ -173,10 +172,6 @@ func checkDBSchemaServerVersionMatch(dbStore dataservices.DataStore, serverVersi
 
 func initKubernetesDeployer(kubernetesTokenCacheManager *kubeproxy.TokenCacheManager, kubernetesClientFactory *kubecli.ClientFactory, dataStore dataservices.DataStore, reverseTunnelService portainer.ReverseTunnelService, signatureService portainer.DigitalSignatureService, proxyManager *proxy.Manager) portainer.KubernetesDeployer {
 	return exec.NewKubernetesDeployer(kubernetesTokenCacheManager, kubernetesClientFactory, dataStore, reverseTunnelService, signatureService, proxyManager)
-}
-
-func initHelmPackageManager() (libhelmtypes.HelmPackageManager, error) {
-	return libhelm.NewHelmPackageManager()
 }
 
 func initAPIKeyService(datastore dataservices.DataStore) apikey.APIKeyService {
@@ -469,10 +464,7 @@ func buildServer(flags *portainer.CLIFlags, shutdownCtx context.Context, shutdow
 
 	proxyManager.NewProxyFactory(dataStore, signatureService, reverseTunnelService, dockerClientFactory, kubernetesClientFactory, kubernetesTokenCacheManager, gitService, snapshotService, jwtService)
 
-	helmPackageManager, err := initHelmPackageManager()
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed initializing helm package manager")
-	}
+	helmPackageManager := libhelm.NewHelmPackageManager()
 
 	applicationStatus := initStatus(instanceID)
 
@@ -538,10 +530,7 @@ func buildServer(flags *portainer.CLIFlags, shutdownCtx context.Context, shutdow
 		log.Fatal().Msg("failed to fetch SSL settings from DB")
 	}
 
-	platformService, err := platform.NewService(dataStore)
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed initializing platform service")
-	}
+	platformService := platform.NewService(dataStore)
 
 	upgradeService, err := upgrade.NewService(
 		*flags.Assets,

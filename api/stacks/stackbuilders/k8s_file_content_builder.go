@@ -92,12 +92,7 @@ func (b *K8sStackFileContentBuilder) Deploy(ctx context.Context, payload *StackP
 		Kind:      "content",
 	}
 
-	k8sDeploymentConfig, err := deployments.CreateKubernetesStackDeploymentConfig(b.stack, b.KuberneteDeployer, k8sAppLabel, b.User, endpoint)
-	if err != nil {
-		b.err = fmt.Errorf("failed to create temp kub deployment files: %w", err)
-
-		return b
-	}
+	k8sDeploymentConfig := deployments.CreateKubernetesStackDeploymentConfig(b.stack, b.KuberneteDeployer, k8sAppLabel, b.User, endpoint)
 
 	b.deploymentConfiger = k8sDeploymentConfig
 

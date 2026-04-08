@@ -109,7 +109,7 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 			return httperror.InternalServerError("Unable to retrieve a resource control associated to the stack", err)
 		}
 
-		if access, err := handler.userCanAccessStack(securityContext, endpoint.ID, resourceControl); err != nil {
+		if access, err := handler.userCanAccessStack(securityContext, resourceControl); err != nil {
 			return httperror.InternalServerError("Unable to verify user authorizations to validate stack access", err)
 		} else if !access {
 			return httperror.Forbidden("Access denied to resource", httperrors.ErrResourceAccessDenied)
@@ -226,7 +226,7 @@ func (handler *Handler) deployStack(r *http.Request, stack *portainer.Stack, pul
 
 		prune := stack.Option != nil && stack.Option.Prune
 
-		deploymentConfiger, err = deployments.CreateSwarmStackDeploymentConfig(securityContext, stack, endpoint, handler.DataStore, handler.FileService, handler.StackDeployer, prune, pullImage)
+		deploymentConfiger, err = deployments.CreateSwarmStackDeploymentConfigTx(handler.DataStore, securityContext, stack, endpoint, handler.FileService, handler.StackDeployer, prune, pullImage)
 		if err != nil {
 			return httperror.InternalServerError(err.Error(), err)
 		}
@@ -240,7 +240,7 @@ func (handler *Handler) deployStack(r *http.Request, stack *portainer.Stack, pul
 
 		prune := stack.Option != nil && stack.Option.Prune
 
-		deploymentConfiger, err = deployments.CreateComposeStackDeploymentConfig(securityContext, stack, endpoint, handler.DataStore, handler.FileService, handler.StackDeployer, prune, pullImage, true)
+		deploymentConfiger, err = deployments.CreateComposeStackDeploymentConfigTx(handler.DataStore, securityContext, stack, endpoint, handler.FileService, handler.StackDeployer, prune, pullImage, true)
 		if err != nil {
 			return httperror.InternalServerError(err.Error(), err)
 		}
@@ -266,10 +266,7 @@ func (handler *Handler) deployStack(r *http.Request, stack *portainer.Stack, pul
 			Kind:      "git",
 		}
 
-		deploymentConfiger, err = deployments.CreateKubernetesStackDeploymentConfig(stack, handler.KubernetesDeployer, appLabel, user, endpoint)
-		if err != nil {
-			return httperror.InternalServerError(err.Error(), err)
-		}
+		deploymentConfiger = deployments.CreateKubernetesStackDeploymentConfig(stack, handler.KubernetesDeployer, appLabel, user, endpoint)
 
 	default:
 		return httperror.InternalServerError("Unsupported stack", errors.Errorf("unsupported stack type: %v", stack.Type))

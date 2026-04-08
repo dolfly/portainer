@@ -307,10 +307,7 @@ func (handler *Handler) deployKubernetesStack(ctx context.Context, userID portai
 	user := &portainer.User{
 		ID: userID,
 	}
-	k8sDeploymentConfig, err := deployments.CreateKubernetesStackDeploymentConfig(stack, handler.KubernetesDeployer, appLabels, user, endpoint)
-	if err != nil {
-		return "", errors.Wrap(err, "failed to create temp kub deployment files")
-	}
+	k8sDeploymentConfig := deployments.CreateKubernetesStackDeploymentConfig(stack, handler.KubernetesDeployer, appLabels, user, endpoint)
 
 	if err := k8sDeploymentConfig.Deploy(ctx); err != nil {
 		return "", err
