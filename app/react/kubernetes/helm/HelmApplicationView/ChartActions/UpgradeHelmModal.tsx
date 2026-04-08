@@ -5,6 +5,8 @@ import { withReactQuery } from '@/react-tools/withReactQuery';
 import { withCurrentUser } from '@/react-tools/withCurrentUser';
 import { ChartVersion } from '@/react/kubernetes/helm/helmChartSourceQueries/useHelmRepoVersions';
 import { EnvironmentId } from '@/react/portainer/environments/types';
+import { K8sRegistryAccessNotice } from '@/react/kubernetes/components/K8sRegistryAccessNotice';
+import { withUIRouter } from '@/react-tools/withUIRouter';
 
 import { Modal, OnSubmit, openModal } from '@@/modals';
 import { confirm } from '@@/modals/confirm';
@@ -124,6 +126,12 @@ export function UpgradeHelmModal({
               inputId="namespace-input"
               size="medium"
             >
+              <div className="mb-1">
+                <K8sRegistryAccessNotice
+                  namespace={helmReleaseInitialValues.namespace}
+                  environmentId={environmentId}
+                />
+              </div>
               <Input
                 id="namespace-input"
                 value={helmReleaseInitialValues.namespace}
@@ -219,11 +227,14 @@ export async function openUpgradeHelmModal(
   releaseManifest: string,
   environmentId: EnvironmentId
 ) {
-  return openModal(withReactQuery(withCurrentUser(UpgradeHelmModal)), {
-    helmReleaseInitialValues,
-    versions,
-    chartName: helmReleaseInitialValues.chart,
-    releaseManifest,
-    environmentId,
-  });
+  return openModal(
+    withUIRouter(withReactQuery(withCurrentUser(UpgradeHelmModal))),
+    {
+      helmReleaseInitialValues,
+      versions,
+      chartName: helmReleaseInitialValues.chart,
+      releaseManifest,
+      environmentId,
+    }
+  );
 }
