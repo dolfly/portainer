@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	portainer "github.com/portainer/portainer/api"
+	"github.com/portainer/portainer/api/dataservices"
 	"github.com/portainer/portainer/api/filesystem"
 	gittypes "github.com/portainer/portainer/api/git/types"
 	"github.com/portainer/portainer/api/scheduler"
@@ -14,54 +14,15 @@ import (
 	"github.com/portainer/portainer/api/stacks/stackutils"
 )
 
-type GitMethodStackBuildProcess interface {
-	// Set general stack information
-	SetGeneralInfo(payload *StackPayload, endpoint *portainer.Endpoint) GitMethodStackBuildProcess
-	// Set unique stack information, e.g. swarm stack has swarmID, kubernetes stack has namespace
-	SetUniqueInfo(payload *StackPayload) GitMethodStackBuildProcess
-	// Deploy stack based on the configuration
-	Deploy(ctx context.Context, payload *StackPayload, endpoint *portainer.Endpoint) GitMethodStackBuildProcess
-	// Save the stack information to database
-	SaveStack() (*portainer.Stack, error)
-	// Get response from HTTP request. Use if it is needed
-	GetResponse() string
-	// Set git repository configuration
-	SetGitRepository(ctx context.Context, payload *StackPayload) GitMethodStackBuildProcess
-	Error() error
-	EnableAutoUpdate(ctx context.Context, stack *portainer.Stack) error
-}
-
 type GitMethodStackBuilder struct {
 	StackBuilder
 	gitService portainer.GitService
 	scheduler  *scheduler.Scheduler
 }
 
-func (b *GitMethodStackBuilder) SetGeneralInfo(payload *StackPayload, endpoint *portainer.Endpoint) GitMethodStackBuildProcess {
-	stackID := b.dataStore.Stack().GetNextIdentifier()
-	b.stack.ID = portainer.StackID(stackID)
-	b.stack.EndpointID = endpoint.ID
+func (b *GitMethodStackBuilder) prepare(ctx context.Context, payload *StackPayload) error {
 	b.stack.AdditionalFiles = payload.AdditionalFiles
-	now := time.Now().Unix()
-	b.stack.Status = portainer.StackStatusDeploying
-	b.stack.CreationDate = now
-	b.stack.DeploymentStatus = []portainer.StackDeploymentStatus{
-		{Status: portainer.StackStatusDeploying, Time: now},
-	}
 	b.stack.AutoUpdate = payload.AutoUpdate
-
-	return b
-}
-
-func (b *GitMethodStackBuilder) SetUniqueInfo(payload *StackPayload) GitMethodStackBuildProcess {
-	b.stack.AutoUpdate = payload.AutoUpdate
-	return b
-}
-
-func (b *GitMethodStackBuilder) SetGitRepository(ctx context.Context, payload *StackPayload) GitMethodStackBuildProcess {
-	if b.hasError() {
-		return b
-	}
 
 	var repoConfig gittypes.RepoConfig
 	if payload.Authentication {
@@ -96,33 +57,19 @@ func (b *GitMethodStackBuilder) SetGitRepository(ctx context.Context, payload *S
 
 	commitHash, err := stackutils.DownloadGitRepository(ctx, repoConfig, b.gitService, getProjectPath)
 	if err != nil {
-		b.err = fmt.Errorf("failed to download git repository: %w", err)
-		return b
+		return fmt.Errorf("failed to download git repository: %w", err)
 	}
 
 	// Update the latest commit id
 	repoConfig.ConfigHash = commitHash
 	b.stack.GitConfig = &repoConfig
 
-	return b
+	return nil
 }
 
-func (b *GitMethodStackBuilder) Deploy(ctx context.Context, payload *StackPayload, endpoint *portainer.Endpoint) GitMethodStackBuildProcess {
-	if b.hasError() {
-		return b
-	}
-
-	// Deploy the stack
-	b.err = b.deploymentConfiger.Deploy(ctx)
-
-	return b
-}
-
-func (b *GitMethodStackBuilder) GetResponse() string {
-	return ""
-}
-
-func (b *GitMethodStackBuilder) EnableAutoUpdate(ctx context.Context, stack *portainer.Stack) error {
+// postDeploy enables the auto-update scheduler job for the stack if configured,
+// and persists the resulting job ID back to the database.
+func (b *GitMethodStackBuilder) postDeploy(ctx context.Context, stack *portainer.Stack) error {
 	if stack.AutoUpdate == nil || stack.AutoUpdate.Interval == "" {
 		return nil
 	}
@@ -137,6 +84,18 @@ func (b *GitMethodStackBuilder) EnableAutoUpdate(ctx context.Context, stack *por
 		return err
 	}
 
-	stack.AutoUpdate.JobID = jobID
-	return nil
+	return b.dataStore.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		s, err := tx.Stack().Read(stack.ID)
+		if err != nil {
+			return fmt.Errorf("Unable to retrieve the stack from the database: %w", err)
+		}
+
+		s.AutoUpdate.JobID = jobID
+
+		if err := tx.Stack().Update(s.ID, s); err != nil {
+			return fmt.Errorf("Unable to update the stack inside the database: %w", err)
+		}
+
+		return nil
+	})
 }

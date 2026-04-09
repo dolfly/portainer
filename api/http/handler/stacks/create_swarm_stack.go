@@ -47,7 +47,7 @@ func createStackPayloadFromSwarmFileContentPayload(name string, swarmID string, 
 	return stackbuilders.StackPayload{
 		Name:             name,
 		SwarmID:          swarmID,
-		StackFileContent: fileContent,
+		StackFileContent: []byte(fileContent),
 		Env:              env,
 		FromAppTemplate:  fromAppTemplate,
 	}
@@ -92,13 +92,12 @@ func (handler *Handler) createSwarmStackFromFileContent(w http.ResponseWriter, r
 
 	stackPayload := createStackPayloadFromSwarmFileContentPayload(payload.Name, payload.SwarmID, payload.StackFileContent, payload.Env, payload.FromAppTemplate)
 
-	swarmStackBuilder := stackbuilders.CreateSwarmStackFileContentBuilder(securityContext,
+	swarmStackBuilder := stackbuilders.CreateSwarmStackFileBuilder(securityContext,
 		handler.DataStore,
 		handler.FileService,
 		handler.StackDeployer)
 
-	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(handler.DataStore, swarmStackBuilder)
-	stack, httpErr := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint)
+	stack, httpErr := stackbuilders.Build(context.TODO(), handler.DataStore, swarmStackBuilder, &stackPayload, endpoint)
 	if httpErr != nil {
 		return httpErr
 	}
@@ -239,8 +238,7 @@ func (handler *Handler) createSwarmStackFromGitRepository(w http.ResponseWriter,
 		handler.Scheduler,
 		handler.StackDeployer)
 
-	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(handler.DataStore, swarmStackBuilder)
-	stack, httpErr := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint)
+	stack, httpErr := stackbuilders.Build(context.TODO(), handler.DataStore, swarmStackBuilder, &stackPayload, endpoint)
 	if httpErr != nil {
 		return httpErr
 	}
@@ -257,10 +255,10 @@ type swarmStackFromFileUploadPayload struct {
 
 func createStackPayloadFromSwarmFileUploadPayload(name, swarmID string, fileContentBytes []byte, env []portainer.Pair) stackbuilders.StackPayload {
 	return stackbuilders.StackPayload{
-		Name:                  name,
-		SwarmID:               swarmID,
-		StackFileContentBytes: fileContentBytes,
-		Env:                   env,
+		Name:             name,
+		SwarmID:          swarmID,
+		StackFileContent: fileContentBytes,
+		Env:              env,
 	}
 }
 
@@ -335,13 +333,12 @@ func (handler *Handler) createSwarmStackFromFileUpload(w http.ResponseWriter, r 
 
 	stackPayload := createStackPayloadFromSwarmFileUploadPayload(payload.Name, payload.SwarmID, payload.StackFileContent, payload.Env)
 
-	swarmStackBuilder := stackbuilders.CreateSwarmStackFileUploadBuilder(securityContext,
+	swarmStackBuilder := stackbuilders.CreateSwarmStackFileBuilder(securityContext,
 		handler.DataStore,
 		handler.FileService,
 		handler.StackDeployer)
 
-	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(handler.DataStore, swarmStackBuilder)
-	stack, httpErr := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint)
+	stack, httpErr := stackbuilders.Build(context.TODO(), handler.DataStore, swarmStackBuilder, &stackPayload, endpoint)
 	if httpErr != nil {
 		return httpErr
 	}

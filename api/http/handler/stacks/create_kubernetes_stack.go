@@ -34,7 +34,7 @@ func createStackPayloadFromK8sFileContentPayload(name, namespace, fileContent st
 	return stackbuilders.StackPayload{
 		StackName:        name,
 		Namespace:        namespace,
-		StackFileContent: fileContent,
+		StackFileContent: []byte(fileContent),
 		FromAppTemplate:  fromAppTemplate,
 	}
 }
@@ -171,8 +171,7 @@ func (handler *Handler) createKubernetesStackFromFileContent(w http.ResponseWrit
 		}
 	}
 
-	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(handler.DataStore, k8sStackBuilder)
-	if _, err := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint); err != nil {
+	if _, err := stackbuilders.Build(context.TODO(), handler.DataStore, k8sStackBuilder, &stackPayload, endpoint); err != nil {
 		return err
 	}
 
@@ -244,8 +243,7 @@ func (handler *Handler) createKubernetesStackFromGitRepository(w http.ResponseWr
 		handler.KubernetesDeployer,
 		user)
 
-	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(handler.DataStore, k8sStackBuilder)
-	if _, err := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint); err != nil {
+	if _, err := stackbuilders.Build(context.TODO(), handler.DataStore, k8sStackBuilder, &stackPayload, endpoint); err != nil {
 		return err
 	}
 
@@ -290,8 +288,7 @@ func (handler *Handler) createKubernetesStackFromManifestURL(w http.ResponseWrit
 		handler.KubernetesDeployer,
 		user)
 
-	stackBuilderDirector := stackbuilders.NewStackBuilderDirector(handler.DataStore, k8sStackBuilder)
-	if _, err := stackBuilderDirector.Build(context.TODO(), &stackPayload, endpoint); err != nil {
+	if _, err := stackbuilders.Build(context.TODO(), handler.DataStore, k8sStackBuilder, &stackPayload, endpoint); err != nil {
 		return err
 	}
 
