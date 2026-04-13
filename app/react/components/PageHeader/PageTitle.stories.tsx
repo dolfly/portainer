@@ -23,7 +23,7 @@ Primary.args = {
 function WithChildrenTemplate({ title }: StoryProps) {
   return (
     <PageTitle title={title}>
-      <span className="text-sm text-muted">additional content</span>
+      <span className="text-muted text-sm">additional content</span>
     </PageTitle>
   );
 }

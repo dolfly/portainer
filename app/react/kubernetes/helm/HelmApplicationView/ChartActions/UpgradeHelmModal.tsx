@@ -94,14 +94,14 @@ export function UpgradeHelmModal({
     <Modal
       onDismiss={() => onSubmit()}
       size="xl"
-      className="flex flex-col h-[80vh] px-0"
+      className="flex h-[80vh] flex-col px-0"
       aria-label="upgrade-helm"
     >
       <Modal.Header
         title={
           <div className="inline-flex items-center gap-1 px-5">
             <WidgetIcon icon={ArrowUp} />
-            <h2 className="text-base m-0 ml-1">Upgrade</h2>
+            <h2 className="m-0 ml-1 text-base">Upgrade</h2>
           </div>
         }
       />
@@ -183,7 +183,7 @@ export function UpgradeHelmModal({
           </div>
         </Modal.Body>
       </div>
-      <div className="px-5 border-solid border-0 border-t border-gray-5 th-dark:border-gray-7 th-highcontrast:border-white">
+      <div className="border-0 border-t border-solid border-gray-5 px-5 th-highcontrast:border-white th-dark:border-gray-7">
         <Modal.Footer>
           <Button
             onClick={() => onSubmit()}

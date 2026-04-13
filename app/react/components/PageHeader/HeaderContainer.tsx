@@ -19,7 +19,7 @@ export function HeaderContainer({ id, children }: PropsWithChildren<Props>) {
     <Context.Provider value>
       <div
         id={id}
-        className="row min-h-[60px] bg-[var(--bg-widget-color)] !mb-[5px] !rounded-none !border-0 !border-b !border-solid !border-b-[var(--border-widget)] !shadow-none"
+        className="row !mb-[5px] min-h-[60px] !rounded-none !border-0 !border-b !border-solid !border-b-[var(--border-widget)] bg-[var(--bg-widget-color)] !shadow-none"
       >
         <div id="loadingbar-placeholder" />
         <div className="col-xs-12">

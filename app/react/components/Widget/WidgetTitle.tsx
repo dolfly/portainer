@@ -23,7 +23,7 @@ export function WidgetTitle({
       <div className="flex items-center justify-between">
         <span className={clsx('inline-flex items-center gap-1', className)}>
           {icon && <WidgetIcon icon={icon} />}
-          <h2 id={titleId} className={clsx('text-base m-0', icon && 'ml-1')}>
+          <h2 id={titleId} className={clsx('m-0 text-base', icon && 'ml-1')}>
             {title}
           </h2>
         </span>

@@ -74,7 +74,7 @@ export function StackInfoTab({
           {stackName}
 
           {stack && (
-            <div className="inline-flex ml-3">
+            <div className="ml-3 inline-flex">
               <StackActions
                 stack={stack}
                 fileContent={stackFileContent}

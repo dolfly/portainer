@@ -59,7 +59,7 @@ export function Modal({
           <div
             className={clsx(
               styles.modalContent,
-              'relative overflow-y-auto p-5 rounded-lg',
+              'relative overflow-y-auto rounded-lg p-5',
               className
             )}
           >

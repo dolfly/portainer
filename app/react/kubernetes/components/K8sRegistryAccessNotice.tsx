@@ -82,7 +82,7 @@ export function K8sRegistryAccessNotice({
     return (
       <TextTip
         color="blue"
-        className="invisible pointer-events-none"
+        className="pointer-events-none invisible"
         inline={false}
       >
         <InlineLoader size="xs">Loading...</InlineLoader>
@@ -171,7 +171,7 @@ export function K8sRegistryAccessNotice({
     <TextTip color="blue" inline={false}>
       <TooltipWithChildren
         message={
-          <ul className="list-disk !pl-4 mb-0">
+          <ul className="list-disk mb-0 !pl-4">
             {nsRegistries.map((r) => (
               <li key={r.Id}>
                 {r.Name}: {r.URL}
@@ -180,7 +180,7 @@ export function K8sRegistryAccessNotice({
           </ul>
         }
       >
-        <span className="underline cursor-help">
+        <span className="cursor-help underline">
           {registryCount} {pluralize(registryCount, 'registry', 'registries')}
         </span>
       </TooltipWithChildren>{' '}
