@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	portainer "github.com/portainer/portainer/api"
+	"github.com/portainer/portainer/api/dataservices"
 	"github.com/portainer/portainer/api/datastore"
 	"github.com/portainer/portainer/api/internal/testhelpers"
 	kubecli "github.com/portainer/portainer/api/kubernetes/cli"
@@ -43,6 +44,18 @@ func (s *deleteSpyKubeClient) DeleteRegistrySecret(_ portainer.RegistryID, names
 func (s *deleteSpyKubeClient) RemoveImagePullSecretFromServiceAccount(namespace, _, _ string) error {
 	s.removedPullSecrets = append(s.removedPullSecrets, namespace)
 	return s.removePullSecretErrors[namespace]
+}
+
+func newTestHandler(t *testing.T) (*Handler, dataservices.DataStore) {
+	t.Helper()
+
+	_, store := datastore.MustNewTestStore(t, false, false)
+	require.NotNil(t, store)
+
+	handler := NewHandler(testhelpers.NewTestRequestBouncer())
+	handler.DataStore = store
+
+	return handler, store
 }
 
 // --- cleanupRegistryFromNamespaces unit tests ---

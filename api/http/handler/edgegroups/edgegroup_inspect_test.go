@@ -16,8 +16,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEdgeGroupInspectHandler(t *testing.T) {
-	t.Parallel()
+func newHandlerWithEdgeEndpoints(t *testing.T) (*Handler, *datastore.Store) {
+	t.Helper()
+
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	handler := NewHandler(testhelpers.NewTestRequestBouncer())
@@ -45,7 +46,14 @@ func TestEdgeGroupInspectHandler(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	err = store.EdgeGroup().Create(&portainer.EdgeGroup{
+	return handler, store
+}
+
+func TestEdgeGroupInspectHandler(t *testing.T) {
+	t.Parallel()
+	handler, store := newHandlerWithEdgeEndpoints(t)
+
+	err := store.EdgeGroup().Create(&portainer.EdgeGroup{
 		ID:          1,
 		Name:        "Test Edge Group",
 		EndpointIDs: roar.FromSlice([]portainer.EndpointID{1, 2, 3}),

@@ -7,9 +7,7 @@ import (
 	"testing"
 
 	portainer "github.com/portainer/portainer/api"
-	"github.com/portainer/portainer/api/datastore"
 	"github.com/portainer/portainer/api/http/security"
-	"github.com/portainer/portainer/api/internal/testhelpers"
 
 	"github.com/segmentio/encoding/json"
 	"github.com/stretchr/testify/assert"
@@ -56,7 +54,8 @@ func Test_registryCreatePayload_Validate(t *testing.T) {
 
 func TestHandler_registryCreate(t *testing.T) {
 	t.Parallel()
-	_, store := datastore.MustNewTestStore(t, false, false)
+
+	handler, _ := newTestHandler(t)
 
 	payload := registryCreatePayload{
 		Name:           "Test registry",
@@ -78,9 +77,6 @@ func TestHandler_registryCreate(t *testing.T) {
 
 	ctx := security.StoreRestrictedRequestContext(r, restrictedContext)
 	r = r.WithContext(ctx)
-
-	handler := NewHandler(testhelpers.NewTestRequestBouncer())
-	handler.DataStore = store
 
 	handlerError := handler.registryCreate(w, r)
 	require.Nil(t, handlerError)
