@@ -48,7 +48,7 @@ export function Modal({
           aria-labelledby={ariaLabelledBy}
           className={clsx(
             styles.modalDialog,
-            'max-w-[calc(100vw-2rem)] bg-transparent p-0',
+            'max-h-[calc(100vh-2rem)] max-w-[calc(100vw-2rem)] bg-transparent p-0',
             {
               'w-[450px]': size === 'md',
               'w-[700px]': size === 'lg',
