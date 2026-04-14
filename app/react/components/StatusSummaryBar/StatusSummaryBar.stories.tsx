@@ -28,7 +28,7 @@ export function Environments() {
         data-cy="environment-status-bar"
         ariaLabel="Filter by environment status"
       />
-      <div className="p-4 border border-solid border-gray-4 rounded-lg text-sm">
+      <div className="rounded-lg border border-solid border-gray-4 p-4 text-sm">
         Active filter: <strong>{filter}</strong>
       </div>
     </div>
@@ -55,7 +55,7 @@ export function Containers() {
         data-cy="container-status-bar"
         ariaLabel="Filter by container status"
       />
-      <div className="p-4 border border-solid border-gray-4 rounded-lg text-sm">
+      <div className="rounded-lg border border-solid border-gray-4 p-4 text-sm">
         Active filter: <strong>{filter}</strong>
       </div>
     </div>

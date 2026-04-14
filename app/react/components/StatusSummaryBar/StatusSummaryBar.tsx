@@ -36,7 +36,7 @@ export function StatusSummaryBar({
 
   return (
     <div
-      className="relative flex items-stretch border border-solid border-[var(--border-widget)] rounded-lg overflow-x-auto overflow-y-hidden bg-[var(--bg-widget-color)]"
+      className="relative flex items-stretch overflow-x-auto overflow-y-hidden rounded-lg border border-solid border-[var(--border-widget)] bg-[var(--bg-widget-color)]"
       data-cy={dataCy}
       role="radiogroup"
       aria-label={ariaLabel}
@@ -66,7 +66,7 @@ export function StatusSummaryBar({
       ))}
 
       {activeLabel && (
-        <div className="hidden xl:flex ml-auto">
+        <div className="ml-auto hidden xl:flex">
           <Separator />
           <FilterBarActiveIndicator
             label={activeLabel}

@@ -6,7 +6,7 @@ interface Props {
 export function FilterBarActiveIndicator({ label, onClear }: Props) {
   return (
     <div
-      className="flex items-center gap-4 px-5 bg-gray-2 th-dark:bg-gray-iron-10 th-highcontrast:bg-transparent whitespace-nowrap"
+      className="flex items-center gap-4 whitespace-nowrap bg-gray-2 px-5 th-highcontrast:bg-transparent th-dark:bg-gray-iron-10"
       data-cy="active-filter-indicator"
     >
       <span className="text-sm text-[var(--text-muted-color)]">
@@ -17,7 +17,7 @@ export function FilterBarActiveIndicator({ label, onClear }: Props) {
       </span>
       <button
         type="button"
-        className="border-0 bg-transparent cursor-pointer p-0 text-[21px] font-bold leading-none opacity-[var(--button-opacity)] hover:opacity-[var(--button-opacity-hover)] text-[var(--button-close-color)]"
+        className="cursor-pointer border-0 bg-transparent p-0 text-[21px] font-bold leading-none text-[var(--button-close-color)] opacity-[var(--button-opacity)] hover:opacity-[var(--button-opacity-hover)]"
         onClick={onClear}
         aria-label="Clear filter"
         data-cy="clear-filter-button"

@@ -38,9 +38,9 @@ export function FilterBarButton({
   return (
     <label
       className={clsx(
-        'relative flex items-center gap-2 mb-0',
+        'relative mb-0 flex items-center gap-2',
         'px-8 py-3',
-        'border-0 cursor-pointer',
+        'cursor-pointer border-0',
         'text-sm font-medium',
         'text-[var(--text-muted-color)]',
         'hover:bg-[var(--bg-blocklist-item-selected-color)]',
@@ -63,7 +63,7 @@ export function FilterBarButton({
       />
       {colors && (
         <span
-          className={clsx('w-2.5 h-2.5 rounded-full shrink-0', colors.dot)}
+          className={clsx('h-2.5 w-2.5 shrink-0 rounded-full', colors.dot)}
           aria-hidden="true"
         />
       )}
