@@ -162,8 +162,15 @@ func (handler *Handler) hijackPodExecStartOperation(
 
 	err = <-errorChan
 
+	if err == nil || errors.Is(err, io.EOF) {
+		// exec process ended normally (shell exited) - send a clean close frame to the browser
+		_ = websocketConn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+
+		return nil
+	}
+
 	// websocket client successfully disconnected
-	if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNoStatusReceived) {
+	if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway, websocket.CloseNoStatusReceived) {
 		log.Debug().Err(err).Msg("websocket error")
 
 		return nil
