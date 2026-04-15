@@ -110,7 +110,7 @@ export function GitReferenceCard({
 
   return (
     <Card>
-      <div className="form-section-title flex gap-2 items-center !mt-0">
+      <div className="form-section-title !mt-0 flex items-center gap-2">
         <Icon icon={GitMerge} /> Managed by Git
       </div>
       {hasError && (
@@ -147,7 +147,7 @@ export function GitReferenceCard({
       )}
 
       <div
-        className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-1 text-sm"
+        className="grid grid-cols-1 gap-x-6 gap-y-1 text-sm lg:grid-cols-2 xl:grid-cols-3"
         data-cy="git-reference-card-info"
       >
         <LineItem
@@ -297,12 +297,12 @@ function LineItem({
     <div
       role="group"
       aria-label={label}
-      className="min-w-0 flex items-center gap-1"
+      className="flex min-w-0 items-center gap-1"
     >
       <StateIcon isLoading={isLoading} isValid={isValid} isError={isError} />
       <span className="text-muted">{label}:</span>
       <span
-        className="truncate inline-flex align-middle items-center gap-1 flex-wrap max-w-[40rem]"
+        className="inline-flex max-w-[40rem] flex-wrap items-center gap-1 truncate align-middle"
         title={title}
         data-cy={dataCy}
       >
