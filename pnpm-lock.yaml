@@ -249,8 +249,8 @@ importers:
         specifier: npm:lodash@4.17.21
         version: lodash@4.17.21
       lucide-react:
-        specifier: ^0.503.0
-        version: 0.503.0(react@17.0.2)
+        specifier: ^0.577.0
+        version: 0.577.0(react@17.0.2)
       markdown-to-jsx:
         specifier: ^7.7.4
         version: 7.7.4(react@17.0.2)
@@ -6499,8 +6499,8 @@ packages:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
 
-  lucide-react@0.503.0:
-    resolution: {integrity: sha512-HGGkdlPWQ0vTF8jJ5TdIqhQXZi6uh3LnNgfZ8MHiuxFfX3RZeA79r2MW2tHAZKlAVfoNE8esm3p+O6VkIvpj6w==}
+  lucide-react@0.577.0:
+    resolution: {integrity: sha512-4LjoFv2eEPwYDPg/CUdBJQSDfPyzXCRrVW1X7jrx/trgxnxkHFjnVZINbzvzxjN70dxychOfg+FTYwBiS3pQ5A==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -15841,7 +15841,7 @@ snapshots:
     dependencies:
       yallist: 4.0.0
 
-  lucide-react@0.503.0(react@17.0.2):
+  lucide-react@0.577.0(react@17.0.2):
     dependencies:
       react: 17.0.2
 

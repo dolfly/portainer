@@ -470,6 +470,8 @@ func (transport *Transport) proxyImageRequest(request *http.Request, unversioned
 	switch requestPath {
 	case "/images/create":
 		return transport.replaceRegistryAuthenticationHeader(request)
+	case "/images/prune":
+		return transport.administratorOperation(request)
 	default:
 		if path.Base(requestPath) == "push" && request.Method == http.MethodPost {
 			return transport.replaceRegistryAuthenticationHeader(request)
