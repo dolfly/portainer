@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -15,6 +14,7 @@ import (
 
 	"github.com/portainer/portainer/api/adminmonitor"
 	"github.com/portainer/portainer/api/crypto"
+	"github.com/portainer/portainer/api/filesystem"
 	"github.com/portainer/portainer/api/http/offlinegate"
 	"github.com/portainer/portainer/api/internal/testhelpers"
 	"github.com/portainer/portainer/pkg/fips"
@@ -88,7 +88,7 @@ func Test_backupHandlerWithoutPassword_shouldCreateATarballArchive(t *testing.T)
 
 	tmpdir := t.TempDir()
 
-	archivePath := filepath.Join(tmpdir, "archive.tar.gz")
+	archivePath := filesystem.JoinPaths(tmpdir, "archive.tar.gz")
 	if err := os.WriteFile(archivePath, body, 0600); err != nil {
 		t.Fatal("Failed to save downloaded .tar.gz archive: ", err)
 	}
@@ -100,12 +100,12 @@ func Test_backupHandlerWithoutPassword_shouldCreateATarballArchive(t *testing.T)
 
 	createdFiles := listFiles(t, tmpdir)
 
-	contains(t, createdFiles, path.Join(tmpdir, "portainer.key"))
-	contains(t, createdFiles, path.Join(tmpdir, "portainer.pub"))
-	contains(t, createdFiles, path.Join(tmpdir, "tls", "file1"))
-	contains(t, createdFiles, path.Join(tmpdir, "tls", "file2"))
-	assert.NotContains(t, createdFiles, path.Join(tmpdir, "extra_file"))
-	assert.NotContains(t, createdFiles, path.Join(tmpdir, "extra_folder", "file1"))
+	contains(t, createdFiles, filesystem.JoinPaths(tmpdir, "portainer.key"))
+	contains(t, createdFiles, filesystem.JoinPaths(tmpdir, "portainer.pub"))
+	contains(t, createdFiles, filesystem.JoinPaths(tmpdir, "tls", "file1"))
+	contains(t, createdFiles, filesystem.JoinPaths(tmpdir, "tls", "file2"))
+	assert.NotContains(t, createdFiles, filesystem.JoinPaths(tmpdir, "extra_file"))
+	assert.NotContains(t, createdFiles, filesystem.JoinPaths(tmpdir, "extra_folder", "file1"))
 }
 
 func Test_backupHandlerWithPassword_shouldCreateEncryptedATarballArchive(t *testing.T) {
@@ -138,7 +138,7 @@ func Test_backupHandlerWithPassword_shouldCreateEncryptedATarballArchive(t *test
 		t.Fatal("Failed to decrypt archive")
 	}
 
-	archivePath := filepath.Join(tmpdir, "archive.tag.gz")
+	archivePath := filesystem.JoinPaths(tmpdir, "archive.tag.gz")
 	archive, err := os.Create(archivePath)
 	require.NoError(t, err)
 
@@ -157,10 +157,10 @@ func Test_backupHandlerWithPassword_shouldCreateEncryptedATarballArchive(t *test
 
 	createdFiles := listFiles(t, tmpdir)
 
-	contains(t, createdFiles, path.Join(tmpdir, "portainer.key"))
-	contains(t, createdFiles, path.Join(tmpdir, "portainer.pub"))
-	contains(t, createdFiles, path.Join(tmpdir, "tls", "file1"))
-	contains(t, createdFiles, path.Join(tmpdir, "tls", "file2"))
-	assert.NotContains(t, createdFiles, path.Join(tmpdir, "extra_file"))
-	assert.NotContains(t, createdFiles, path.Join(tmpdir, "extra_folder", "file1"))
+	contains(t, createdFiles, filesystem.JoinPaths(tmpdir, "portainer.key"))
+	contains(t, createdFiles, filesystem.JoinPaths(tmpdir, "portainer.pub"))
+	contains(t, createdFiles, filesystem.JoinPaths(tmpdir, "tls", "file1"))
+	contains(t, createdFiles, filesystem.JoinPaths(tmpdir, "tls", "file2"))
+	assert.NotContains(t, createdFiles, filesystem.JoinPaths(tmpdir, "extra_file"))
+	assert.NotContains(t, createdFiles, filesystem.JoinPaths(tmpdir, "extra_folder", "file1"))
 }
