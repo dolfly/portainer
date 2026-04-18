@@ -180,11 +180,15 @@ func (transport *Transport) decorateContainerCreationOperation(request *http.Req
 			CapAdd      []string       `json:"CapAdd"`
 			CapDrop     []string       `json:"CapDrop"`
 			Binds       []string       `json:"Binds"`
+			Mounts      []struct {
+				Type string `json:"Type"`
+			} `json:"Mounts"`
 		} `json:"HostConfig"`
 	}
 
 	forbiddenResponse := &http.Response{
 		StatusCode: http.StatusForbidden,
+		Body:       http.NoBody,
 	}
 
 	tokenData, err := security.RetrieveTokenData(request)
@@ -240,6 +244,14 @@ func (transport *Transport) decorateContainerCreationOperation(request *http.Req
 		if !securitySettings.AllowBindMountsForRegularUsers && len(partialContainer.HostConfig.Binds) > 0 {
 			for _, bind := range partialContainer.HostConfig.Binds {
 				if strings.HasPrefix(bind, "/") {
+					return forbiddenResponse, ErrBindMountsForbidden
+				}
+			}
+		}
+
+		if !securitySettings.AllowBindMountsForRegularUsers && len(partialContainer.HostConfig.Mounts) > 0 {
+			for _, mount := range partialContainer.HostConfig.Mounts {
+				if mount.Type == "bind" {
 					return forbiddenResponse, ErrBindMountsForbidden
 				}
 			}
