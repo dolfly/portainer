@@ -23,6 +23,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// prepareFilestorePath copies the test assets to an isolated temp dir so
+// parallel tests don't share the same filestorePath and interfere with each other.
+func prepareFilestorePath(t *testing.T) string {
+	t.Helper()
+	tmpDir := t.TempDir()
+	err := os.CopyFS(tmpDir, os.DirFS("./test_assets/handler_test"))
+	require.NoError(t, err)
+
+	return tmpDir
+}
+
 func init() {
 	fips.InitFIPS(false)
 }
@@ -52,6 +63,7 @@ func contains(t *testing.T, list []string, path string) {
 }
 
 func Test_backupHandlerWithoutPassword_shouldCreateATarballArchive(t *testing.T) {
+	t.Parallel()
 	r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"password":""}`))
 	w := httptest.NewRecorder()
 
@@ -62,7 +74,7 @@ func Test_backupHandlerWithoutPassword_shouldCreateATarballArchive(t *testing.T)
 		testhelpers.NewTestRequestBouncer(),
 		testhelpers.NewDatastore(),
 		gate,
-		"./test_assets/handler_test",
+		prepareFilestorePath(t),
 		func() {},
 		adminMonitor).backup(w, r)
 	assert.Nil(t, handlerErr, "Handler should not fail")
@@ -97,6 +109,7 @@ func Test_backupHandlerWithoutPassword_shouldCreateATarballArchive(t *testing.T)
 }
 
 func Test_backupHandlerWithPassword_shouldCreateEncryptedATarballArchive(t *testing.T) {
+	t.Parallel()
 	r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"password":"secret"}`))
 	w := httptest.NewRecorder()
 
@@ -107,7 +120,7 @@ func Test_backupHandlerWithPassword_shouldCreateEncryptedATarballArchive(t *test
 		testhelpers.NewTestRequestBouncer(),
 		testhelpers.NewDatastore(),
 		gate,
-		"./test_assets/handler_test",
+		prepareFilestorePath(t),
 		func() {},
 		adminMonitor).backup(w, r)
 	assert.Nil(t, handlerErr, "Handler should not fail")
