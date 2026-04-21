@@ -149,6 +149,9 @@ func runCommandAndCaptureStdErr(ctx context.Context, command string, args []stri
 	}
 
 	if err := cmd.Run(); err != nil {
+		if stderr.Len() == 0 {
+			return err
+		}
 		return errors.New(stderr.String())
 	}
 

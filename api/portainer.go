@@ -1216,8 +1216,12 @@ type (
 		Env []Pair `json:"Env"`
 		//
 		ResourceControl *ResourceControl `json:"ResourceControl"`
-		// Stack status (1 - active, 2 - inactive)
+		// Stack status (1 - active, 2 - inactive, 3 - deploying, 4 - error)
 		Status StackStatus `json:"Status" example:"1"`
+		// DeploymentStartStatus is the stack status captured when the current
+		// deployment starts. It is used by deployment logic during the current
+		// deployment attempt and is cleared/replaced when a new deployment begins.
+		DeploymentStartStatus StackStatus `json:"DeploymentStartStatus" example:"1"`
 		// Path on disk to the repository hosting the Stack file
 		ProjectPath string `example:"/data/compose/myStack_jpofkc0i9uo9wtx1zesuk649w"`
 		// The date in unix time when stack was created

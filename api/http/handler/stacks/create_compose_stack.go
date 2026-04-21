@@ -1,7 +1,6 @@
 package stacks
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -161,7 +160,7 @@ func (handler *Handler) createComposeStackFromFileContent(w http.ResponseWriter,
 		handler.FileService,
 		handler.StackDeployer)
 
-	stack, httpErr := stackbuilders.Build(context.TODO(), handler.DataStore, composeStackBuilder, &stackPayload, endpoint)
+	stack, httpErr := stackbuilders.Build(r.Context(), handler.DataStore, composeStackBuilder, &stackPayload, endpoint)
 	if httpErr != nil {
 		return httpErr
 	}
@@ -298,7 +297,7 @@ func (handler *Handler) createComposeStackFromGitRepository(w http.ResponseWrite
 		handler.Scheduler,
 		handler.StackDeployer)
 
-	stack, httpErr := stackbuilders.Build(context.TODO(), handler.DataStore, composeStackBuilder, &stackPayload, endpoint)
+	stack, httpErr := stackbuilders.Build(r.Context(), handler.DataStore, composeStackBuilder, &stackPayload, endpoint)
 	if httpErr != nil {
 		return httpErr
 	}
@@ -384,7 +383,7 @@ func (handler *Handler) createComposeStackFromFileUpload(w http.ResponseWriter, 
 		handler.FileService,
 		handler.StackDeployer)
 
-	stack, httpErr := stackbuilders.Build(context.TODO(), handler.DataStore, composeStackBuilder, &stackPayload, endpoint)
+	stack, httpErr := stackbuilders.Build(r.Context(), handler.DataStore, composeStackBuilder, &stackPayload, endpoint)
 	if httpErr != nil {
 		return httpErr
 	}
