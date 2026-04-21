@@ -344,6 +344,8 @@ type (
 		RepositoryURL string `json:"RepositoryURL,omitempty"`
 		// ConfigFilePath is the path to the config file in the git repository used for deploying the stack
 		ConfigFilePath string `json:"ConfigFilePath,omitempty"`
+		// ReferenceName is the git reference (branch/tag) used for deploying the stack
+		ReferenceName string `json:"ReferenceName,omitempty"`
 		// AdditionalFiles are the additional files used for deploying the stack
 		AdditionalFiles []string `json:"AdditionalFiles,omitempty"`
 	}

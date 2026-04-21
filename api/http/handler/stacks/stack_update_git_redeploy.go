@@ -1,6 +1,7 @@
 package stacks
 
 import (
+	"cmp"
 	"context"
 	"net/http"
 	"time"
@@ -26,7 +27,7 @@ type stackGitRedeployPayload struct {
 	RepositoryUsername       string
 	RepositoryPassword       string
 	Env                      []portainer.Pair
-	Prune                    bool
+	Prune                    *bool
 	// RepullImageAndRedeploy indicates whether to force repulling images and redeploying the stack
 	RepullImageAndRedeploy bool
 
@@ -128,16 +129,23 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 		return httperror.BadRequest("Invalid request payload", err)
 	}
 	payload.RepullImageAndRedeploy = payload.RepullImageAndRedeploy || payload.PullImage
-	stack.GitConfig.ReferenceName = payload.RepositoryReferenceName
-	stack.Env = payload.Env
-	if stack.Type == portainer.DockerSwarmStack || stack.Type == portainer.DockerComposeStack {
-		if stack.Option == nil {
-			stack.Option = &portainer.StackOption{}
-		}
-		stack.Option.Prune = payload.Prune
+
+	stack.GitConfig.ReferenceName = cmp.Or(payload.RepositoryReferenceName, stack.GitConfig.ReferenceName)
+
+	if payload.Env != nil {
+		stack.Env = payload.Env
 	}
 
-	if stack.Type == portainer.KubernetesStack {
+	if payload.Prune != nil {
+		if stack.Type == portainer.DockerSwarmStack || stack.Type == portainer.DockerComposeStack {
+			if stack.Option == nil {
+				stack.Option = &portainer.StackOption{}
+			}
+			stack.Option.Prune = *payload.Prune
+		}
+	}
+
+	if stack.Type == portainer.KubernetesStack && payload.StackName != "" {
 		stack.Name = payload.StackName
 	}
 
@@ -186,6 +194,7 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 	}
 	stack.CurrentDeploymentInfo = &portainer.StackDeploymentInfo{
 		RepositoryURL:   stack.GitConfig.URL,
+		ReferenceName:   stack.GitConfig.ReferenceName,
 		ConfigFilePath:  stack.GitConfig.ConfigFilePath,
 		AdditionalFiles: stack.AdditionalFiles,
 		ConfigHash:      stack.GitConfig.ConfigHash,
