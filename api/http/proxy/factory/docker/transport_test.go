@@ -529,8 +529,7 @@ func TestTransport_proxyNetworkRequest(t *testing.T) {
 		require.Error(t, err)
 		require.Nil(t, r)
 		if r != nil {
-			err = r.Body.Close()
-			require.NoError(t, err)
+			require.NoError(t, r.Body.Close())
 		}
 	}
 
@@ -539,9 +538,143 @@ func TestTransport_proxyNetworkRequest(t *testing.T) {
 		require.Error(t, err)
 		require.Nil(t, r)
 		if r != nil {
-			err = r.Body.Close()
-			require.NoError(t, err)
+			require.NoError(t, r.Body.Close())
 		}
+	}
+}
+
+func TestTransport_proxyExecRequest_accessControl(t *testing.T) {
+	t.Parallel()
+
+	admin := portainer.User{ID: 1, Username: "admin", Role: portainer.AdministratorRole}
+	std1 := portainer.User{ID: 2, Username: "std1", Role: portainer.StandardUserRole}
+	std2 := portainer.User{ID: 3, Username: "std2", Role: portainer.StandardUserRole}
+
+	containerID := "1111"
+	execID := "2222"
+
+	_, ds := datastore.MustNewTestStore(t, true, false)
+
+	err := ds.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		require.NoError(t, tx.User().Create(&admin))
+		require.NoError(t, tx.User().Create(&std1))
+		require.NoError(t, tx.User().Create(&std2))
+		require.NoError(t, tx.Endpoint().Create(&portainer.Endpoint{
+			ID:   1,
+			Name: "env",
+			UserAccessPolicies: portainer.UserAccessPolicies{
+				std1.ID: portainer.AccessPolicy{RoleID: 1},
+				std2.ID: portainer.AccessPolicy{RoleID: 1},
+			},
+		}))
+
+		// Only std1 owns the container, std2 has no resource control for it
+		require.NoError(t, tx.ResourceControl().Create(
+			authorization.NewPrivateResourceControl(containerID, portainer.ContainerResourceControl, std1.ID),
+		))
+
+		return nil
+	})
+	require.NoError(t, err)
+
+	srv, version := mockDockerAPIServer(t, RoutesDefinition{
+		{http.MethodGet, "/exec/" + execID + "/json"}:    container.ExecInspect{ExecID: execID, ContainerID: containerID},
+		{http.MethodPost, "/exec/" + execID + "/start"}:  struct{}{},
+		{http.MethodPost, "/exec/" + execID + "/resize"}: struct{}{},
+	})
+	defer srv.Close()
+
+	transport := &Transport{
+		endpoint:      &portainer.Endpoint{URL: srv.URL},
+		dataStore:     ds,
+		HTTPTransport: &http.Transport{},
+	}
+
+	test := func(method, url string, token portainer.TokenData) (*http.Response, error) {
+		req := httptest.NewRequest(method, srv.URL+"/v"+version+url, nil)
+		req = req.WithContext(security.StoreTokenData(req, &token))
+		return transport.ProxyDockerRequest(req)
+	}
+
+	adminToken := portainer.TokenData{ID: admin.ID, Username: admin.Username, Role: admin.Role}
+	std1Token := portainer.TokenData{ID: std1.ID, Username: std1.Username, Role: std1.Role}
+	std2Token := portainer.TokenData{ID: std2.ID, Username: std2.Username, Role: std2.Role}
+
+	// admin can exec into any container
+	r, err := test(http.MethodPost, "/exec/"+execID+"/start", adminToken)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	// std1 owns the container, all exec operations allowed
+	r, err = test(http.MethodPost, "/exec/"+execID+"/start", std1Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	r, err = test(http.MethodGet, "/exec/"+execID+"/json", std1Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	r, err = test(http.MethodPost, "/exec/"+execID+"/resize", std1Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	// std2 does NOT own the container, all exec operations must be blocked
+	r, err = test(http.MethodPost, "/exec/"+execID+"/start", std2Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusForbidden, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	r, err = test(http.MethodGet, "/exec/"+execID+"/json", std2Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusForbidden, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	r, err = test(http.MethodPost, "/exec/"+execID+"/resize", std2Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusForbidden, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+}
+
+func TestTransport_proxyExecRequest_createClientError(t *testing.T) {
+	t.Parallel()
+
+	// AzureEnvironment type causes CreateClient to return an error immediately
+	transport := &Transport{
+		endpoint:      &portainer.Endpoint{Type: portainer.AzureEnvironment},
+		HTTPTransport: &http.Transport{},
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "http://localhost/v1.51/exec/2222/start", nil)
+	resp, err := transport.ProxyDockerRequest(req)
+	require.Error(t, err)
+	require.Nil(t, resp)
+	if resp != nil {
+		require.NoError(t, resp.Body.Close())
+	}
+}
+
+func TestTransport_proxyExecRequest_inspectError(t *testing.T) {
+	t.Parallel()
+
+	// Mock server that handles /_ping (for Docker client negotiation) but no exec routes
+	srv, version := mockDockerAPIServer(t, RoutesDefinition{})
+	defer srv.Close()
+
+	transport := &Transport{
+		endpoint:      &portainer.Endpoint{URL: srv.URL},
+		HTTPTransport: &http.Transport{},
+	}
+
+	req := httptest.NewRequest(http.MethodPost, srv.URL+"/v"+version+"/exec/2222/start", nil)
+	resp, err := transport.ProxyDockerRequest(req)
+	require.Error(t, err)
+	require.Nil(t, resp)
+	if resp != nil {
+		require.NoError(t, resp.Body.Close())
 	}
 }
 

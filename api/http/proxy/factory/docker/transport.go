@@ -98,6 +98,7 @@ var prefixProxyFuncMap = map[string]func(*Transport, *http.Request, string) (*ht
 	"build":      (*Transport).proxyBuildRequest,
 	"configs":    (*Transport).proxyConfigRequest,
 	"containers": (*Transport).proxyContainerRequest,
+	"exec":       (*Transport).proxyExecRequest,
 	"images":     (*Transport).proxyImageRequest,
 	"networks":   (*Transport).proxyNetworkRequest,
 	"nodes":      (*Transport).proxyNodeRequest,
@@ -306,6 +307,23 @@ func (transport *Transport) proxyContainerRequest(request *http.Request, unversi
 
 		return transport.executeDockerRequest(request)
 	}
+}
+
+func (transport *Transport) proxyExecRequest(request *http.Request, unversionedPath string) (*http.Response, error) {
+	execID := path.Base(path.Dir(unversionedPath))
+
+	client, err := transport.dockerClientFactory.CreateClient(transport.endpoint, request.Header.Get(portainer.PortainerAgentTargetHeader), nil)
+	if err != nil {
+		return nil, err
+	}
+	defer logs.CloseAndLogErr(client)
+
+	execInspect, err := client.ContainerExecInspect(request.Context(), execID)
+	if err != nil {
+		return nil, err
+	}
+
+	return transport.restrictedResourceOperation(request, execInspect.ContainerID, execInspect.ContainerID, portainer.ContainerResourceControl, false)
 }
 
 func (transport *Transport) proxyServiceRequest(request *http.Request, unversionedPath string) (*http.Response, error) {
