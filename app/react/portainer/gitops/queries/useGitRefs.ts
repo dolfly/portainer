@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import axios from '@/portainer/services/axios/axios';
 import { isBE } from '@/react/portainer/feature-flags/feature-flags.service';
-import { withGlobalError } from '@/react-tools/react-query';
+import { withError } from '@/react-tools/react-query';
 
 import { AuthTypeOption } from '../../account/git-credentials/types';
 import { omitPassword } from '../utils';
@@ -45,7 +45,7 @@ export function useGitRefs<T = string[]>(
     select,
     onSuccess,
     onSettled,
-    ...(suppressError ? {} : withGlobalError('Failed loading refs')),
+    ...(suppressError ? {} : withError('Failed loading refs')),
   });
 }
 

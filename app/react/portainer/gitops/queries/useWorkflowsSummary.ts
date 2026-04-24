@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import axios from '@/portainer/services/axios/axios';
-import { withGlobalError } from '@/react-tools/react-query';
+import { withError } from '@/react-tools/react-query';
 
 import { workflowQueryKeys } from './query-keys';
 
@@ -24,6 +24,6 @@ export function useWorkflowsSummary() {
   return useQuery({
     queryKey: workflowQueryKeys.summary(),
     queryFn: getWorkflowsSummary,
-    ...withGlobalError('Failed loading workflow summary'),
+    ...withError('Failed loading workflow summary'),
   });
 }

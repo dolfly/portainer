@@ -7,7 +7,7 @@ import { queryKeys } from '@/react/common/stacks/queries/query-keys';
 import { transformAutoUpdateViewModel } from '@/react/portainer/gitops/AutoUpdateFieldset/utils';
 import { saveGitCredentialsIfNeeded } from '@/react/portainer/account/git-credentials/queries/useCreateGitCredentialsMutation';
 import { useCurrentUser } from '@/react/hooks/useUser';
-import { withGlobalError } from '@/react-tools/react-query';
+import { withError } from '@/react-tools/react-query';
 
 import { FormValues } from './types';
 
@@ -82,6 +82,6 @@ export function useUpdateGitStack(stack: Stack) {
         queryKey: queryKeys.stack(stack.Id),
       });
     },
-    ...withGlobalError('Unable to save stack settings'),
+    ...withError('Unable to save stack settings'),
   });
 }

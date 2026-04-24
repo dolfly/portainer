@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import axios from '@/portainer/services/axios/axios';
-import { withGlobalError } from '@/react-tools/react-query';
+import { withError } from '@/react-tools/react-query';
 import { withPaginationHeaders } from '@/react/common/api/pagination.types';
 
 import {
@@ -35,6 +35,6 @@ export function useWorkflows(params: WorkflowsParams) {
   return useQuery({
     queryKey: workflowQueryKeys.list(params),
     queryFn: () => getWorkflows(params),
-    ...withGlobalError('Failed loading workflows'),
+    ...withError('Failed loading workflows'),
   });
 }
