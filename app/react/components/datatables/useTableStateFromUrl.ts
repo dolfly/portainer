@@ -43,7 +43,7 @@ export function useTableStateFromUrl<
   const [urlState, setUrlState] = useParamsState((params) => ({
     search: params.search ?? '',
     sort: params.sort ?? defaultSort,
-    order: (params.order ?? 'asc') as 'asc' | 'desc',
+    order: (params.order === 'desc' ? 'desc' : 'asc') as 'asc' | 'desc',
     page: Math.max(0, parseIntOrDefault(params.page, 0)),
     pageSize: parsePositiveIntOrNull(params.pageSize),
     ...(parseExtra ? parseExtra(params) : ({} as TParsed)),

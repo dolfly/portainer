@@ -60,7 +60,7 @@ export function useListState() {
             sort: id ?? DEFAULT_SORT,
             order: desc ? 'desc' : 'asc',
             // Clear status filter only if was previously grouped by status
-            ...(sortKey === 'status' ? { status: null } : {}),
+            ...(id === 'status' ? { status: null } : {}),
             type: null,
             platform: null,
             page: 0,
