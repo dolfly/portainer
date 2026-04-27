@@ -303,6 +303,10 @@ func (transport *Transport) proxyContainerRequest(request *http.Request, unversi
 			}
 
 			return transport.restrictedResourceOperation(request, containerID, containerID, portainer.ContainerResourceControl, false)
+		} else if match, _ := path.Match("/containers/*/attach/ws", requestPath); match {
+			containerID := path.Base(path.Dir(path.Dir(requestPath)))
+
+			return transport.restrictedResourceOperation(request, containerID, containerID, portainer.ContainerResourceControl, false)
 		}
 
 		return transport.executeDockerRequest(request)

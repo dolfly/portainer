@@ -805,3 +805,106 @@ func TestTransport_proxyBuildRequest_Prune(t *testing.T) {
 		require.NoError(t, r.Body.Close())
 	}
 }
+
+func TestTransport_proxyContainerRequest(t *testing.T) {
+	t.Parallel()
+
+	const containerID = "1111"
+
+	admin := portainer.User{ID: 1, Username: "admin", Role: portainer.AdministratorRole}
+	std1 := portainer.User{ID: 2, Username: "std1", Role: portainer.StandardUserRole}
+	std2 := portainer.User{ID: 3, Username: "std2", Role: portainer.StandardUserRole}
+
+	_, ds := datastore.MustNewTestStore(t, true, false)
+
+	require.NoError(t, ds.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		require.NoError(t, tx.User().Create(&admin))
+		require.NoError(t, tx.User().Create(&std1))
+		require.NoError(t, tx.User().Create(&std2))
+		require.NoError(t, tx.Endpoint().Create(&portainer.Endpoint{ID: 1, Name: "env",
+			UserAccessPolicies: portainer.UserAccessPolicies{std1.ID: portainer.AccessPolicy{RoleID: 1}},
+		}))
+		require.NoError(t, tx.ResourceControl().Create(authorization.NewPrivateResourceControl(containerID, portainer.ContainerResourceControl, std1.ID)))
+
+		return nil
+	}))
+
+	srv, version := mockDockerAPIServer(t, RoutesDefinition{
+		{http.MethodPost, "/containers/" + containerID + "/start"}:    struct{}{},
+		{http.MethodGet, "/containers/" + containerID + "/attach/ws"}: struct{}{},
+		{http.MethodDelete, "/containers/" + containerID}:             struct{}{},
+		{http.MethodPost, "/containers/prune"}:                        struct{}{},
+	})
+	defer srv.Close()
+
+	transport := &Transport{
+		endpoint:      &portainer.Endpoint{ID: 1, URL: srv.URL},
+		dataStore:     ds,
+		HTTPTransport: &http.Transport{},
+	}
+
+	test := func(method, url string, token portainer.TokenData) (*http.Response, error) {
+		req := httptest.NewRequest(method, srv.URL+"/v"+version+url, nil)
+		req = req.WithContext(security.StoreTokenData(req, &token))
+		return transport.proxyContainerRequest(req, url)
+	}
+
+	adminToken := portainer.TokenData{ID: admin.ID, Username: admin.Username, Role: admin.Role}
+	std1Token := portainer.TokenData{ID: std1.ID, Username: std1.Username, Role: std1.Role}
+	std2Token := portainer.TokenData{ID: std2.ID, Username: std2.Username, Role: std2.Role}
+
+	// /containers/{id}/start (2-segment): admin and owner allowed, non-owner denied
+	r, err := test(http.MethodPost, "/containers/"+containerID+"/start", adminToken)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	r, err = test(http.MethodPost, "/containers/"+containerID+"/start", std1Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	r, err = test(http.MethodPost, "/containers/"+containerID+"/start", std2Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusForbidden, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	// /containers/{id}/attach/ws (3-segment): admin and owner allowed, non-owner denied
+	r, err = test(http.MethodGet, "/containers/"+containerID+"/attach/ws", adminToken)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	r, err = test(http.MethodGet, "/containers/"+containerID+"/attach/ws", std1Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	r, err = test(http.MethodGet, "/containers/"+containerID+"/attach/ws", std2Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusForbidden, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	// DELETE /containers/{id}: non-owner denied, admin allowed
+	// std2 must be tested before admin: a successful delete removes the resource control from the datastore
+	r, err = test(http.MethodDelete, "/containers/"+containerID, std2Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusForbidden, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	r, err = test(http.MethodDelete, "/containers/"+containerID, adminToken)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	// /containers/prune: admin-only
+	r, err = test(http.MethodPost, "/containers/prune", adminToken)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+
+	r, err = test(http.MethodPost, "/containers/prune", std1Token)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusForbidden, r.StatusCode)
+	require.NoError(t, r.Body.Close())
+}
