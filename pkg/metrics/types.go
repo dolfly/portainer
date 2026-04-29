@@ -13,6 +13,8 @@ const (
 	ClusterFilesystemCapacityBytesMetric = "portainer_edge_agent_cluster_filesystem_capacity_bytes"
 	ClusterNetworkReceiveBytesMetric     = "portainer_edge_agent_cluster_network_receive_bytes_total"
 	ClusterNetworkTransmitBytesMetric    = "portainer_edge_agent_cluster_network_transmit_bytes_total"
+	ClusterNodeReadyMetric               = "portainer_edge_agent_node_ready"
+	ClusterNodeUnschedulableMetric       = "portainer_edge_agent_node_unschedulable"
 )
 
 // EdgeAlertBatch is the generic envelope pushed by edge agents.
