@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from '@storybook/react';
+import { Meta, StoryObj } from '@storybook/react-webpack5';
 import { Check } from 'lucide-react';
 
 import { StatusBadge } from './StatusBadge';

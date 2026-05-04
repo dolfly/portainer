@@ -1,10 +1,10 @@
-import { Meta, StoryObj } from '@storybook/react';
+import { Meta, StoryObj } from '@storybook/react-webpack5';
 import { Layers, AlertCircle, Database } from 'lucide-react';
 
 import { HeaderLayout } from './HeaderLayout';
 
 const meta: Meta<typeof HeaderLayout> = {
-  title: 'Design System/HeaderLayout',
+  title: 'Components/HeaderLayout',
   component: HeaderLayout,
   tags: ['autodocs'],
 };

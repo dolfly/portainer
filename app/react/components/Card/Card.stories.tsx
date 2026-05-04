@@ -1,11 +1,11 @@
-import { Meta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react-webpack5';
 import { PropsWithChildren } from 'react';
 
 import { Card, Props } from './Card';
 
 export default {
   component: Card,
-  title: 'Components/Card/Card',
+  title: 'Components/Card',
 } as Meta;
 
 function Template({
