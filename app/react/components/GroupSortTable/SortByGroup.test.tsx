@@ -39,6 +39,7 @@ vi.mock('@reach/menu-button', () => {
           setOpen(false);
         }
       }
+
       document.addEventListener('mousedown', handleDocDown);
       return () => document.removeEventListener('mousedown', handleDocDown);
     }, [isOpen]);
@@ -60,10 +61,12 @@ vi.mock('@reach/menu-button', () => {
     [key: string]: unknown;
   }) {
     const ctx = useContext(MenuCtx);
+
     function handleClick() {
       externalOnClick?.();
       ctx?.setOpen(!ctx.isOpen);
     }
+
     return (
       <button type="button" onClick={handleClick} {...props}>
         {children}
@@ -97,10 +100,12 @@ vi.mock('@reach/menu-button', () => {
     className?: string;
   }) {
     const ctx = useContext(MenuCtx);
+
     function handleClick() {
       onSelect?.();
       ctx?.setOpen(false);
     }
+
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/interactive-supports-focus
       <div role="menuitem" onClick={handleClick} className={className}>
@@ -139,6 +144,7 @@ function renderComponent({
     withTestRouter(() => (
       <SortByGroup
         sortBy={sortBy}
+        sortDesc={false}
         onSortChange={onSortChange}
         sortOptions={sortOptions}
         groupFilter={groupFilter}
@@ -162,13 +168,13 @@ describe('SortByGroup', () => {
       expect(onSortChange).toHaveBeenCalledExactlyOnceWith('Name');
     });
 
-    test('clicking the already-active button does not call onSortChange', async () => {
+    test('clicking the already-active non-grouped button calls onSortChange to toggle sort order', async () => {
       const user = userEvent.setup();
       const { onSortChange } = renderComponent({ sortBy: 'Name' });
 
-      await user.click(screen.getByRole('button', { name: /^Name$/i }));
+      await user.click(screen.getByRole('button', { name: /^Name Asc/i }));
 
-      expect(onSortChange).not.toHaveBeenCalled();
+      expect(onSortChange).toHaveBeenCalledExactlyOnceWith('Name');
     });
   });
 
