@@ -169,6 +169,16 @@ function EdgeKeyInfo({
         asyncMode={asyncMode}
         showMetaFields
       >
+        <TextTip color="blue">
+          Portainer Server URL{' '}
+          {!asyncMode ? 'and tunnel server address are' : 'is'} set{' '}
+          <Link
+            to="portainer.settings.edgeCompute"
+            data-cy="server-url-portainer-edge-settings-link"
+          >
+            here
+          </Link>
+        </TextTip>
         <FormControl label="Portainer API server URL">
           <Input value={url} readOnly data-cy="edge-auto-create-url-input" />
         </FormControl>
@@ -182,17 +192,6 @@ function EdgeKeyInfo({
             />
           </FormControl>
         )}
-
-        <TextTip color="blue">
-          Portainer Server URL{' '}
-          {!asyncMode ? 'and tunnel server address are' : 'is'} set{' '}
-          <Link
-            to="portainer.settings.edgeCompute"
-            data-cy="server-url-portainer-edge-settings-link"
-          >
-            here
-          </Link>
-        </TextTip>
       </EdgeScriptForm>
     </>
   );
