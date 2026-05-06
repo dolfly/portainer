@@ -62,7 +62,7 @@ func (manager *SwarmStackManager) Login(ctx context.Context, registries []portai
 
 	for _, registry := range registries {
 		if registry.Authentication {
-			username, password, err := getEffectiveRegUsernamePassword(manager.dataStore, &registry)
+			username, password, err := getEffectiveRegUsernamePassword(&registry)
 			if err != nil {
 				continue
 			}
