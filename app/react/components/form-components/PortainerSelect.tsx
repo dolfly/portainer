@@ -41,6 +41,7 @@ interface SharedProps<TValue>
   placeholder?: string;
   disabled?: boolean;
   isClearable?: boolean;
+  /** Portals the dropdown to document.body, ensuring it renders above sticky footers and overlays. */
   bindToBody?: boolean;
   isLoading?: boolean;
   noOptionsMessage?: () => string;
