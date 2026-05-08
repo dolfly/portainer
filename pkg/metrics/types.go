@@ -4,6 +4,8 @@ const (
 	// AlertRuleIDLabel is the Prometheus label key used to correlate alerts
 	// with their Portainer alert rule ID across agent and server packages.
 	AlertRuleIDLabel = "alert_rule_id"
+	// AlertTierLabel marks generated evaluator rules that belong to a parent tiered rule.
+	AlertTierLabel = "portainer_alert_tier"
 
 	ClusterCPUUsageCoresMetric           = "portainer_edge_agent_cluster_cpu_usage_cores"
 	ClusterCPUCapacityCoresMetric        = "portainer_edge_agent_cluster_cpu_capacity_cores"
@@ -99,5 +101,6 @@ type EdgeAlertRule struct {
 	Severity           string            `json:"severity"`
 	PromqlExpr         string            `json:"promql_expr"`
 	ForDurationMinutes int               `json:"for_duration_minutes,omitempty"`
+	Labels             map[string]string `json:"labels,omitempty"`
 	Annotations        map[string]string `json:"annotations,omitempty"`
 }
