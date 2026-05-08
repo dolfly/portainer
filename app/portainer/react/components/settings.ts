@@ -20,6 +20,8 @@ import { SessionLifetimeSelect } from '@/react/portainer/settings/Authentication
 import { LdapSecurityFieldset } from '@/react/portainer/settings/AuthenticationView/LDAPAuth/LdapSecurityFieldset/LdapSecurityFieldset';
 import { DnBuilder } from '@/react/portainer/settings/AuthenticationView/LDAPAuth/DnEntriesField/DnBuilder';
 import { GroupDnBuilder } from '@/react/portainer/settings/AuthenticationView/LDAPAuth/DnEntriesField/GroupDnBuilder';
+import { withControlledInput } from '@/react-tools/withControlledInput';
+import { AdminGroupsSectionCE } from '@/react/portainer/settings/AuthenticationView/LDAPAuth/AdminGroupsSection';
 
 export const settingsModule = angular
   .module('portainer.app.react.components.settings', [])
@@ -109,4 +111,26 @@ export const settingsModule = angular
       'limitedFeatureId',
       'title',
     ])
+  )
+  .component(
+    'ldapCustomAdminGroup',
+    r2a(
+      withReactQuery(
+        withControlledInput(AdminGroupsSectionCE, {
+          searchSettings: 'onSearchSettingsChange',
+          autoPopulate: 'onAutoPopulateChange',
+          selectedAdminGroups: 'onSelectedAdminGroupsChange',
+        })
+      ),
+      [
+        'searchSettings',
+        'onSearchSettingsChange',
+        'autoPopulate',
+        'onAutoPopulateChange',
+        'selectedAdminGroups',
+        'onSelectedAdminGroupsChange',
+        'limitedFeatureId',
+        'isLimitedFeatureSelfContained',
+      ]
+    )
   ).name;
