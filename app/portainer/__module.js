@@ -289,7 +289,12 @@ angular
 
       var home = {
         name: 'portainer.home',
-        url: '/home?redirect&environmentId&environmentName&route&groupBy&filter',
+        url: '/home?redirect&environmentId&environmentName&route&groupBy&groupFilter&search&order',
+        params: {
+          ...paginationParams('id'),
+          groupBy: filterParam(),
+          groupFilter: filterParam(),
+        },
         views: {
           'content@': {
             component: 'homeView',
@@ -302,12 +307,14 @@ angular
 
       var workflows = {
         name: 'portainer.workflows',
-        url: '/workflows?search&sort&order&page&pageSize&status&type&platform',
+        url: '/workflows?search&sort&order&page&pageSize&status&type&platform&groupBy&groupFilter',
         params: {
           ...paginationParams('name'),
           status: filterParam(),
           type: filterParam(),
           platform: filterParam(),
+          groupBy: filterParam(),
+          groupFilter: filterParam(),
         },
         views: {
           'content@': {

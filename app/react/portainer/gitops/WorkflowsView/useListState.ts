@@ -31,26 +31,39 @@ export function useListState() {
       platform: asEnum(params.platform, DEPLOYMENT_PLATFORMS),
     }),
     buildExtra: (urlState, setUrlState) => {
-      const sortKey = toSortKey(urlState.sort);
       return {
         status: urlState.status,
         type: urlState.type,
         platform: urlState.platform,
         setStatus: (v: WorkflowStatus | null) =>
           setUrlState({ status: v, page: 0 }),
-        groupFilter: getGroupFilter(sortKey, urlState),
 
-        setGroupFilter: (value: string | null) => {
-          if (sortKey === 'status') {
-            setUrlState({ status: value as WorkflowStatus | null, page: 0 });
-          } else if (sortKey === 'type') {
+        setGroupFilter: (group: string | null, filter: string | null) => {
+          if (group === 'status') {
             setUrlState({
-              type: value as WorkflowType | null,
+              groupBy: group,
+              groupFilter: filter,
+              status: filter as WorkflowStatus | null,
+              type: null,
+              platform: null,
               page: 0,
             });
-          } else if (sortKey === 'platform') {
+          } else if (group === 'type') {
             setUrlState({
-              platform: value as DeploymentPlatform | null,
+              groupBy: group,
+              groupFilter: filter,
+              type: filter as WorkflowType | null,
+              status: null,
+              platform: null,
+              page: 0,
+            });
+          } else if (group === 'platform') {
+            setUrlState({
+              groupBy: group,
+              groupFilter: filter,
+              platform: filter as DeploymentPlatform | null,
+              type: null,
+              status: null,
               page: 0,
             });
           }
@@ -59,8 +72,9 @@ export function useListState() {
           setUrlState({
             sort: id ?? DEFAULT_SORT,
             order: desc ? 'desc' : 'asc',
-            // Clear status filter only if was previously grouped by status
-            ...(id === 'status' ? { status: null } : {}),
+            groupBy: null,
+            groupFilter: null,
+            status: null,
             type: null,
             platform: null,
             page: 0,
@@ -68,41 +82,4 @@ export function useListState() {
       };
     },
   });
-}
-
-function getGroupFilter(
-  sortKey: SortKey,
-  urlState: {
-    status: WorkflowStatus | null;
-    type: WorkflowType | null;
-    platform: DeploymentPlatform | null;
-  }
-) {
-  switch (sortKey) {
-    case 'status':
-      return urlState.status;
-    case 'platform':
-      return urlState.platform;
-    case 'type':
-      return urlState.type;
-    case 'name':
-    case 'lastSyncDate':
-      return null;
-  }
-}
-
-const SORT_KEYS = [
-  'name',
-  'status',
-  'type',
-  'platform',
-  'lastSyncDate',
-] as const;
-
-type SortKey = (typeof SORT_KEYS)[number];
-
-function toSortKey(sort: string): SortKey {
-  return (SORT_KEYS as readonly string[]).includes(sort)
-    ? (sort as SortKey)
-    : DEFAULT_SORT;
 }

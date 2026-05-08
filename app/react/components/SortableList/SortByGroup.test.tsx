@@ -135,7 +135,7 @@ const groupOptions = {
 };
 
 function renderComponent({
-  sortBy = 'Group' as string,
+  activeKey = 'Group' as string,
   groupFilter = null as string | null,
   onSortChange = vi.fn(),
   onGroupFilterChange = vi.fn(),
@@ -143,7 +143,7 @@ function renderComponent({
   const Wrapped = withTestQueryProvider(
     withTestRouter(() => (
       <SortByGroup
-        sortBy={sortBy}
+        activeKey={activeKey}
         sortDesc={false}
         onSortChange={onSortChange}
         sortOptions={sortOptions}
@@ -161,7 +161,7 @@ describe('SortByGroup', () => {
   describe('grouped: false option', () => {
     test('clicking an inactive button calls onSortChange', async () => {
       const user = userEvent.setup();
-      const { onSortChange } = renderComponent({ sortBy: 'Group' });
+      const { onSortChange } = renderComponent({ activeKey: 'Group' });
 
       await user.click(screen.getByRole('button', { name: /^Name$/i }));
 
@@ -170,7 +170,7 @@ describe('SortByGroup', () => {
 
     test('clicking the already-active non-grouped button calls onSortChange to toggle sort order', async () => {
       const user = userEvent.setup();
-      const { onSortChange } = renderComponent({ sortBy: 'Name' });
+      const { onSortChange } = renderComponent({ activeKey: 'Name' });
 
       await user.click(screen.getByRole('button', { name: /^Name Asc/i }));
 
@@ -181,7 +181,7 @@ describe('SortByGroup', () => {
   describe('grouped: true option', () => {
     test('clicking the dropdown button to open it does not call onSortChange', async () => {
       const user = userEvent.setup();
-      const { onSortChange } = renderComponent({ sortBy: 'Group' });
+      const { onSortChange } = renderComponent({ activeKey: 'Group' });
 
       // Click Platform button (inactive grouped option) — should just open menu
       await user.click(screen.getByRole('button', { name: /^Platform$/i }));
@@ -189,23 +189,26 @@ describe('SortByGroup', () => {
       expect(onSortChange).not.toHaveBeenCalled();
     });
 
-    test('selecting a filter from an inactive grouped option calls onSortChange and onGroupFilterChange', async () => {
+    test('selecting a filter from an inactive grouped option calls onGroupFilterChange with the group key and value', async () => {
       const user = userEvent.setup();
       const { onSortChange, onGroupFilterChange } = renderComponent({
-        sortBy: 'Group',
+        activeKey: 'Group',
       });
 
       await user.click(screen.getByRole('button', { name: /^Platform$/i }));
       await user.click(screen.getByRole('menuitem', { name: /Docker/ }));
 
-      expect(onSortChange).toHaveBeenCalledExactlyOnceWith('Platform');
-      expect(onGroupFilterChange).toHaveBeenCalledExactlyOnceWith('Docker');
+      expect(onSortChange).not.toHaveBeenCalled();
+      expect(onGroupFilterChange).toHaveBeenCalledExactlyOnceWith(
+        'Platform',
+        'Docker'
+      );
     });
 
     test('selecting a filter from the already-active grouped option does not call onSortChange', async () => {
       const user = userEvent.setup();
       const { onSortChange, onGroupFilterChange } = renderComponent({
-        sortBy: 'Group',
+        activeKey: 'Group',
         groupFilter: null,
       });
 
@@ -213,13 +216,16 @@ describe('SortByGroup', () => {
       await user.click(screen.getByRole('menuitem', { name: /GroupA/ }));
 
       expect(onSortChange).not.toHaveBeenCalled();
-      expect(onGroupFilterChange).toHaveBeenCalledExactlyOnceWith('GroupA');
+      expect(onGroupFilterChange).toHaveBeenCalledExactlyOnceWith(
+        'Group',
+        'GroupA'
+      );
     });
 
     test('selecting All from a grouped dropdown calls onGroupFilterChange with null', async () => {
       const user = userEvent.setup();
       const { onSortChange, onGroupFilterChange } = renderComponent({
-        sortBy: 'Group',
+        activeKey: 'Group',
         groupFilter: 'GroupA',
       });
 
@@ -227,7 +233,7 @@ describe('SortByGroup', () => {
       await user.click(screen.getByRole('menuitem', { name: /^All$/ }));
 
       expect(onSortChange).not.toHaveBeenCalled();
-      expect(onGroupFilterChange).toHaveBeenCalledWith(null);
+      expect(onGroupFilterChange).toHaveBeenCalledWith('Group', null);
     });
   });
 });

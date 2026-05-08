@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { GroupSortTableHeader } from './GroupSortTableHeader';
+import { SortableListHeader } from './SortableListHeader';
 
 const defaultSortOptions = [
   { key: 'Group' as const, label: 'Group', grouped: true },
@@ -16,11 +16,11 @@ const defaultGroups = [
 
 function renderHeader(
   overrides: Partial<
-    React.ComponentProps<typeof GroupSortTableHeader<string>>
+    React.ComponentProps<typeof SortableListHeader<string>>
   > = {}
 ) {
   const props = {
-    sortBy: 'Group' as string,
+    activeKey: 'Group' as string,
     sortDesc: false,
     onSortChange: vi.fn(),
     searchTerm: '',
@@ -34,7 +34,7 @@ function renderHeader(
   };
 
   return {
-    ...render(<GroupSortTableHeader {...props} />),
+    ...render(<SortableListHeader {...props} />),
     props,
   };
 }
@@ -42,7 +42,7 @@ function renderHeader(
 describe('GroupSortTableHeader', () => {
   test('clicking the active sort button opens the dropdown with group options', async () => {
     const user = userEvent.setup();
-    renderHeader({ sortBy: 'Group' });
+    renderHeader({ activeKey: 'Group' });
 
     const groupBtn = screen.getByRole('button', { name: /Group/i });
     await user.click(groupBtn);
@@ -56,7 +56,7 @@ describe('GroupSortTableHeader', () => {
   test('clicking an inactive grouped sort button opens the dropdown without calling onSortChange', async () => {
     const user = userEvent.setup();
     const onSortChange = vi.fn();
-    renderHeader({ sortBy: 'Group', onSortChange });
+    renderHeader({ activeKey: 'Group', onSortChange });
 
     await user.click(screen.getByRole('button', { name: /Platform/i }));
 
@@ -67,7 +67,7 @@ describe('GroupSortTableHeader', () => {
   test('dropdown shows group options when opened', async () => {
     const user = userEvent.setup();
     renderHeader({
-      sortBy: 'Group',
+      activeKey: 'Group',
       sortOptions: [{ key: 'Group' as const, label: 'Group', grouped: true }],
     });
 
@@ -79,7 +79,7 @@ describe('GroupSortTableHeader', () => {
   });
 
   test('active group filter is shown as a badge inside the active sort button', () => {
-    renderHeader({ sortBy: 'Group', groupFilter: 'Docker' });
+    renderHeader({ activeKey: 'Group', groupFilter: 'Docker' });
 
     const groupBtn = screen.getByRole('button', { name: /Group/i });
     expect(groupBtn).toHaveTextContent('Docker');
@@ -87,7 +87,7 @@ describe('GroupSortTableHeader', () => {
 
   test('clicking outside the dropdown closes it', async () => {
     const user = userEvent.setup();
-    renderHeader({ sortBy: 'Group' });
+    renderHeader({ activeKey: 'Group' });
 
     await user.click(screen.getByRole('button', { name: /Group/i }));
     expect(screen.getByRole('menu', { name: /Group/i })).toBeVisible();
@@ -133,7 +133,7 @@ describe('GroupSortTableHeader', () => {
   test('All option is present in dropdown menu', async () => {
     const user = userEvent.setup();
     renderHeader({
-      sortBy: 'Group',
+      activeKey: 'Group',
       groupFilter: 'Docker',
       sortOptions: [{ key: 'Group' as const, label: 'Group', grouped: true }],
     });
@@ -146,7 +146,7 @@ describe('GroupSortTableHeader', () => {
   test('displays group counts in dropdown', async () => {
     const user = userEvent.setup();
     renderHeader({
-      sortBy: 'Group',
+      activeKey: 'Group',
       sortOptions: [{ key: 'Group' as const, label: 'Group', grouped: true }],
     });
 

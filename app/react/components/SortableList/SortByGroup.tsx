@@ -11,18 +11,18 @@ export interface SortOption<TSortKey extends string = string> {
 }
 
 export interface SortByGroupProps<TSortKey extends string> {
-  sortBy: TSortKey;
+  activeKey: TSortKey;
   sortDesc: boolean;
   onSortChange: (key: TSortKey) => void;
   sortOptions: SortOption<TSortKey>[];
   groupFilter: string | null;
   groupOptions?: Record<string, DropdownOption[]>;
-  onGroupFilterChange: (value: string | null) => void;
+  onGroupFilterChange: (group: string | null, filter: string | null) => void;
   dataCy?: string;
 }
 
 export function SortByGroup<TSortKey extends string>({
-  sortBy,
+  activeKey,
   sortDesc,
   onSortChange,
   sortOptions,
@@ -52,7 +52,7 @@ export function SortByGroup<TSortKey extends string>({
           <SortOptionItem
             key={option.key}
             option={option}
-            isActive={sortBy === option.key}
+            isActive={activeKey === option.key}
             sortDesc={sortDesc}
             isFirst={index === 0}
             isLast={index === sortOptions.length - 1}
@@ -93,7 +93,7 @@ interface SortOptionItemProps<TSortKey extends string> {
   onSortChange: (key: TSortKey) => void;
   groupFilter: string | null;
   groupOptions?: Record<string, DropdownOption[]>;
-  onGroupFilterChange: (value: string | null) => void;
+  onGroupFilterChange: (group: string | null, filter: string | null) => void;
   dataCy?: string;
 }
 
@@ -123,10 +123,7 @@ function SortOptionItem<TSortKey extends string>({
         options={groupOptions?.[option.key]}
         selected={groupFilter}
         onSelect={(value) => {
-          if (!isActive) {
-            onSortChange(option.key);
-          }
-          onGroupFilterChange(value);
+          onGroupFilterChange(option.key, value);
         }}
         badge={
           isActive
@@ -151,9 +148,6 @@ function SortOptionItem<TSortKey extends string>({
       className={className}
       onClick={() => {
         onSortChange(option.key);
-        if (!isActive) {
-          onGroupFilterChange(null);
-        }
       }}
       data-cy={`${dataCy}-sort-by-${option.key.toLowerCase()}-button`}
     >

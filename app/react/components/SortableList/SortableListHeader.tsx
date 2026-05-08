@@ -12,7 +12,7 @@ import { SortByGroup, SortOption } from './SortByGroup';
 export type { SortOption };
 
 interface Props<TSortKey extends string> {
-  sortBy: TSortKey;
+  activeKey: TSortKey;
   sortDesc: boolean;
   onSortChange: (key: TSortKey) => void;
   searchTerm: string;
@@ -22,12 +22,12 @@ interface Props<TSortKey extends string> {
   actionButton?: ReactNode;
   groupFilter: string | null;
   groupOptions?: Record<string, DropdownOption[]>;
-  onGroupFilterChange: (value: string | null) => void;
+  onGroupFilterChange: (group: string | null, filter: string | null) => void;
   headerButtons?: ReactNode;
 }
 
-export function GroupSortTableHeader<TSortKey extends string>({
-  sortBy,
+export function SortableListHeader<TSortKey extends string>({
+  activeKey,
   sortDesc,
   onSortChange,
   searchTerm,
@@ -49,7 +49,7 @@ export function GroupSortTableHeader<TSortKey extends string>({
       )}
     >
       <SortByGroup
-        sortBy={sortBy}
+        activeKey={activeKey}
         sortDesc={sortDesc}
         onSortChange={onSortChange}
         sortOptions={sortOptions}

@@ -4,10 +4,10 @@ import { Server, Cloud } from 'lucide-react';
 
 import { Icon } from '@@/Icon';
 
-import { GroupSortTableHeader } from './GroupSortTableHeader';
+import { SortableListHeader } from './SortableListHeader';
 
 export default {
-  component: GroupSortTableHeader,
+  component: SortableListHeader,
   title: 'Components/Tables/GroupSortTableHeader',
 } as Meta;
 
@@ -28,19 +28,19 @@ const sortOptions = [
 type SortKey = (typeof sortOptions)[number]['key'];
 
 export function Interactive() {
-  const [sortBy, setSortBy] = useState<SortKey>('name');
+  const [activeKey, setActiveKey] = useState<SortKey>('name');
   const [sortDesc, setSortDesc] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [groupFilter, setGroupFilter] = useState<string | null>(null);
 
-  function handleSortChange(key: SortKey) {
-    setSortDesc((prev) => (sortBy === key ? !prev : false));
-    setSortBy(key);
+  function handleSortChange(key: string) {
+    setSortDesc((prev) => (activeKey === key ? !prev : false));
+    setActiveKey(key as SortKey);
   }
 
   return (
-    <GroupSortTableHeader
-      sortBy={sortBy}
+    <SortableListHeader
+      activeKey={activeKey}
       sortDesc={sortDesc}
       onSortChange={handleSortChange}
       searchTerm={searchTerm}
@@ -48,7 +48,7 @@ export function Interactive() {
       sortOptions={[...sortOptions]}
       groupOptions={groupOptions}
       groupFilter={groupFilter}
-      onGroupFilterChange={setGroupFilter}
+      onGroupFilterChange={(_group, value) => setGroupFilter(value)}
       searchPlaceholder="Search environments..."
       data-cy="group-sort"
     />
@@ -56,18 +56,18 @@ export function Interactive() {
 }
 
 export function WithGroupFilter() {
-  const [sortBy, setSortBy] = useState<SortKey>('group');
+  const [activeKey, setActiveKey] = useState<SortKey>('group');
   const [sortDesc, setSortDesc] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  function handleSortChange(key: SortKey) {
-    setSortDesc((prev) => (sortBy === key ? !prev : false));
-    setSortBy(key);
+  function handleSortChange(key: string) {
+    setSortDesc((prev) => (activeKey === key ? !prev : false));
+    setActiveKey(key as SortKey);
   }
 
   return (
-    <GroupSortTableHeader
-      sortBy={sortBy}
+    <SortableListHeader
+      activeKey={activeKey}
       sortDesc={sortDesc}
       onSortChange={handleSortChange}
       searchTerm={searchTerm}
@@ -83,19 +83,19 @@ export function WithGroupFilter() {
 }
 
 export function WithActionButton() {
-  const [sortBy, setSortBy] = useState<SortKey>('name');
+  const [activeKey, setActiveKey] = useState<SortKey>('name');
   const [sortDesc, setSortDesc] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [groupFilter, setGroupFilter] = useState<string | null>(null);
 
-  function handleSortChange(key: SortKey) {
-    setSortDesc((prev) => (sortBy === key ? !prev : false));
-    setSortBy(key);
+  function handleSortChange(key: string) {
+    setSortDesc((prev) => (activeKey === key ? !prev : false));
+    setActiveKey(key as SortKey);
   }
 
   return (
-    <GroupSortTableHeader
-      sortBy={sortBy}
+    <SortableListHeader
+      activeKey={activeKey}
       sortDesc={sortDesc}
       onSortChange={handleSortChange}
       searchTerm={searchTerm}
@@ -103,7 +103,7 @@ export function WithActionButton() {
       sortOptions={[...sortOptions]}
       groupOptions={groupOptions}
       groupFilter={groupFilter}
-      onGroupFilterChange={setGroupFilter}
+      onGroupFilterChange={(_group, value) => setGroupFilter(value)}
       actionButton={
         <button
           type="button"

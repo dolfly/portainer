@@ -62,7 +62,7 @@ export function ServerSidePagination() {
   const allData = getData();
   const storageKey = 'fruits-veggies-latency-demo';
   const tableState = useSortableListState(storageKey, 'color');
-  const sortBy = tableState.sortBy?.id ?? 'color';
+  const sortBy = tableState.groupBy ?? tableState.sortBy?.id ?? 'color';
 
   const colorOptions = useGroupOptions(
     'color',

@@ -3,7 +3,12 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 
-import { SortableList, SortableListState, SortableGroup } from './SortableList';
+import {
+  SortableList,
+  SortableListState,
+  SortableGroup,
+  computeSortDesc,
+} from './SortableList';
 
 interface Item {
   id: number;
@@ -166,6 +171,57 @@ describe('SortableList', () => {
     expect(screen.getByText('★')).toBeInTheDocument();
   });
 
+  describe('sortBy case-insensitive normalisation', () => {
+    it('shows group headers when sortBy.id is uppercased', () => {
+      renderList({
+        groups: makeStatusGroups(ITEMS),
+        state: { sortBy: { id: 'STATUS', desc: false } },
+        groupOptions: {
+          status: [{ key: 'healthy' }, { key: 'error' }, { key: 'syncing' }],
+        },
+        showGroupHeaders: true,
+      });
+
+      expect(screen.getByText('Healthy')).toBeInTheDocument();
+    });
+
+    it('shows group headers when sortBy.id is mixed-case', () => {
+      renderList({
+        groups: makeStatusGroups(ITEMS),
+        state: { sortBy: { id: 'Status', desc: false } },
+        groupOptions: {
+          status: [{ key: 'healthy' }, { key: 'error' }, { key: 'syncing' }],
+        },
+        showGroupHeaders: true,
+      });
+
+      expect(screen.getByText('Healthy')).toBeInTheDocument();
+    });
+
+    it('highlights the sort option whose key matches case-insensitively', () => {
+      renderList({
+        state: { sortBy: { id: 'STATUS', desc: false } },
+      });
+
+      expect(screen.getByRole('button', { name: /Status/i })).toHaveTextContent(
+        'Asc'
+      );
+    });
+
+    it('shows no active sort option when sortBy.id has no match', () => {
+      renderList({
+        state: { sortBy: { id: 'unknown', desc: false } },
+      });
+
+      expect(
+        screen.getByRole('button', { name: /Name/i })
+      ).not.toHaveTextContent('Asc');
+      expect(
+        screen.getByRole('button', { name: /Status/i })
+      ).not.toHaveTextContent('Asc');
+    });
+  });
+
   it('renders the group description in the group header', () => {
     const groups: SortableGroup<Item>[] = [
       {
@@ -184,6 +240,33 @@ describe('SortableList', () => {
     });
 
     expect(screen.getByText('hint text')).toBeInTheDocument();
+  });
+});
+
+describe('computeSortDesc', () => {
+  it('flips ascending to descending when the same key is active', () => {
+    expect(computeSortDesc('name', 'name', false)).toBe(true);
+  });
+
+  it('flips descending to ascending when the same key is active', () => {
+    expect(computeSortDesc('name', 'name', true)).toBe(false);
+  });
+
+  it('resets to ascending when a different key is clicked (was ascending)', () => {
+    expect(computeSortDesc('status', 'name', false)).toBe(false);
+  });
+
+  it('resets to ascending when a different key is clicked (was descending)', () => {
+    expect(computeSortDesc('status', 'name', true)).toBe(false);
+  });
+
+  it('resets to ascending when a group key is active and a sort key is clicked', () => {
+    // groupBy is active so activeKey is the group option key, not the sort key
+    expect(computeSortDesc('name', 'Health', false)).toBe(false);
+  });
+
+  it('resets to ascending when there is no active key', () => {
+    expect(computeSortDesc('name', '', false)).toBe(false);
   });
 });
 
@@ -263,6 +346,8 @@ function createMockState(
     setPageSize: vi.fn(),
     page: 0,
     setPage: vi.fn(),
+    groupBy: null,
+    setGroupBy: vi.fn(),
     groupFilter: null,
     setGroupFilter: vi.fn(),
     search: '',
