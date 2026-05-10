@@ -27,9 +27,9 @@ interface Props {
 }
 
 const menuListStyles =
-  'overflow-hidden rounded-lg ' +
+  'mt-1 overflow-hidden rounded-lg ' +
   'shadow-[0_6px_12px_rgba(0,0,0,0.18)] ' +
-  'border border-solid border-gray-4 th-dark:border-gray-8 ' +
+  '!border !border-solid !border-gray-5 th-dark:!border-gray-8 th-highcontrast:!border-gray-7 ' +
   'bg-white th-dark:bg-gray-iron-11 th-highcontrast:bg-black';
 
 const menuItemBase =
@@ -47,7 +47,7 @@ const menuItemUnselected =
 
 const countBadge =
   'ml-2 rounded-full px-1.5 py-0.5 text-xs font-normal ' +
-  'bg-gray-2 text-gray-9 ' +
+  'bg-gray-4 text-gray-9 ' +
   'th-dark:bg-gray-7 th-dark:text-gray-3 ' +
   'th-highcontrast:bg-blue-8 th-highcontrast:text-white';
 
@@ -96,6 +96,10 @@ export function DropdownMenu({
             >
               <span className="flex-1">All</span>
             </MenuItem>
+            <div
+              className="h-px bg-gray-4 th-highcontrast:bg-gray-7 th-dark:bg-gray-8"
+              role="separator"
+            />
             {options.map((option) => (
               <MenuItem
                 key={option.key}
