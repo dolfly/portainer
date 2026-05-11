@@ -26,7 +26,6 @@ import (
 	"github.com/portainer/portainer/api/exec"
 	"github.com/portainer/portainer/api/filesystem"
 	"github.com/portainer/portainer/api/git"
-	"github.com/portainer/portainer/api/hostmanagement/openamt"
 	"github.com/portainer/portainer/api/http"
 	"github.com/portainer/portainer/api/http/proxy"
 	kubeproxy "github.com/portainer/portainer/api/http/proxy/factory/kubernetes"
@@ -398,9 +397,6 @@ func buildServer(flags *portainer.CLIFlags, shutdownCtx context.Context, shutdow
 
 	gitService := git.NewService(shutdownCtx)
 
-	// Setting insecureSkipVerify to true to preserve the old behaviour.
-	openAMTService := openamt.NewService(true)
-
 	cryptoService := crypto.Service{}
 
 	signatureService := initDigitalSignatureService()
@@ -593,7 +589,6 @@ func buildServer(flags *portainer.CLIFlags, shutdownCtx context.Context, shutdow
 		LDAPService:                 ldapService,
 		OAuthService:                oauthService,
 		GitService:                  gitService,
-		OpenAMTService:              openAMTService,
 		ProxyManager:                proxyManager,
 		KubernetesTokenCacheManager: kubernetesTokenCacheManager,
 		KubeClusterAccessService:    kubeClusterAccessService,

@@ -71,40 +71,6 @@ type (
 		AuthenticationKey string `json:"AuthenticationKey" example:"cOrXoK/1D35w8YQ8nH1/8ZGwzz45JIYD5jxHKXEQknk="`
 	}
 
-	// OpenAMTConfiguration represents the credentials and configurations used to connect to an OpenAMT MPS server
-	OpenAMTConfiguration struct {
-		Enabled          bool   `json:"enabled"`
-		MPSServer        string `json:"mpsServer"`
-		MPSUser          string `json:"mpsUser"`
-		MPSPassword      string `json:"mpsPassword"`
-		MPSToken         string `json:"mpsToken"` // retrieved from API
-		CertFileName     string `json:"certFileName"`
-		CertFileContent  string `json:"certFileContent"`
-		CertFilePassword string `json:"certFilePassword"`
-		DomainName       string `json:"domainName"`
-	}
-
-	// OpenAMTDeviceInformation represents an AMT managed device information
-	OpenAMTDeviceInformation struct {
-		GUID             string                        `json:"guid"`
-		HostName         string                        `json:"hostname"`
-		ConnectionStatus bool                          `json:"connectionStatus"`
-		PowerState       PowerState                    `json:"powerState"`
-		EnabledFeatures  *OpenAMTDeviceEnabledFeatures `json:"features"`
-	}
-
-	// OpenAMTDeviceEnabledFeatures represents an AMT managed device features information
-	OpenAMTDeviceEnabledFeatures struct {
-		Redirection bool   `json:"redirection"`
-		KVM         bool   `json:"KVM"`
-		SOL         bool   `json:"SOL"`
-		IDER        bool   `json:"IDER"`
-		UserConsent string `json:"userConsent"`
-	}
-
-	// PowerState represents an AMT managed device power state
-	PowerState int
-
 	// CLIFlags represents the available flags on the CLI
 	CLIFlags struct {
 		Addr                      *string
@@ -511,8 +477,6 @@ type (
 		ComposeSyntaxMaxVersion string `json:"ComposeSyntaxMaxVersion" example:"3.8"`
 		// Environment(Endpoint) specific security settings
 		SecuritySettings EndpointSecuritySettings
-		// The identifier of the AMT Device associated with this environment(endpoint)
-		AMTDeviceGUID string `json:"AMTDeviceGUID,omitempty" example:"4c4c4544-004b-3910-8037-b6c04f504633"`
 		// LastCheckInDate mark last check-in date on checkin
 		LastCheckInDate int64
 		// Heartbeat indicates the heartbeat status of an edge environment
@@ -1138,7 +1102,6 @@ type (
 		InternalAuthSettings InternalAuthSettings          `json:"InternalAuthSettings"`
 		LDAPSettings         LDAPSettings                  `json:"LDAPSettings"`
 		OAuthSettings        OAuthSettings                 `json:"OAuthSettings"`
-		OpenAMTConfiguration OpenAMTConfiguration          `json:"openAMTConfiguration"`
 		FeatureFlagSettings  map[featureflags.Feature]bool `json:"FeatureFlagSettings"`
 		// The interval in which environment(endpoint) snapshots are created
 		SnapshotInterval string `json:"SnapshotInterval" example:"5m"`
@@ -1725,14 +1688,6 @@ type (
 			includeExts []string,
 			tlsSkipVerify bool,
 		) ([]string, error)
-	}
-
-	// OpenAMTService represents a service for managing OpenAMT
-	OpenAMTService interface {
-		Configure(configuration OpenAMTConfiguration) error
-		DeviceInformation(configuration OpenAMTConfiguration, deviceGUID string) (*OpenAMTDeviceInformation, error)
-		EnableDeviceFeatures(configuration OpenAMTConfiguration, deviceGUID string, features OpenAMTDeviceEnabledFeatures) (string, error)
-		ExecuteDeviceAction(configuration OpenAMTConfiguration, deviceGUID string, action string) error
 	}
 
 	// JWTService represents a service for managing JWT tokens

@@ -1,6 +1,5 @@
 import angular from 'angular';
 
-import { SettingsOpenAMT } from '@/react/portainer/settings/EdgeComputeView/SettingsOpenAMT';
 import { InternalAuth } from '@/react/portainer/settings/AuthenticationView/InternalAuth';
 import { AuthenticationMethodSelector } from '@/react/portainer/settings/AuthenticationView/AuthenticationMethodSelector';
 import { r2a } from '@/react-tools/react2angular';
@@ -25,7 +24,6 @@ import { AdminGroupsSectionCE } from '@/react/portainer/settings/AuthenticationV
 
 export const settingsModule = angular
   .module('portainer.app.react.components.settings', [])
-  .component('settingsOpenAmt', r2a(SettingsOpenAMT, ['onSubmit', 'settings']))
   .component(
     'sessionLifetimeSelect',
     r2a(SessionLifetimeSelect, ['value', 'onChange'])

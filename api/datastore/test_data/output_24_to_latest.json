@@ -660,18 +660,7 @@
     "SnapshotInterval": "5m",
     "TemplatesURL": "",
     "TrustOnFirstConnect": false,
-    "UserSessionTimeout": "8h",
-    "openAMTConfiguration": {
-      "certFileContent": "",
-      "certFileName": "",
-      "certFilePassword": "",
-      "domainName": "",
-      "enabled": false,
-      "mpsPassword": "",
-      "mpsServer": "",
-      "mpsToken": "",
-      "mpsUser": ""
-    }
+    "UserSessionTimeout": "8h"
   },
   "snapshots": [
     {

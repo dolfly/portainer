@@ -18,7 +18,6 @@ import (
 	"github.com/portainer/portainer/api/http/handler/file"
 	"github.com/portainer/portainer/api/http/handler/gitops"
 	"github.com/portainer/portainer/api/http/handler/helm"
-	"github.com/portainer/portainer/api/http/handler/hostmanagement/openamt"
 	"github.com/portainer/portainer/api/http/handler/kubernetes"
 	"github.com/portainer/portainer/api/http/handler/ldap"
 	"github.com/portainer/portainer/api/http/handler/motd"
@@ -65,7 +64,6 @@ type Handler struct {
 	RoleHandler            *roles.Handler
 	SettingsHandler        *settings.Handler
 	SSLHandler             *ssl.Handler
-	OpenAMTHandler         *openamt.Handler
 	StackHandler           *stacks.Handler
 	StorybookHandler       *storybook.Handler
 	SystemHandler          *system.Handler
@@ -128,8 +126,6 @@ type Handler struct {
 // @tag.description Operate git repository
 // @tag.name helm
 // @tag.description Manage Helm charts
-// @tag.name intel
-// @tag.description Manage Intel AMT settings
 // @tag.name kubernetes
 // @tag.description Manage Kubernetes cluster
 // @tag.name ldap
@@ -244,8 +240,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.StripPrefix("/api", h.UserHandler).ServeHTTP(w, r)
 	case strings.HasPrefix(r.URL.Path, "/api/ssl"):
 		http.StripPrefix("/api", h.SSLHandler).ServeHTTP(w, r)
-	case strings.HasPrefix(r.URL.Path, "/api/open_amt"):
-		http.StripPrefix("/api", h.OpenAMTHandler).ServeHTTP(w, r)
 	case strings.HasPrefix(r.URL.Path, "/api/teams"):
 		http.StripPrefix("/api", h.TeamHandler).ServeHTTP(w, r)
 	case strings.HasPrefix(r.URL.Path, "/api/team_memberships"):

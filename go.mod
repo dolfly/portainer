@@ -73,7 +73,6 @@ require (
 	k8s.io/kubectl v0.35.1
 	k8s.io/metrics v0.35.1
 	oras.land/oras-go/v2 v2.6.0
-	software.sslmate.com/src/go-pkcs12 v0.0.0-20210415151418-c5206de65a78
 )
 
 require github.com/gorilla/securecookie v1.1.2 // indirect
