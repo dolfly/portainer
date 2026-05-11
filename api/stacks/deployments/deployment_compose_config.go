@@ -60,13 +60,6 @@ func CreateComposeStackDeploymentConfigTx(tx dataservices.DataStoreTx, securityC
 	return config, nil
 }
 
-func (config *ComposeStackDeploymentConfig) GetUsername() string {
-	if config.user != nil {
-		return config.user.Username
-	}
-	return ""
-}
-
 func (config *ComposeStackDeploymentConfig) Deploy(ctx context.Context) error {
 	if config.FileService == nil || config.StackDeployer == nil {
 		log.Debug().Msg("file service or stack deployer is not initialized")

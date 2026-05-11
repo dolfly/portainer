@@ -57,13 +57,6 @@ func CreateSwarmStackDeploymentConfigTx(tx dataservices.DataStoreTx, securityCon
 	return config, nil
 }
 
-func (config *SwarmStackDeploymentConfig) GetUsername() string {
-	if config.user != nil {
-		return config.user.Username
-	}
-	return ""
-}
-
 func (config *SwarmStackDeploymentConfig) Deploy(ctx context.Context) error {
 	if config.FileService == nil || config.StackDeployer == nil {
 		log.Println("[deployment, swarm] file service or stack deployer is not initialised")
