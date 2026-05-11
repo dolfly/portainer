@@ -36,7 +36,7 @@ require (
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
 	github.com/hashicorp/golang-lru v0.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/jpillora/chisel v1.10.0
+	github.com/jpillora/chisel v1.11.6
 	github.com/klauspost/compress v1.18.3
 	github.com/koding/websocketproxy v0.0.0-20181220232114-7ed82d81a28c
 	github.com/kubernetes/kompose v1.37.0
