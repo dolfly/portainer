@@ -46,13 +46,6 @@ export const Danger: Story = {
   },
 };
 
-export const WithAriaAttributes: Story = {
-  args: {
-    'aria-label': 'Badge with Aria Attributes',
-    children: 'With Aria Attributes',
-  },
-};
-
 export const WithChildren: Story = {
   args: {
     children: (
