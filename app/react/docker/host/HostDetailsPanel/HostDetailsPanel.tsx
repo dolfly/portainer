@@ -44,7 +44,7 @@ export function HostDetailsPanel({
     <div className="row">
       <div className="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <Widget>
-          <WidgetTitle title="Host Details" />
+          <WidgetTitle title="Host Details" icon="code" />
           <WidgetBody className="no-padding">
             <DetailsTable dataCy="host-details" className="!mb-0">
               <tr>
