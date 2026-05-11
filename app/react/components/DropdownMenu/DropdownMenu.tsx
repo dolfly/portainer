@@ -46,7 +46,7 @@ const menuItemUnselected =
   'th-highcontrast:text-white th-highcontrast:hover:bg-white th-highcontrast:hover:text-black th-highcontrast:[&[data-selected]]:!bg-white th-highcontrast:[&[data-selected]]:!text-black';
 
 const countBadge =
-  'ml-2 rounded-full px-1.5 py-0.5 text-xs font-normal ' +
+  'inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full px-1 text-xs font-normal ' +
   'bg-gray-4 text-gray-9 ' +
   'th-dark:bg-gray-7 th-dark:text-gray-3 ' +
   'th-highcontrast:bg-blue-8 th-highcontrast:text-white';
