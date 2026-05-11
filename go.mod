@@ -31,7 +31,6 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
-	github.com/gorilla/csrf v1.7.3
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
 	github.com/hashicorp/golang-lru v0.6.0
@@ -55,7 +54,6 @@ require (
 	github.com/segmentio/encoding v0.5.3
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
-	github.com/urfave/negroni v1.0.0
 	github.com/viney-shih/go-lock v1.1.1
 	go.etcd.io/bbolt v1.4.3
 	go.podman.io/image/v5 v5.37.0
@@ -74,8 +72,6 @@ require (
 	k8s.io/metrics v0.35.1
 	oras.land/oras-go/v2 v2.6.0
 )
-
-require github.com/gorilla/securecookie v1.1.2 // indirect
 
 require (
 	cloud.google.com/go/auth v0.18.1 // indirect

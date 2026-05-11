@@ -346,7 +346,7 @@ func (server *Server) Start(ctx context.Context) error {
 			log.Info().Str("bind_address", server.BindAddress).Msg("starting HTTP server")
 			httpServer := &http.Server{
 				Addr:     server.BindAddress,
-				Handler:  middlewares.PlaintextHTTPRequest(handler),
+				Handler:  handler,
 				ErrorLog: errorLogger,
 			}
 

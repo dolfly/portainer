@@ -1977,7 +1977,7 @@ const (
 )
 
 // List of supported features
-var SupportedFeatureFlags = []featureflags.Feature{"hsts", "csp", "legacy-csrf"}
+var SupportedFeatureFlags = []featureflags.Feature{"hsts", "csp"}
 
 const (
 	_ AuthenticationMethod = iota
