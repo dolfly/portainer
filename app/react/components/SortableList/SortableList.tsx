@@ -51,35 +51,27 @@ export function SortableList<T>({
   isLoading = false,
   'data-cy': dataCy,
 }: Props<T>) {
-  const rawSortKey = tableState.sortBy?.id ?? '';
-  const activeSortKey =
-    sortOptions
-      .filter((o) => !o.grouped)
-      .find((opt) => opt.key.toLowerCase() === rawSortKey.toLowerCase())?.key ??
-    null;
-  const rawGroupKey = tableState.groupBy ?? '';
-  const activeGroupKey =
-    sortOptions
-      .filter((o) => o.grouped)
-      .find((opt) => opt.key.toLowerCase() === rawGroupKey.toLowerCase())
-      ?.key ?? null;
-  const activeKey = activeGroupKey ?? activeSortKey ?? '';
+  const activeKey = getSortKey(
+    sortOptions,
+    tableState.groupBy ?? tableState.sortBy?.id ?? ''
+  );
 
   return (
     <SortableListCard>
       <SortableListHeader
-        activeKey={activeKey}
-        sortDesc={tableState.sortBy?.desc ?? false}
-        onSortChange={(key) => {
-          tableState.setSortBy(
-            key,
-            computeSortDesc(key, activeKey, tableState.sortBy?.desc ?? false)
-          );
+        value={{
+          group: activeKey,
+          groupValue: tableState.groupFilter,
         }}
+        onChange={({ group, groupValue }) => {
+          tableState.setGroupFilter({
+            group,
+            groupValue,
+          });
+        }}
+        sortDesc={tableState.sortBy?.desc ?? false}
         searchTerm={tableState.search}
         onSearchChange={tableState.setSearch}
-        groupFilter={tableState.groupFilter}
-        onGroupFilterChange={tableState.setGroupFilter}
         groupOptions={groupOptions}
         sortOptions={sortOptions}
         searchPlaceholder={searchPlaceholder}
@@ -114,10 +106,14 @@ export function SortableList<T>({
   );
 }
 
-export function computeSortDesc(
-  key: string,
-  activeKey: string,
-  currentDesc: boolean
-): boolean {
-  return activeKey === key ? !currentDesc : false;
+function getSortKey(sortOptions: SortOption[], sortKey: string | undefined) {
+  if (!sortKey) {
+    return '';
+  }
+
+  const sortOption = sortOptions.find(
+    (opt) => opt.key.toLowerCase() === sortKey.toLowerCase()
+  );
+
+  return sortOption?.key ?? '';
 }

@@ -21,7 +21,7 @@ type Extra = {
   groupBy: string | null;
   setGroupBy(group: string | null): void;
   groupFilter: string | null;
-  setGroupFilter(group: string | null, filter: string | null): void;
+  setGroupFilter(value: { group: string; groupValue: string | null }): void;
 };
 
 export function useTableStateFromUrl<
@@ -86,10 +86,19 @@ export function useTableStateFromUrl<
       }),
 
     groupFilter: urlState.groupFilter,
-    setGroupFilter: (group, filter) => {
+    setGroupFilter: ({
+      group,
+      groupValue,
+    }: {
+      group: string;
+      groupValue: string | null;
+    }) => {
+      const isSameGroup = urlState.groupBy === group;
       setCoreState({
+        sort: group,
+        order: isSameGroup && urlState.order === 'asc' ? 'desc' : 'asc',
         groupBy: group,
-        groupFilter: filter,
+        groupFilter: groupValue,
         page: 0,
       });
     },

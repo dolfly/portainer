@@ -12,32 +12,28 @@ import { SortByGroup, SortOption } from './SortByGroup';
 export type { SortOption };
 
 interface Props<TSortKey extends string> {
-  activeKey: TSortKey;
   sortDesc: boolean;
-  onSortChange: (key: TSortKey) => void;
+  value: { group: TSortKey; groupValue: string | null };
+  onChange: (value: { group: TSortKey; groupValue: string | null }) => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   sortOptions: SortOption<TSortKey>[];
   searchPlaceholder?: string;
   actionButton?: ReactNode;
-  groupFilter: string | null;
   groupOptions?: Record<string, DropdownOption[]>;
-  onGroupFilterChange: (group: string | null, filter: string | null) => void;
   headerButtons?: ReactNode;
 }
 
 export function SortableListHeader<TSortKey extends string>({
-  activeKey,
   sortDesc,
-  onSortChange,
+  value,
+  onChange,
   searchTerm,
   onSearchChange,
   sortOptions,
   searchPlaceholder = 'Filter...',
   actionButton,
-  groupFilter,
   groupOptions,
-  onGroupFilterChange,
   headerButtons,
   'data-cy': dataCy,
 }: Props<TSortKey> & AutomationTestingProps) {
@@ -49,14 +45,12 @@ export function SortableListHeader<TSortKey extends string>({
       )}
     >
       <SortByGroup
-        activeKey={activeKey}
+        value={value}
         sortDesc={sortDesc}
-        onSortChange={onSortChange}
+        onChange={onChange}
         sortOptions={sortOptions}
-        groupFilter={groupFilter}
         groupOptions={groupOptions}
-        onGroupFilterChange={onGroupFilterChange}
-        data-cy={`${dataCy}-sort`}
+        dataCy={`${dataCy}-sort`}
       />
       <div className="ml-auto flex items-center gap-2">
         {headerButtons}

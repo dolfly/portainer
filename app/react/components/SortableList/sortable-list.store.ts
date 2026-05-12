@@ -16,7 +16,7 @@ interface SortableListSettings
   groupBy: string | null;
   setGroupBy: (group: string | null) => void;
   groupFilter: string | null;
-  setGroupFilter: (group: string | null, filter: string | null) => void;
+  setGroupFilter: (value: { group: string; groupValue: string | null }) => void;
 }
 
 export type SortableListState = TableState<SortableListSettings>;
@@ -29,8 +29,23 @@ function sortableListExtras(
     groupBy: null,
     setGroupBy: (group) => set((s) => ({ ...s, groupBy: group })),
     groupFilter: null,
-    setGroupFilter: (group: string | null, filter: string | null) =>
-      set((s) => ({ ...s, groupBy: group, groupFilter: filter, page: 0 })),
+    setGroupFilter: ({
+      group,
+      groupValue,
+    }: {
+      group: string;
+      groupValue: string | null;
+    }) =>
+      set((s) => ({
+        ...s,
+        sortBy: {
+          id: group,
+          desc: s.sortBy?.id === group ? !s.sortBy.desc : false,
+        },
+        groupBy: group,
+        groupFilter: groupValue,
+        page: 0,
+      })),
   };
 }
 

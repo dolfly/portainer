@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 
 import { SortableListHeader } from './SortableListHeader';
 
+vi.mock('@reach/menu-button');
+
 const defaultSortOptions = [
   { key: 'Group' as const, label: 'Group', grouped: true },
   { key: 'Platform' as const, label: 'Platform', grouped: true },
@@ -20,15 +22,13 @@ function renderHeader(
   > = {}
 ) {
   const props = {
-    activeKey: 'Group' as string,
-    sortDesc: false,
-    onSortChange: vi.fn(),
+    value: { group: 'Group' as string, groupValue: null as string | null },
+    onChange: vi.fn(),
     searchTerm: '',
     onSearchChange: vi.fn(),
     sortOptions: defaultSortOptions,
-    groupFilter: null,
     groupOptions: { Group: defaultGroups, Platform: defaultGroups },
-    onGroupFilterChange: vi.fn(),
+    sortDesc: false,
     'data-cy': 'cy',
     ...overrides,
   };
@@ -42,7 +42,7 @@ function renderHeader(
 describe('GroupSortTableHeader', () => {
   test('clicking the active sort button opens the dropdown with group options', async () => {
     const user = userEvent.setup();
-    renderHeader({ activeKey: 'Group' });
+    renderHeader();
 
     const groupBtn = screen.getByRole('button', { name: /Group/i });
     await user.click(groupBtn);
@@ -53,21 +53,21 @@ describe('GroupSortTableHeader', () => {
     expect(screen.getByRole('menuitem', { name: /Kubernetes/ })).toBeVisible();
   });
 
-  test('clicking an inactive grouped sort button opens the dropdown without calling onSortChange', async () => {
+  test('clicking an inactive grouped sort button opens the dropdown without calling onChange', async () => {
     const user = userEvent.setup();
-    const onSortChange = vi.fn();
-    renderHeader({ activeKey: 'Group', onSortChange });
+    const onChange = vi.fn();
+    renderHeader({ onChange, value: { group: 'Group', groupValue: null } });
 
     await user.click(screen.getByRole('button', { name: /Platform/i }));
 
-    expect(onSortChange).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
     expect(screen.getByRole('menu', { name: /Platform/i })).toBeVisible();
   });
 
   test('dropdown shows group options when opened', async () => {
     const user = userEvent.setup();
     renderHeader({
-      activeKey: 'Group',
+      value: { group: 'Group', groupValue: null },
       sortOptions: [{ key: 'Group' as const, label: 'Group', grouped: true }],
     });
 
@@ -79,7 +79,7 @@ describe('GroupSortTableHeader', () => {
   });
 
   test('active group filter is shown as a badge inside the active sort button', () => {
-    renderHeader({ activeKey: 'Group', groupFilter: 'Docker' });
+    renderHeader({ value: { group: 'Group', groupValue: 'Docker' } });
 
     const groupBtn = screen.getByRole('button', { name: /Group/i });
     expect(groupBtn).toHaveTextContent('Docker');
@@ -87,7 +87,7 @@ describe('GroupSortTableHeader', () => {
 
   test('clicking outside the dropdown closes it', async () => {
     const user = userEvent.setup();
-    renderHeader({ activeKey: 'Group' });
+    renderHeader({ value: { group: 'Group', groupValue: null } });
 
     await user.click(screen.getByRole('button', { name: /Group/i }));
     expect(screen.getByRole('menu', { name: /Group/i })).toBeVisible();
@@ -133,8 +133,7 @@ describe('GroupSortTableHeader', () => {
   test('All option is present in dropdown menu', async () => {
     const user = userEvent.setup();
     renderHeader({
-      activeKey: 'Group',
-      groupFilter: 'Docker',
+      value: { group: 'Group', groupValue: 'Docker' },
       sortOptions: [{ key: 'Group' as const, label: 'Group', grouped: true }],
     });
 
@@ -146,7 +145,7 @@ describe('GroupSortTableHeader', () => {
   test('displays group counts in dropdown', async () => {
     const user = userEvent.setup();
     renderHeader({
-      activeKey: 'Group',
+      value: { group: 'Group', groupValue: null },
       sortOptions: [{ key: 'Group' as const, label: 'Group', grouped: true }],
     });
 
@@ -165,5 +164,36 @@ describe('GroupSortTableHeader', () => {
       screen.getByRole('button', { name: /Platform/i })
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Health/i })).toBeInTheDocument();
+  });
+
+  test('selecting a group option calls onChange with the sort key and selected value', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderHeader({ onChange });
+
+    await user.click(screen.getByRole('button', { name: /Group/i }));
+    await user.click(screen.getByRole('menuitem', { name: /Docker/ }));
+
+    expect(onChange).toHaveBeenCalledWith({
+      group: 'Group',
+      groupValue: 'Docker',
+    });
+  });
+
+  test('selecting All calls onChange with the sort key and null', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderHeader({
+      value: { group: 'Group', groupValue: 'Docker' },
+      onChange,
+    });
+
+    await user.click(screen.getByRole('button', { name: /Group/i }));
+    await user.click(screen.getByRole('menuitem', { name: /All/ }));
+
+    expect(onChange).toHaveBeenCalledWith({
+      group: 'Group',
+      groupValue: null,
+    });
   });
 });

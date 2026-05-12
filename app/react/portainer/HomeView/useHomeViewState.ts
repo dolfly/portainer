@@ -17,6 +17,7 @@ export function useHomeViewState() {
   return useTableStateFromUrl<Record<never, never>, Extra>({
     localStorageKey: STORAGE_KEY,
     defaultSort: DEFAULT_SORT,
+    defaultGroupBy: DEFAULT_SORT,
     buildExtra: (urlState, setUrlState) => {
       return {
         groupKey: urlState.groupBy

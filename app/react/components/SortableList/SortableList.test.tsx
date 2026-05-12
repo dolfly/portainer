@@ -3,12 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 
-import {
-  SortableList,
-  SortableListState,
-  SortableGroup,
-  computeSortDesc,
-} from './SortableList';
+import { SortableList, SortableListState, SortableGroup } from './SortableList';
 
 interface Item {
   id: number;
@@ -40,14 +35,17 @@ describe('SortableList', () => {
     expect(screen.getByText('Theta')).toBeInTheDocument();
   });
 
-  it('calls setSortBy when a sort option is clicked', async () => {
+  it('calls setGroupFilter when a sort option is clicked', async () => {
     const user = userEvent.setup();
-    const setSortBy = vi.fn();
-    renderList({ state: { setSortBy } });
+    const setGroupFilter = vi.fn();
+    renderList({ state: { setGroupFilter } });
 
     await user.click(screen.getByText('Status'));
 
-    expect(setSortBy).toHaveBeenCalledWith('status', false);
+    expect(setGroupFilter).toHaveBeenCalledWith({
+      group: 'status',
+      groupValue: null,
+    });
   });
 
   it('shows group headers when showGroupHeaders=true and multiple groups', () => {
@@ -240,33 +238,6 @@ describe('SortableList', () => {
     });
 
     expect(screen.getByText('hint text')).toBeInTheDocument();
-  });
-});
-
-describe('computeSortDesc', () => {
-  it('flips ascending to descending when the same key is active', () => {
-    expect(computeSortDesc('name', 'name', false)).toBe(true);
-  });
-
-  it('flips descending to ascending when the same key is active', () => {
-    expect(computeSortDesc('name', 'name', true)).toBe(false);
-  });
-
-  it('resets to ascending when a different key is clicked (was ascending)', () => {
-    expect(computeSortDesc('status', 'name', false)).toBe(false);
-  });
-
-  it('resets to ascending when a different key is clicked (was descending)', () => {
-    expect(computeSortDesc('status', 'name', true)).toBe(false);
-  });
-
-  it('resets to ascending when a group key is active and a sort key is clicked', () => {
-    // groupBy is active so activeKey is the group option key, not the sort key
-    expect(computeSortDesc('name', 'Health', false)).toBe(false);
-  });
-
-  it('resets to ascending when there is no active key', () => {
-    expect(computeSortDesc('name', '', false)).toBe(false);
   });
 });
 

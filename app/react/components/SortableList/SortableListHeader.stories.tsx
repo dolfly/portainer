@@ -28,27 +28,29 @@ const sortOptions = [
 type SortKey = (typeof sortOptions)[number]['key'];
 
 export function Interactive() {
-  const [activeKey, setActiveKey] = useState<SortKey>('name');
   const [sortDesc, setSortDesc] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [groupFilter, setGroupFilter] = useState<string | null>(null);
 
-  function handleSortChange(key: string) {
-    setSortDesc((prev) => (activeKey === key ? !prev : false));
-    setActiveKey(key as SortKey);
-  }
+  const [value, setValue] = useState<{
+    group: SortKey;
+    groupValue: string | null;
+  }>({
+    group: 'name',
+    groupValue: null,
+  });
+  const [searchTerm, setSearchTerm] = useState('');
 
   return (
     <SortableListHeader
-      activeKey={activeKey}
       sortDesc={sortDesc}
-      onSortChange={handleSortChange}
+      value={value}
+      onChange={(newValue) => {
+        setSortDesc((prev) => (value.group === newValue.group ? !prev : false));
+        setValue(newValue);
+      }}
       searchTerm={searchTerm}
       onSearchChange={setSearchTerm}
       sortOptions={[...sortOptions]}
       groupOptions={groupOptions}
-      groupFilter={groupFilter}
-      onGroupFilterChange={(_group, value) => setGroupFilter(value)}
       searchPlaceholder="Search environments..."
       data-cy="group-sort"
     />
@@ -56,26 +58,28 @@ export function Interactive() {
 }
 
 export function WithGroupFilter() {
-  const [activeKey, setActiveKey] = useState<SortKey>('group');
   const [sortDesc, setSortDesc] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-
-  function handleSortChange(key: string) {
-    setSortDesc((prev) => (activeKey === key ? !prev : false));
-    setActiveKey(key as SortKey);
-  }
+  const [value, setValue] = useState<{
+    group: SortKey;
+    groupValue: string | null;
+  }>({
+    group: 'group',
+    groupValue: 'Production',
+  });
 
   return (
     <SortableListHeader
-      activeKey={activeKey}
       sortDesc={sortDesc}
-      onSortChange={handleSortChange}
+      value={value}
+      onChange={(newValue) => {
+        setSortDesc((prev) => (value.group === newValue.group ? !prev : false));
+        setValue(newValue);
+      }}
       searchTerm={searchTerm}
       onSearchChange={setSearchTerm}
       sortOptions={[...sortOptions]}
       groupOptions={groupOptions}
-      groupFilter="Production"
-      onGroupFilterChange={() => {}}
       searchPlaceholder="Search environments..."
       data-cy="group-sort"
     />
@@ -83,27 +87,28 @@ export function WithGroupFilter() {
 }
 
 export function WithActionButton() {
-  const [activeKey, setActiveKey] = useState<SortKey>('name');
   const [sortDesc, setSortDesc] = useState(false);
+  const [value, setValue] = useState<{
+    group: SortKey;
+    groupValue: string | null;
+  }>({
+    group: 'name',
+    groupValue: null,
+  });
   const [searchTerm, setSearchTerm] = useState('');
-  const [groupFilter, setGroupFilter] = useState<string | null>(null);
-
-  function handleSortChange(key: string) {
-    setSortDesc((prev) => (activeKey === key ? !prev : false));
-    setActiveKey(key as SortKey);
-  }
 
   return (
     <SortableListHeader
-      activeKey={activeKey}
       sortDesc={sortDesc}
-      onSortChange={handleSortChange}
+      value={value}
+      onChange={(newValue) => {
+        setSortDesc((prev) => (value.group === newValue.group ? !prev : false));
+        setValue(newValue);
+      }}
       searchTerm={searchTerm}
       onSearchChange={setSearchTerm}
       sortOptions={[...sortOptions]}
       groupOptions={groupOptions}
-      groupFilter={groupFilter}
-      onGroupFilterChange={(_group, value) => setGroupFilter(value)}
       actionButton={
         <button
           type="button"

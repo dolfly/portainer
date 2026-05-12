@@ -23,6 +23,7 @@ interface Props {
   badge?: string | null;
   onClick?: () => void;
   className?: string;
+  'aria-pressed'?: boolean;
   'data-cy'?: string;
 }
 
@@ -59,6 +60,7 @@ export function DropdownMenu({
   badge,
   onClick,
   className,
+  'aria-pressed': ariaPressed,
   'data-cy': dataCy,
 }: Props) {
   return (
@@ -66,6 +68,7 @@ export function DropdownMenu({
       <ReachMenuButton
         className={clsx('group flex gap-1', className)}
         onClick={() => onClick?.()}
+        aria-pressed={ariaPressed}
         data-cy={dataCy}
       >
         {label}

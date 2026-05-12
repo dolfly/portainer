@@ -2,9 +2,12 @@ package workflows
 
 import (
 	"fmt"
+	"slices"
+	"strconv"
 
 	portainer "github.com/portainer/portainer/api"
 	"github.com/portainer/portainer/api/dataservices"
+	"github.com/portainer/portainer/api/http/models/kubernetes"
 	"github.com/portainer/portainer/api/http/security"
 	"github.com/portainer/portainer/api/internal/authorization"
 	"github.com/portainer/portainer/api/internal/endpointutils"
@@ -15,7 +18,7 @@ import (
 	"github.com/portainer/portainer/api/stacks/stackutils"
 )
 
-func endpointMatchesStackType(ep portainer.Endpoint, stackType portainer.StackType) bool {
+func EndpointMatchesStackType(ep portainer.Endpoint, stackType portainer.StackType) bool {
 	switch stackType {
 	case portainer.DockerSwarmStack:
 		return len(ep.Snapshots) > 0 && ep.Snapshots[0].Swarm
@@ -45,11 +48,6 @@ func buildEndpointMap(tx dataservices.DataStoreTx, stacks []portainer.Stack) (ma
 	}
 
 	return m, nil
-}
-
-type endpointAccess struct {
-	isKubeAdmin        bool
-	nonAdminNamespaces []string
 }
 
 // filterDockerStacksByAccess filters stacks to only those the current user can access.
@@ -102,6 +100,11 @@ func resolveKubeAccess(k8sFactory *cli.ClientFactory, sc *security.RestrictedReq
 	return endpointAccess{isKubeAdmin: false, nonAdminNamespaces: nonAdminNamespaces}, nil
 }
 
+type endpointAccess struct {
+	isKubeAdmin        bool
+	nonAdminNamespaces []string
+}
+
 func buildEndpointAccessMap(k8sFactory *cli.ClientFactory, sc *security.RestrictedRequestContext, endpointMap map[portainer.EndpointID]portainer.Endpoint) (map[portainer.EndpointID]endpointAccess, error) {
 	result := make(map[portainer.EndpointID]endpointAccess, len(endpointMap))
 
@@ -118,5 +121,58 @@ func buildEndpointAccessMap(k8sFactory *cli.ClientFactory, sc *security.Restrict
 		result[epID] = access
 	}
 
+	return result, nil
+}
+
+// lookup only if env is kube and either not edge or (edge + not async)
+func ShouldPerformEnvLookup(endpoint *portainer.Endpoint) bool {
+	return endpointutils.IsKubernetesEndpoint(endpoint) &&
+		(!endpointutils.IsEdgeEndpoint(endpoint) ||
+			(endpointutils.IsEdgeEndpoint(endpoint) && !endpoint.Edge.AsyncMode))
+}
+
+func filterK8SStacks(items []portainer.Stack, endpointMap map[portainer.EndpointID]portainer.Endpoint, k8sFactory *cli.ClientFactory, accessMap map[portainer.EndpointID]endpointAccess) ([]portainer.Stack, error) {
+	k8sStacks, result := slicesx.Partition(items, func(s portainer.Stack) bool {
+		return s.Type == portainer.KubernetesStack
+	})
+
+	groupedByEnvId := slicesx.GroupBy(k8sStacks, func(s portainer.Stack) portainer.EndpointID {
+		return s.EndpointID
+	})
+
+	for envID, stacks := range groupedByEnvId {
+		ep, ok := endpointMap[envID]
+		if !ok || !ShouldPerformEnvLookup(&ep) {
+			continue
+		}
+
+		kcl, err := k8sFactory.GetPrivilegedKubeClient(&ep)
+		if err != nil {
+			return nil, err
+		}
+
+		access := accessMap[envID]
+		kcl.SetIsKubeAdmin(access.isKubeAdmin)
+		kcl.SetClientNonAdminNamespaces(access.nonAdminNamespaces)
+
+		apps, err := kcl.GetApplications("", "")
+		if err != nil {
+			return nil, err
+		}
+
+		for _, s := range stacks {
+			idx := slices.IndexFunc(apps, func(app kubernetes.K8sApplication) bool {
+				return app.StackKind != "edge" && app.StackID == strconv.Itoa(int(s.ID))
+			})
+			if idx == -1 {
+				continue
+			}
+
+			app := apps[idx]
+			s.Name = app.Name
+			s.Namespace = app.ResourcePool
+			result = append(result, s)
+		}
+	}
 	return result, nil
 }

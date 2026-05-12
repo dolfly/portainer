@@ -10,25 +10,26 @@ export interface SortOption<TSortKey extends string = string> {
   ascendingLabel?: string;
 }
 
+type Value<TSortKey> = {
+  group: TSortKey;
+  groupValue: string | null;
+};
+
 export interface SortByGroupProps<TSortKey extends string> {
-  activeKey: TSortKey;
+  value: Value<TSortKey>;
   sortDesc: boolean;
-  onSortChange: (key: TSortKey) => void;
+  onChange: (value: Value<TSortKey>) => void;
   sortOptions: SortOption<TSortKey>[];
-  groupFilter: string | null;
   groupOptions?: Record<string, DropdownOption[]>;
-  onGroupFilterChange: (group: string | null, filter: string | null) => void;
   dataCy?: string;
 }
 
 export function SortByGroup<TSortKey extends string>({
-  activeKey,
+  value,
   sortDesc,
-  onSortChange,
+  onChange,
   sortOptions,
-  groupFilter,
   groupOptions,
-  onGroupFilterChange,
   dataCy,
 }: SortByGroupProps<TSortKey>) {
   return (
@@ -52,14 +53,13 @@ export function SortByGroup<TSortKey extends string>({
           <SortOptionItem
             key={option.key}
             option={option}
-            isActive={activeKey === option.key}
+            isActive={value.group === option.key}
             sortDesc={sortDesc}
             isFirst={index === 0}
             isLast={index === sortOptions.length - 1}
-            onSortChange={onSortChange}
-            groupFilter={groupFilter}
+            value={value}
+            onChange={(value) => onChange(value)}
             groupOptions={groupOptions}
-            onGroupFilterChange={onGroupFilterChange}
             dataCy={dataCy}
           />
         ))}
@@ -90,10 +90,9 @@ interface SortOptionItemProps<TSortKey extends string> {
   sortDesc: boolean;
   isFirst: boolean;
   isLast: boolean;
-  onSortChange: (key: TSortKey) => void;
-  groupFilter: string | null;
+  value: Value<TSortKey>;
+  onChange: (value: Value<TSortKey>) => void;
   groupOptions?: Record<string, DropdownOption[]>;
-  onGroupFilterChange: (group: string | null, filter: string | null) => void;
   dataCy?: string;
 }
 
@@ -103,10 +102,9 @@ function SortOptionItem<TSortKey extends string>({
   sortDesc,
   isFirst,
   isLast,
-  onSortChange,
-  groupFilter,
+  value,
+  onChange,
   groupOptions,
-  onGroupFilterChange,
   dataCy,
 }: SortOptionItemProps<TSortKey>) {
   const className = clsx(
@@ -121,16 +119,17 @@ function SortOptionItem<TSortKey extends string>({
       <DropdownMenu
         label={option.label}
         options={groupOptions?.[option.key]}
-        selected={groupFilter}
-        onSelect={(value) => {
-          onGroupFilterChange(option.key, value);
+        selected={isActive ? value.groupValue ?? null : null}
+        onSelect={(selected) => {
+          onChange({ group: option.key, groupValue: selected });
         }}
         badge={
           isActive
-            ? getFilterBadge(groupOptions, option.key, groupFilter)
+            ? getFilterBadge(groupOptions, option.key, value.groupValue ?? null)
             : undefined
         }
         className={className}
+        aria-pressed={isActive}
         data-cy={`${dataCy}-sort-by-${option.key.toLowerCase()}-button`}
       />
     );
@@ -146,8 +145,9 @@ function SortOptionItem<TSortKey extends string>({
     <button
       type="button"
       className={className}
+      aria-pressed={isActive}
       onClick={() => {
-        onSortChange(option.key);
+        onChange({ group: option.key, groupValue: null });
       }}
       data-cy={`${dataCy}-sort-by-${option.key.toLowerCase()}-button`}
     >

@@ -280,8 +280,8 @@ angular
         name: 'portainer.home',
         url: '/home?redirect&environmentId&environmentName&route&groupBy&groupFilter&search&order',
         params: {
-          ...paginationParams('id'),
-          groupBy: filterParam(),
+          ...paginationParams('Id'),
+          groupBy: filterParam('Id'),
           groupFilter: filterParam(),
         },
         views: {
@@ -294,8 +294,14 @@ angular
         },
       };
 
+      var gitopsBase = {
+        name: 'portainer.gitops',
+        url: '/gitops',
+        abstract: true,
+      };
+
       var workflows = {
-        name: 'portainer.workflows',
+        name: 'portainer.gitops.workflows',
         url: '/workflows?search&sort&order&page&pageSize&status&type&platform&groupBy&groupFilter',
         params: {
           ...paginationParams('name'),
@@ -308,6 +314,21 @@ angular
         views: {
           'content@': {
             component: 'workflowsView',
+          },
+        },
+      };
+
+      var gitopsSources = {
+        name: 'portainer.gitops.sources',
+        url: '/sources?search&sort&order&page&pageSize&status&type',
+        params: {
+          ...paginationParams('name'),
+          status: filterParam(),
+          type: filterParam(),
+        },
+        views: {
+          'content@': {
+            component: 'sourcesListView',
           },
         },
       };
@@ -432,7 +453,9 @@ angular
       $stateRegistryProvider.register(groupAccess);
       $stateRegistryProvider.register(groupCreation);
       $stateRegistryProvider.register(home);
+      $stateRegistryProvider.register(gitopsBase);
       $stateRegistryProvider.register(workflows);
+      $stateRegistryProvider.register(gitopsSources);
       $stateRegistryProvider.register(init);
       $stateRegistryProvider.register(initAdmin);
       $stateRegistryProvider.register(settings);

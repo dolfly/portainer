@@ -1,11 +1,3 @@
-import {
-  useState,
-  useEffect,
-  useRef,
-  useContext,
-  createContext,
-  ReactNode,
-} from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -14,108 +6,7 @@ import { withTestRouter } from '@/react/test-utils/withRouter';
 
 import { SortByGroup, SortOption } from './SortByGroup';
 
-type MenuCtxType = {
-  isOpen: boolean;
-  setOpen: (v: boolean) => void;
-  menuRef: React.RefObject<HTMLDivElement>;
-};
-
-vi.mock('@reach/menu-button', () => {
-  const MenuCtx = createContext<MenuCtxType | null>(null);
-
-  function Menu({ children }: { children?: ReactNode }) {
-    const [isOpen, setOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-      function handleDocDown(e: MouseEvent) {
-        const target = e.target as Node | null;
-        if (
-          isOpen &&
-          menuRef.current &&
-          target &&
-          !menuRef.current.contains(target)
-        ) {
-          setOpen(false);
-        }
-      }
-
-      document.addEventListener('mousedown', handleDocDown);
-      return () => document.removeEventListener('mousedown', handleDocDown);
-    }, [isOpen]);
-
-    return (
-      <MenuCtx.Provider value={{ isOpen, setOpen, menuRef }}>
-        <div ref={menuRef}>{children}</div>
-      </MenuCtx.Provider>
-    );
-  }
-
-  function MenuButton({
-    children,
-    onClick: externalOnClick,
-    ...props
-  }: {
-    children?: ReactNode;
-    onClick?: () => void;
-    [key: string]: unknown;
-  }) {
-    const ctx = useContext(MenuCtx);
-
-    function handleClick() {
-      externalOnClick?.();
-      ctx?.setOpen(!ctx.isOpen);
-    }
-
-    return (
-      <button type="button" onClick={handleClick} {...props}>
-        {children}
-      </button>
-    );
-  }
-
-  function MenuList({
-    children,
-    className,
-  }: {
-    children?: ReactNode;
-    className?: string;
-  }) {
-    const ctx = useContext(MenuCtx);
-    if (!ctx?.isOpen) return null;
-    return (
-      <div role="menu" className={className}>
-        {children}
-      </div>
-    );
-  }
-
-  function MenuItem({
-    children,
-    onSelect,
-    className,
-  }: {
-    children?: ReactNode;
-    onSelect?: () => void;
-    className?: string;
-  }) {
-    const ctx = useContext(MenuCtx);
-
-    function handleClick() {
-      onSelect?.();
-      ctx?.setOpen(false);
-    }
-
-    return (
-      // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/interactive-supports-focus
-      <div role="menuitem" onClick={handleClick} className={className}>
-        {children}
-      </div>
-    );
-  }
-
-  return { Menu, MenuButton, MenuList, MenuItem };
-});
+vi.mock('@reach/menu-button');
 
 const sortOptions: SortOption[] = [
   { key: 'Group', label: 'Group', grouped: true },
@@ -135,105 +26,106 @@ const groupOptions = {
 };
 
 function renderComponent({
-  activeKey = 'Group' as string,
-  groupFilter = null as string | null,
-  onSortChange = vi.fn(),
-  onGroupFilterChange = vi.fn(),
+  group = 'Group' as string,
+  groupValue = null as string | null,
+  onChange = vi.fn(),
 } = {}) {
   const Wrapped = withTestQueryProvider(
     withTestRouter(() => (
       <SortByGroup
-        activeKey={activeKey}
-        sortDesc={false}
-        onSortChange={onSortChange}
+        value={{ group, groupValue }}
+        onChange={onChange}
         sortOptions={sortOptions}
-        groupFilter={groupFilter}
         groupOptions={groupOptions}
-        onGroupFilterChange={onGroupFilterChange}
+        sortDesc={false}
         dataCy="test"
       />
     ))
   );
-  return { ...render(<Wrapped />), onSortChange, onGroupFilterChange };
+  return { ...render(<Wrapped />), onChange };
 }
 
 describe('SortByGroup', () => {
   describe('grouped: false option', () => {
-    test('clicking an inactive button calls onSortChange', async () => {
+    test('clicking an inactive button calls onChange with { group, groupValue: null }', async () => {
       const user = userEvent.setup();
-      const { onSortChange } = renderComponent({ activeKey: 'Group' });
+      const { onChange } = renderComponent({ group: 'Group' });
 
       await user.click(screen.getByRole('button', { name: /^Name$/i }));
 
-      expect(onSortChange).toHaveBeenCalledExactlyOnceWith('Name');
+      expect(onChange).toHaveBeenCalledExactlyOnceWith({
+        group: 'Name',
+        groupValue: null,
+      });
     });
 
-    test('clicking the already-active non-grouped button calls onSortChange to toggle sort order', async () => {
+    test('clicking the already-active button does calls onChange', async () => {
       const user = userEvent.setup();
-      const { onSortChange } = renderComponent({ activeKey: 'Name' });
+      const { onChange } = renderComponent({ group: 'Name' });
 
       await user.click(screen.getByRole('button', { name: /^Name Asc/i }));
 
-      expect(onSortChange).toHaveBeenCalledExactlyOnceWith('Name');
+      expect(onChange).toHaveBeenCalledExactlyOnceWith({
+        group: 'Name',
+        groupValue: null,
+      });
     });
   });
 
   describe('grouped: true option', () => {
-    test('clicking the dropdown button to open it does not call onSortChange', async () => {
+    test('clicking the dropdown button to open it does not call onChange', async () => {
       const user = userEvent.setup();
-      const { onSortChange } = renderComponent({ activeKey: 'Group' });
+      const { onChange } = renderComponent({ group: 'Group' });
 
-      // Click Platform button (inactive grouped option) — should just open menu
       await user.click(screen.getByRole('button', { name: /^Platform$/i }));
 
-      expect(onSortChange).not.toHaveBeenCalled();
+      expect(onChange).not.toHaveBeenCalled();
+      expect(screen.getByRole('menu')).toBeVisible();
     });
 
-    test('selecting a filter from an inactive grouped option calls onGroupFilterChange with the group key and value', async () => {
+    test('selecting a filter from an inactive grouped option calls onChange with both keys', async () => {
       const user = userEvent.setup();
-      const { onSortChange, onGroupFilterChange } = renderComponent({
-        activeKey: 'Group',
-      });
+      const { onChange } = renderComponent({ group: 'Group' });
 
       await user.click(screen.getByRole('button', { name: /^Platform$/i }));
       await user.click(screen.getByRole('menuitem', { name: /Docker/ }));
 
-      expect(onSortChange).not.toHaveBeenCalled();
-      expect(onGroupFilterChange).toHaveBeenCalledExactlyOnceWith(
-        'Platform',
-        'Docker'
-      );
+      expect(onChange).toHaveBeenCalledExactlyOnceWith({
+        group: 'Platform',
+        groupValue: 'Docker',
+      });
     });
 
-    test('selecting a filter from the already-active grouped option does not call onSortChange', async () => {
+    test('selecting a filter from the already-active grouped option calls onChange', async () => {
       const user = userEvent.setup();
-      const { onSortChange, onGroupFilterChange } = renderComponent({
-        activeKey: 'Group',
-        groupFilter: null,
+      const { onChange } = renderComponent({
+        group: 'Group',
+        groupValue: null,
       });
 
       await user.click(screen.getByRole('button', { name: /^Group$/i }));
       await user.click(screen.getByRole('menuitem', { name: /GroupA/ }));
 
-      expect(onSortChange).not.toHaveBeenCalled();
-      expect(onGroupFilterChange).toHaveBeenCalledExactlyOnceWith(
-        'Group',
-        'GroupA'
-      );
+      expect(onChange).toHaveBeenCalledExactlyOnceWith({
+        group: 'Group',
+        groupValue: 'GroupA',
+      });
     });
 
-    test('selecting All from a grouped dropdown calls onGroupFilterChange with null', async () => {
+    test('selecting All from a grouped dropdown calls onChange with (key, null)', async () => {
       const user = userEvent.setup();
-      const { onSortChange, onGroupFilterChange } = renderComponent({
-        activeKey: 'Group',
-        groupFilter: 'GroupA',
+      const { onChange } = renderComponent({
+        group: 'Group',
+        groupValue: 'GroupA',
       });
 
       await user.click(screen.getByRole('button', { name: /^Group/i }));
       await user.click(screen.getByRole('menuitem', { name: /^All$/ }));
 
-      expect(onSortChange).not.toHaveBeenCalled();
-      expect(onGroupFilterChange).toHaveBeenCalledWith('Group', null);
+      expect(onChange).toHaveBeenCalledWith({
+        group: 'Group',
+        groupValue: null,
+      });
     });
   });
 });
