@@ -192,13 +192,14 @@ func TestSortEndpointsByHealth(t *testing.T) {
 		Type:   portainer.DockerEnvironment,
 		Status: portainer.EndpointStatusDown,
 	}
-	// Outdated: agent with empty version (and status=Up so healthRank doesn't short-circuit to Down)
+	// Outdated: edge agent with empty version and a prior check-in (old agent style, no version reported)
 	outdated := portainer.Endpoint{
-		ID:     1,
-		Name:   "outdated-env",
-		Type:   portainer.AgentOnDockerEnvironment,
-		Status: portainer.EndpointStatusUp,
-		// Agent.Version == "" → isOutdated returns true
+		ID:              1,
+		Name:            "outdated-env",
+		Type:            portainer.EdgeAgentOnDockerEnvironment,
+		Status:          portainer.EndpointStatusUp,
+		LastCheckInDate: time.Now().Unix(),
+		// IsEdgeEndpoint + Agent.Version == "" + LastCheckInDate > 0 → isOutdated returns true
 	}
 	// Heartbeat: edge that checked in recently with a current agent version (not outdated)
 	heartbeat := portainer.Endpoint{
