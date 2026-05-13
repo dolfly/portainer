@@ -52,6 +52,7 @@ import (
 	"github.com/portainer/portainer/pkg/fips"
 	"github.com/portainer/portainer/pkg/libhelm"
 	"github.com/portainer/portainer/pkg/libstack/compose"
+	libswarm "github.com/portainer/portainer/pkg/libstack/swarm"
 	"github.com/portainer/portainer/pkg/validate"
 
 	"github.com/google/uuid"
@@ -337,7 +338,6 @@ func loadEncryptionSecretKey(keyfilename string) []byte {
 }
 
 func buildServer(flags *portainer.CLIFlags, shutdownCtx context.Context, shutdownTrigger context.CancelFunc) portainer.Server {
-
 	if flags.FeatureFlags != nil {
 		featureflags.Parse(*flags.FeatureFlags, portainer.SupportedFeatureFlags)
 	}
@@ -437,16 +437,11 @@ func buildServer(flags *portainer.CLIFlags, shutdownCtx context.Context, shutdow
 
 	reverseTunnelService.ProxyManager = proxyManager
 
-	dockerConfigPath := fileService.GetDockerConfigPath()
-
 	composeDeployer := compose.NewComposeDeployer()
 
-	composeStackManager := exec.NewComposeStackManager(composeDeployer, proxyManager, dataStore)
+	composeStackManager := exec.NewComposeStackManager(composeDeployer, proxyManager)
 
-	swarmStackManager, err := exec.NewSwarmStackManager(*flags.Assets, dockerConfigPath, signatureService, fileService, reverseTunnelService, dataStore)
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed initializing swarm stack manager")
-	}
+	swarmStackManager := exec.NewSwarmStackManager(libswarm.NewSwarmDeployer(), proxyManager)
 
 	kubernetesDeployer := initKubernetesDeployer(kubernetesTokenCacheManager, kubernetesClientFactory, dataStore, reverseTunnelService, signatureService, proxyManager)
 
