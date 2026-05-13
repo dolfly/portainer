@@ -33,8 +33,7 @@ type Options<TValue> = OptionsOrGroups<
 >;
 
 interface SharedProps<TValue>
-  extends AutomationTestingProps,
-    Pick<AriaAttributes, 'aria-label'> {
+  extends AutomationTestingProps, Pick<AriaAttributes, 'aria-label'> {
   name?: string;
   inputId?: string;
   size?: 'sm' | 'md';

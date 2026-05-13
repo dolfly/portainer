@@ -11,8 +11,7 @@ import {
 import { useTableState, TableState } from '@@/datatables/useTableState';
 
 interface SortableListSettings
-  extends BasicTableSettings,
-    BackendPaginationTableSettings {
+  extends BasicTableSettings, BackendPaginationTableSettings {
   groupBy: string | null;
   setGroupBy: (group: string | null) => void;
   groupFilter: string | null;

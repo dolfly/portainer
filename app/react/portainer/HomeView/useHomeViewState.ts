@@ -21,7 +21,7 @@ export function useHomeViewState() {
     buildExtra: (urlState, setUrlState) => {
       return {
         groupKey: urlState.groupBy
-          ? getSortTypeCaseInsensitive(urlState.groupBy) ?? DEFAULT_SORT
+          ? (getSortTypeCaseInsensitive(urlState.groupBy) ?? DEFAULT_SORT)
           : DEFAULT_SORT,
         setHeaderFilter: (sortBy, filter) => {
           setUrlState({
