@@ -1445,6 +1445,7 @@ type (
 		LastActivity time.Time
 		Port         int
 		Credentials  string
+		HasSnapshot  bool
 	}
 
 	// TunnelServerInfo represents information associated to the tunnel server
