@@ -14,6 +14,7 @@ import (
 
 	"github.com/distribution/reference"
 	portainer "github.com/portainer/portainer/api"
+	"github.com/portainer/portainer/api/filesystem"
 	"github.com/portainer/portainer/api/logs"
 	"github.com/portainer/portainer/pkg/libstack"
 	retry "github.com/portainer/portainer/pkg/retry"
@@ -476,7 +477,7 @@ func createProject(ctx context.Context, configFilepaths []string, options libsta
 	for i, service := range project.Services {
 		for j, envFile := range service.EnvFiles {
 			if !filepath.IsAbs(envFile.Path) {
-				project.Services[i].EnvFiles[j].Path = filepath.Join(workingDir, envFile.Path)
+				project.Services[i].EnvFiles[j].Path = filesystem.JoinPaths(workingDir, envFile.Path)
 			}
 		}
 	}

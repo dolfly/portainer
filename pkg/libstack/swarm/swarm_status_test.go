@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/portainer/portainer/api/filesystem"
 	libstack "github.com/portainer/portainer/pkg/libstack"
 	"github.com/stretchr/testify/require"
 )
@@ -59,7 +59,7 @@ services:
 			projectName := testCase.TestName
 
 			composeFileName := fmt.Sprintf("docker-compose-%s.yml", projectName)
-			composeFilePath := filepath.Join(dir, composeFileName)
+			composeFilePath := filesystem.JoinPaths(dir, composeFileName)
 
 			f, err := os.Create(composeFilePath)
 			require.NoError(t, err, "failed to create compose file")

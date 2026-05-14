@@ -2,7 +2,6 @@ package swarm
 
 import (
 	"os"
-	"path/filepath"
 	"slices"
 	"testing"
 
@@ -10,6 +9,7 @@ import (
 	configtypes "github.com/docker/cli/cli/config/types"
 	"github.com/docker/docker/api/types/swarm"
 	dockerregistry "github.com/docker/docker/registry"
+	"github.com/portainer/portainer/api/filesystem"
 	"github.com/portainer/portainer/pkg/libstack"
 	"github.com/stretchr/testify/require"
 )
@@ -215,7 +215,7 @@ func Test_getConfig(t *testing.T) {
 	dir := t.TempDir()
 
 	writeFile := func(name, content string) string {
-		path := filepath.Join(dir, name)
+		path := filesystem.JoinPaths(dir, name)
 		require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
 		return path
 	}

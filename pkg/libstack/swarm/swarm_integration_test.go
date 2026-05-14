@@ -3,13 +3,13 @@ package swarm
 import (
 	"context"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
+	"github.com/portainer/portainer/api/filesystem"
 	"github.com/portainer/portainer/pkg/libstack"
 	"github.com/stretchr/testify/require"
 )
@@ -69,7 +69,7 @@ func serviceExists(t *testing.T, apiClient client.APIClient, stackName, serviceN
 func createComposeFile(t *testing.T, dir, name, content string) string {
 	t.Helper()
 
-	path := filepath.Join(dir, name)
+	path := filesystem.JoinPaths(dir, name)
 	require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
 
 	return path
