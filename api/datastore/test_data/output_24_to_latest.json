@@ -607,6 +607,7 @@
     "EnableEdgeComputeFeatures": false,
     "EnforceEdgeID": false,
     "FeatureFlagSettings": null,
+    "ForceSecureCookies": false,
     "GlobalDeploymentOptions": {
       "hideStacksFunctionality": false
     },

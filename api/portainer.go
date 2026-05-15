@@ -1147,6 +1147,10 @@ type (
 		AllowContainerCapabilitiesForRegularUsers bool `json:"AllowContainerCapabilitiesForRegularUsers,omitempty"`
 
 		IsDockerDesktopExtension bool `json:"IsDockerDesktopExtension,omitempty"`
+
+		// ForceSecureCookies forces the Secure attribute on auth cookies regardless of detected scheme.
+		// Enable when Portainer runs behind a TLS-terminating proxy.
+		ForceSecureCookies bool `json:"ForceSecureCookies" example:"false"`
 	}
 
 	// SnapshotJob represents a scheduled job that can create environment(endpoint) snapshots
