@@ -14,20 +14,20 @@ func TestComputeGitPhases(t *testing.T) {
 	okRefs := func(_ context.Context) ([]string, error) {
 		return []string{"refs/heads/main"}, nil
 	}
-	okFiles := func(_ context.Context, _ []string) ([]string, error) {
+	okFiles := func(_ context.Context, _ []string, _ bool) ([]string, error) {
 		return []string{"docker-compose.yml"}, nil
 	}
 	errRefs := func(_ context.Context) ([]string, error) {
 		return nil, errors.New("connection refused")
 	}
-	errFiles := func(_ context.Context, _ []string) ([]string, error) {
+	errFiles := func(_ context.Context, _ []string, _ bool) ([]string, error) {
 		return nil, errors.New("connection refused")
 	}
 
 	cases := []struct {
 		name             string
 		referenceName    string
-		configFilePath   string
+		configFilePath   []GitEntries
 		listRefs         ListRefsFunc
 		listFiles        ListFilesFunc
 		expectedSource   Status
@@ -36,7 +36,7 @@ func TestComputeGitPhases(t *testing.T) {
 		{
 			name:             "listRefs errors → source error, artifact unknown",
 			referenceName:    "refs/heads/main",
-			configFilePath:   "docker-compose.yml",
+			configFilePath:   []GitEntries{{Name: "docker-compose.yml", IsFile: true}},
 			listRefs:         errRefs,
 			listFiles:        okFiles,
 			expectedSource:   StatusError,
@@ -45,7 +45,7 @@ func TestComputeGitPhases(t *testing.T) {
 		{
 			name:           "ref not in list → source error, artifact unknown",
 			referenceName:  "refs/heads/missing",
-			configFilePath: "docker-compose.yml",
+			configFilePath: []GitEntries{{Name: "docker-compose.yml", IsFile: true}},
 			listRefs: func(_ context.Context) ([]string, error) {
 				return []string{"refs/heads/main"}, nil
 			},
@@ -56,7 +56,7 @@ func TestComputeGitPhases(t *testing.T) {
 		{
 			name:             "empty configFilePath → artifact error",
 			referenceName:    "refs/heads/main",
-			configFilePath:   "",
+			configFilePath:   []GitEntries{},
 			listRefs:         okRefs,
 			listFiles:        okFiles,
 			expectedSource:   StatusHealthy,
@@ -65,7 +65,7 @@ func TestComputeGitPhases(t *testing.T) {
 		{
 			name:             "listFiles errors → artifact error",
 			referenceName:    "refs/heads/main",
-			configFilePath:   "docker-compose.yml",
+			configFilePath:   []GitEntries{{Name: "docker-compose.yml", IsFile: true}},
 			listRefs:         okRefs,
 			listFiles:        errFiles,
 			expectedSource:   StatusHealthy,
@@ -74,9 +74,9 @@ func TestComputeGitPhases(t *testing.T) {
 		{
 			name:           "file not in list → artifact error",
 			referenceName:  "refs/heads/main",
-			configFilePath: "docker-compose.yml",
+			configFilePath: []GitEntries{{Name: "docker-compose.yml", IsFile: true}},
 			listRefs:       okRefs,
-			listFiles: func(_ context.Context, _ []string) ([]string, error) {
+			listFiles: func(_ context.Context, _ []string, _ bool) ([]string, error) {
 				return []string{"other.yml"}, nil
 			},
 			expectedSource:   StatusHealthy,
@@ -85,7 +85,7 @@ func TestComputeGitPhases(t *testing.T) {
 		{
 			name:             "both healthy",
 			referenceName:    "refs/heads/main",
-			configFilePath:   "docker-compose.yml",
+			configFilePath:   []GitEntries{{Name: "docker-compose.yml", IsFile: true}},
 			listRefs:         okRefs,
 			listFiles:        okFiles,
 			expectedSource:   StatusHealthy,
@@ -94,7 +94,7 @@ func TestComputeGitPhases(t *testing.T) {
 		{
 			name:             "empty referenceName → source healthy (default HEAD)",
 			referenceName:    "",
-			configFilePath:   "docker-compose.yml",
+			configFilePath:   []GitEntries{{Name: "docker-compose.yml", IsFile: true}},
 			listRefs:         okRefs,
 			listFiles:        okFiles,
 			expectedSource:   StatusHealthy,
@@ -132,9 +132,9 @@ func TestComputeArtifactPhase_ExtensionFilter(t *testing.T) {
 			ComputeGitPhases(
 				t.Context(),
 				"",
-				tc.configPath,
+				[]GitEntries{{Name: tc.configPath, IsFile: true}},
 				func(_ context.Context) ([]string, error) { return nil, nil },
-				func(_ context.Context, exts []string) ([]string, error) {
+				func(_ context.Context, exts []string, dirOnly bool) ([]string, error) {
 					capturedExts = exts
 					return []string{tc.configPath}, nil
 				},
@@ -151,12 +151,12 @@ func TestComputeGitPhases_ArtifactNotCalledOnSourceError(t *testing.T) {
 	listRefs := func(_ context.Context) ([]string, error) {
 		return nil, errors.New("repo unreachable")
 	}
-	listFiles := func(_ context.Context, _ []string) ([]string, error) {
+	listFiles := func(_ context.Context, _ []string, _ bool) ([]string, error) {
 		listFilesCalled = true
 		return nil, nil
 	}
 
-	ComputeGitPhases(t.Context(), "refs/heads/main", "docker-compose.yml", listRefs, listFiles)
+	ComputeGitPhases(t.Context(), "refs/heads/main", []GitEntries{{Name: "docker-compose.yml", IsFile: true}}, listRefs, listFiles)
 
 	assert.False(t, listFilesCalled, "listFiles must not be called when source fails")
 }

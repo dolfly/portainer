@@ -68,25 +68,32 @@ func FetchWorkflows(
 
 	items := make([]Workflow, 0, len(entries))
 	for _, s := range entries {
-		source, artifact := computePhases(ctx, gitService, s.GitConfig)
+		gitEntries := []GitEntries{
+			{Name: s.GitConfig.ConfigFilePath, IsFile: true},
+		}
+		for _, additionalPath := range s.AdditionalFiles {
+			gitEntries = append(gitEntries, GitEntries{Name: additionalPath, IsFile: true})
+		}
+
+		source, artifact := computePhases(ctx, gitService, s.GitConfig, gitEntries)
 		items = append(items, MapStackToWorkflow(s, s.GitConfig, source, artifact))
 	}
 
 	return items, nil
 }
 
-func computePhases(ctx context.Context, gitSvc portainer.GitService, cfg *gittypes.RepoConfig) (source, artifact WorkflowPhaseStatus) {
+func computePhases(ctx context.Context, gitSvc portainer.GitService, cfg *gittypes.RepoConfig, gitEntries []GitEntries) (source, artifact WorkflowPhaseStatus) {
 	if gitSvc == nil || cfg == nil {
 		return WorkflowPhaseStatus{Status: StatusUnknown}, WorkflowPhaseStatus{Status: StatusUnknown}
 	}
 
 	username, password := gitCredentials(cfg)
-	return ComputeGitPhases(ctx, cfg.ReferenceName, cfg.ConfigFilePath,
+	return ComputeGitPhases(ctx, cfg.ReferenceName, gitEntries,
 		func(ctx context.Context) ([]string, error) {
 			return gitSvc.ListRefs(ctx, cfg.URL, username, password, false, cfg.TLSSkipVerify)
 		},
-		func(ctx context.Context, exts []string) ([]string, error) {
-			return gitSvc.ListFiles(ctx, cfg.URL, cfg.ReferenceName, username, password, false, false, exts, cfg.TLSSkipVerify)
+		func(ctx context.Context, exts []string, dirOnly bool) ([]string, error) {
+			return gitSvc.ListFiles(ctx, cfg.URL, cfg.ReferenceName, username, password, dirOnly, false, exts, cfg.TLSSkipVerify)
 		},
 	)
 }
