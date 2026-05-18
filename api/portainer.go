@@ -1846,6 +1846,24 @@ type (
 		GetVolumes(namespace string) ([]models.K8sVolumeInfo, error)
 		GetVolume(namespace, volumeName string) (*models.K8sVolumeInfo, error)
 		CombineVolumesWithApplications(volumes *[]models.K8sVolumeInfo) (*[]models.K8sVolumeInfo, error)
+
+		// StorageClass
+		GetStorageClasses() ([]models.K8sStorageClass, error)
+		GetStorageClass(name string) (*models.K8sStorageClass, error)
+		DeleteStorageClasses(names []string) error
+		SetDefaultStorageClass(name string) error
+
+		// PersistentVolume
+		GetPersistentVolumes() ([]models.K8sPersistentVolume, error)
+		GetPersistentVolume(name string) (*models.K8sPersistentVolume, error)
+		DeletePersistentVolumes(names []string) error
+		UpdatePersistentVolumeReclaimPolicy(name string, policy corev1.PersistentVolumeReclaimPolicy) error
+
+		// PersistentVolumeClaim
+		GetPersistentVolumeClaims(namespace string) ([]models.K8sPersistentVolumeClaim, error)
+		GetPersistentVolumeClaim(namespace, name string) (*models.K8sPersistentVolumeClaim, error)
+		DeletePersistentVolumeClaims(reqs models.K8sVolumeDeleteRequests) error
+		ResizePersistentVolumeClaim(namespace, name, newSize string) error
 	}
 
 	// KubernetesDeployer represents a service to deploy a manifest inside a Kubernetes environment(endpoint)
