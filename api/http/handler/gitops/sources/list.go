@@ -8,11 +8,9 @@ import (
 	"strings"
 
 	gocache "github.com/patrickmn/go-cache"
-	portainer "github.com/portainer/portainer/api"
 	ceWorkflows "github.com/portainer/portainer/api/gitops/workflows"
 	"github.com/portainer/portainer/api/http/security"
 	"github.com/portainer/portainer/api/http/utils/filters"
-	"github.com/portainer/portainer/api/set"
 	"github.com/portainer/portainer/api/slicesx"
 	httperror "github.com/portainer/portainer/pkg/libhttp/error"
 	"github.com/portainer/portainer/pkg/libhttp/request"
@@ -45,10 +43,6 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) *httperror.Handle
 	securityContext, err := security.RetrieveRestrictedRequestContext(r)
 	if err != nil {
 		return httperror.InternalServerError("Unable to retrieve info from request context", err)
-	}
-
-	if !securityContext.IsAdmin {
-		return httperror.Forbidden("Access denied", nil)
 	}
 
 	key := cacheKey(securityContext)
@@ -118,46 +112,11 @@ func (h *Handler) fetchSources(ctx context.Context, sc *security.RestrictedReque
 		return nil, err
 	}
 
-	byURL := make(map[string][]ceWorkflows.Workflow)
-	for _, wf := range workflows {
-		if wf.GitConfig != nil {
-			byURL[wf.GitConfig.URL] = append(byURL[wf.GitConfig.URL], wf)
-		}
-	}
+	byID := workflowsBySourceID(workflows)
 
-	sources := make([]Source, 0, len(byURL))
-	for url, wfs := range byURL {
-		statuses := make([]ceWorkflows.Status, 0, len(wfs))
-		var sourceError string
-		var lastSync int64
-		endpointIDs := make(set.Set[portainer.EndpointID])
-		for _, wf := range wfs {
-			statuses = append(statuses, wf.Status.Source.Status)
-			if sourceError == "" && wf.Status.Source.Status == ceWorkflows.StatusError {
-				sourceError = wf.Status.Source.Error
-			}
-			if wf.LastSyncDate > lastSync {
-				lastSync = wf.LastSyncDate
-			}
-			if wf.Target.EndpointID != 0 {
-				endpointIDs.Add(wf.Target.EndpointID)
-			}
-			for _, id := range wf.Target.ResolvedEndpointIDs {
-				endpointIDs.Add(id)
-			}
-		}
-
-		sources = append(sources, Source{
-			ID:           sourceID(url),
-			Name:         repoName(url),
-			Type:         "git",
-			URL:          url,
-			Status:       worstCaseStatus(statuses),
-			Error:        sourceError,
-			UsedBy:       len(wfs),
-			Environments: len(endpointIDs),
-			LastSync:     lastSync,
-		})
+	sources := make([]Source, 0, len(byID))
+	for id, wfs := range byID {
+		sources = append(sources, buildSource(id, wfs[0].GitConfig.URL, wfs))
 	}
 	return sources, nil
 }

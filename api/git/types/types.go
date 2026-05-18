@@ -2,6 +2,9 @@ package gittypes
 
 import (
 	"errors"
+	"net/url"
+	"path"
+	"strings"
 )
 
 var (
@@ -9,6 +12,10 @@ var (
 	ErrAuthenticationFailure  = errors.New("authentication failed, please ensure that the git credentials are correct")
 	ErrSymlinkDetected        = errors.New("repository contains a symlink, which is not allowed for security reasons")
 )
+
+type GitCredentialAuthType int
+
+type GitProvider int
 
 // RepoConfig represents a configuration for a repo
 type RepoConfig struct {
@@ -27,9 +34,30 @@ type RepoConfig struct {
 	TLSSkipVerify bool `example:"false"`
 }
 
+// RepoName extracts the repository name from a git URL for use as a display name.
+// e.g. "https://github.com/org/app-config.git" results in "app-config"
+func RepoName(rawURL string) string {
+	return strings.TrimSuffix(path.Base(rawURL), ".git")
+}
+
+// SanitizeURL strips any userinfo (username/password) embedded in rawURL,
+// returning a URL safe to store or return to clients.
+func SanitizeURL(rawURL string) string {
+	u, err := url.Parse(rawURL)
+	if err != nil || u.User == nil {
+		return rawURL
+	}
+
+	u.User = nil
+
+	return u.String()
+}
+
 type GitAuthentication struct {
-	Username string
-	Password string
+	Username          string
+	Password          string
+	Provider          GitProvider           `json:",omitempty"`
+	AuthorizationType GitCredentialAuthType `json:",omitempty"`
 	// Git credentials identifier when the value is not 0
 	// When the value is 0, Username and Password are set without using saved credential
 	// This is introduced since 2.15.0

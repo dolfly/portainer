@@ -20,7 +20,8 @@ func MapStackToWorkflow(s portainer.Stack, gitConfig *gittypes.RepoConfig, sourc
 			Artifact: artifact,
 			Target:   deriveStackTargetState(s),
 		},
-		GitConfig: gitConfig,
+		GitConfig:  gitConfig,
+		AutoUpdate: s.AutoUpdate,
 		Target: Target{
 			EndpointID: s.EndpointID,
 			Namespace:  s.Namespace,

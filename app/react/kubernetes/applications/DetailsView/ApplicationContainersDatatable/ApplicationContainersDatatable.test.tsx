@@ -181,7 +181,10 @@ describe('ApplicationContainersDatatable', () => {
       http.get(
         '/api/endpoints/1/kubernetes/api/v1/namespaces/test-namespace/pods',
         () =>
-          HttpResponse.json({ ...mockPodsResponse, items: [mockPod, secondPod] })
+          HttpResponse.json({
+            ...mockPodsResponse,
+            items: [mockPod, secondPod],
+          })
       )
     );
 
@@ -309,7 +312,8 @@ describe('ApplicationContainersDatatable', () => {
     server.use(
       http.get(
         '/api/endpoints/1/kubernetes/api/v1/namespaces/test-namespace/pods',
-        () => HttpResponse.json({ ...mockPodsResponse, items: [podWithSidecar] })
+        () =>
+          HttpResponse.json({ ...mockPodsResponse, items: [podWithSidecar] })
       )
     );
 
@@ -380,9 +384,7 @@ describe('ApplicationContainersDatatable', () => {
     renderComponent();
 
     await screen.findByText('test-pod-1');
-    await user.click(
-      screen.getByTestId('application-pod-restart-test-pod-1')
-    );
+    await user.click(screen.getByTestId('application-pod-restart-test-pod-1'));
 
     await waitFor(() => {
       expect(restartRequested).toBe(true);
@@ -407,9 +409,7 @@ describe('ApplicationContainersDatatable', () => {
     renderComponent();
 
     await screen.findByText('test-pod-1');
-    await user.click(
-      screen.getByTestId('application-pod-restart-test-pod-1')
-    );
+    await user.click(screen.getByTestId('application-pod-restart-test-pod-1'));
 
     await waitFor(() => {
       expect(confirm).toHaveBeenCalled();
@@ -443,7 +443,10 @@ describe('ApplicationContainersDatatable', () => {
   it('disables the restart button when the cluster does not support pod restart', async () => {
     server.use(
       http.get('/api/kubernetes/1/version', () =>
-        HttpResponse.json({ ...mockKubernetesVersion, supportsPodRestart: false })
+        HttpResponse.json({
+          ...mockKubernetesVersion,
+          supportsPodRestart: false,
+        })
       )
     );
 

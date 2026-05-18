@@ -339,6 +339,19 @@ angular
         },
       };
 
+      var gitopsSourceDetail = {
+        name: 'portainer.gitops.sources.item',
+        url: '/:sourceId?tab',
+        params: {
+          tab: filterParam('settings'),
+        },
+        views: {
+          'content@': {
+            component: 'sourceItemView',
+          },
+        },
+      };
+
       var init = {
         name: 'portainer.init',
         abstract: true,
@@ -462,6 +475,7 @@ angular
       $stateRegistryProvider.register(gitopsBase);
       $stateRegistryProvider.register(workflows);
       $stateRegistryProvider.register(gitopsSources);
+      $stateRegistryProvider.register(gitopsSourceDetail);
       $stateRegistryProvider.register(init);
       $stateRegistryProvider.register(initAdmin);
       $stateRegistryProvider.register(settings);
