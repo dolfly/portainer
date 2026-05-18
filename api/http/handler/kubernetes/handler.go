@@ -106,6 +106,7 @@ func NewHandler(bouncer security.BouncerService, authorizationService *authoriza
 	endpointRouter.Handle("/cluster_role_bindings/delete", httperror.LoggerHandler(h.deleteClusterRoleBindings)).Methods(http.MethodPost)
 	endpointRouter.Handle("/describe", httperror.LoggerHandler(h.describeResource)).Methods(http.MethodGet)
 	endpointRouter.Handle("/nodes/{name}/drain", httperror.LoggerHandler(h.drainNode)).Methods(http.MethodPost)
+	endpointRouter.Handle("/version", httperror.LoggerHandler(h.getKubernetesVersion)).Methods(http.MethodGet)
 
 	// namespaces
 	// in the future this piece of code might be in another package (or a few different packages - namespaces/namespace?)
@@ -128,6 +129,8 @@ func NewHandler(bouncer security.BouncerService, authorizationService *authoriza
 	namespaceRouter.Handle("/service_accounts/{name}/image_pull_secrets", httperror.LoggerHandler(h.updateKubernetesServiceAccountImagePullSecrets)).Methods(http.MethodPut)
 	namespaceRouter.Handle("/volumes", httperror.LoggerHandler(h.GetKubernetesVolumesInNamespace)).Methods(http.MethodGet)
 	namespaceRouter.Handle("/volumes/{volume}", httperror.LoggerHandler(h.getKubernetesVolume)).Methods(http.MethodGet)
+	namespaceRouter.Handle("/pods/{name}", httperror.LoggerHandler(h.deleteKubernetesPod)).Methods(http.MethodDelete)
+	namespaceRouter.Handle("/pods/{name}/restart", httperror.LoggerHandler(h.restartKubernetesPod)).Methods(http.MethodPost)
 
 	// Deprecated
 	endpointRouter.Handle("/namespaces", middlewares.Deprecated(endpointRouter, deprecatedNamespaceParser)).Methods(http.MethodPut)

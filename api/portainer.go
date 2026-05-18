@@ -1794,6 +1794,9 @@ type (
 
 		// Pod
 		CreateUserShellPod(ctx context.Context, serviceAccountName, shellPodImage string) (*KubernetesShellPod, error)
+		DeletePod(namespace, name string) error
+		RestartPod(namespace, name string) error
+		SupportsPodRestart() (bool, error)
 
 		// RBAC
 		IsRBACEnabled() (bool, error)
