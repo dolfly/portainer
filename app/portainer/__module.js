@@ -280,8 +280,10 @@ angular
         name: 'portainer.home',
         url: '/home?redirect&environmentId&environmentName&route&groupBy&groupFilter&search&order',
         params: {
-          ...paginationParams('Id'),
-          groupBy: filterParam('Id'),
+          ...paginationParams(),
+          sort: filterParam(),
+          order: filterParam(),
+          groupBy: filterParam(),
           groupFilter: filterParam(),
         },
         views: {
@@ -304,7 +306,9 @@ angular
         name: 'portainer.gitops.workflows',
         url: '/workflows?search&sort&order&page&pageSize&status&type&platform&groupBy&groupFilter',
         params: {
-          ...paginationParams('name'),
+          ...paginationParams(),
+          sort: filterParam(),
+          order: filterParam(),
           status: filterParam(),
           type: filterParam(),
           platform: filterParam(),
@@ -322,7 +326,9 @@ angular
         name: 'portainer.gitops.sources',
         url: '/sources?search&sort&order&page&pageSize&status&type',
         params: {
-          ...paginationParams('name'),
+          ...paginationParams(),
+          sort: filterParam(),
+          order: filterParam(),
           status: filterParam(),
           type: filterParam(),
         },
