@@ -1210,8 +1210,12 @@ type (
 		AutoUpdate *AutoUpdateSettings `json:"AutoUpdate"`
 		// The stack deployment option
 		Option *StackOption `json:"Option"`
-		// The git config of this stack
-		GitConfig *gittypes.RepoConfig
+		// GitConfig is the git repository configuration for git-backed stacks.
+		// Deprecated: loaded from Source via WorkflowID; kept for DB backwards-compatibility only.
+		// Non-migration code must not read or write this field; use Source records instead.
+		GitConfig *gittypes.RepoConfig `json:"GitConfig"`
+		// WorkflowID is the ID of the Workflow that owns the Source for this stack.
+		WorkflowID WorkflowID `json:"WorkflowID,omitempty"`
 		// CurrentDeploymentInfo records the git repository state at the time of the last actual deployment.
 		CurrentDeploymentInfo *StackDeploymentInfo `json:"CurrentDeploymentInfo,omitempty"`
 		// Whether the stack is from a app template
@@ -1239,6 +1243,23 @@ type (
 
 	// StackType represents the type of the stack (compose v2, stack deploy v3)
 	StackType int
+
+	// Source represents a GitOps source that can be referenced by stacks or deployments.
+	Source struct {
+		ID         SourceID             `json:"id" example:"1"`
+		Name       string               `json:"name" example:"my-source"`
+		LastSync   int64                `json:"lastSync,omitempty" example:"1587399600"`
+		Type       SourceType           `json:"type" example:"1"`
+		GitConfig  *gittypes.RepoConfig `json:"gitConfig,omitempty"`
+		Registry   *Registry            `json:"registry,omitempty"`
+		HelmConfig *HelmConfig          `json:"helmConfig,omitempty"`
+	}
+
+	// SourceID represents a source identifier
+	SourceID int
+
+	// SourceType represents the type of a source
+	SourceType int
 
 	// Status represents the application status
 	Status struct {
@@ -1518,6 +1539,14 @@ type (
 
 	// WebhookType represents the type of resource a webhook is related to
 	WebhookType int
+
+	// Workflow represents a GitOps workflow
+	Workflow struct {
+		ID        WorkflowID `json:"id" example:"1"`
+		SourceIDs []SourceID `json:"sourceIds"`
+	}
+
+	WorkflowID int
 
 	Snapshot struct {
 		EndpointID EndpointID          `json:"EndpointId"`
@@ -2156,6 +2185,13 @@ const (
 	PortainerBE
 	// PortainerEE represents the business edition of Portainer
 	PortainerEE
+)
+
+const (
+	_ SourceType = iota
+	SourceTypeGit
+	SourceTypeRegistry
+	SourceTypeHelm
 )
 
 const (

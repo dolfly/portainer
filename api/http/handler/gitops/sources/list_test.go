@@ -18,12 +18,18 @@ func TestSourcesList_GroupsByURLAndCredentials(t *testing.T) {
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
-		require.NoError(t, tx.Stack().Create(&portainer.Stack{
-			ID: 1, Name: "stack-a", GitConfig: gitCfg("https://github.com/org/repo"),
-		}))
-		require.NoError(t, tx.Stack().Create(&portainer.Stack{
-			ID: 2, Name: "stack-b", GitConfig: gitCfg("https://github.com/org/repo"),
-		}))
+		cfg := gitCfg("https://github.com/org/repo")
+		src := &portainer.Source{Name: "repo", Type: portainer.SourceTypeGit, GitConfig: cfg}
+		require.NoError(t, tx.Source().Create(src))
+
+		wfA := &portainer.Workflow{SourceIDs: []portainer.SourceID{src.ID}}
+		require.NoError(t, tx.Workflow().Create(wfA))
+		wfB := &portainer.Workflow{SourceIDs: []portainer.SourceID{src.ID}}
+		require.NoError(t, tx.Workflow().Create(wfB))
+
+		require.NoError(t, tx.Stack().Create(&portainer.Stack{ID: 1, Name: "stack-a", WorkflowID: wfA.ID}))
+		require.NoError(t, tx.Stack().Create(&portainer.Stack{ID: 2, Name: "stack-b", WorkflowID: wfB.ID}))
+
 		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
 	}))
 
@@ -45,8 +51,15 @@ func TestSourcesList_SeparatesCredentials(t *testing.T) {
 		cfg1.Authentication = &gittypes.GitAuthentication{Username: "alice", Password: "pass1"}
 		cfg2 := gitCfg("https://github.com/org/repo")
 		cfg2.Authentication = &gittypes.GitAuthentication{Username: "bob", Password: "pass2"}
-		require.NoError(t, tx.Stack().Create(&portainer.Stack{ID: 1, Name: "stack-a", GitConfig: cfg1}))
-		require.NoError(t, tx.Stack().Create(&portainer.Stack{ID: 2, Name: "stack-b", GitConfig: cfg2}))
+
+		stackA := &portainer.Stack{ID: 1, Name: "stack-a"}
+		createGitWorkflow(t, tx, stackA, cfg1)
+		require.NoError(t, tx.Stack().Create(stackA))
+
+		stackB := &portainer.Stack{ID: 2, Name: "stack-b"}
+		createGitWorkflow(t, tx, stackB, cfg2)
+		require.NoError(t, tx.Stack().Create(stackB))
+
 		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
 	}))
 
@@ -64,9 +77,9 @@ func TestSourcesList_StatusFilter(t *testing.T) {
 
 	// With nil gitService, source git-phase status is always StatusUnknown.
 	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
-		require.NoError(t, tx.Stack().Create(&portainer.Stack{
-			ID: 1, GitConfig: gitCfg("https://github.com/org/app"),
-		}))
+		stack := &portainer.Stack{ID: 1}
+		createGitWorkflow(t, tx, stack, gitCfg("https://github.com/org/app"))
+		require.NoError(t, tx.Stack().Create(stack))
 		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
 	}))
 
@@ -92,12 +105,14 @@ func TestSourcesList_SearchByURL(t *testing.T) {
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
-		require.NoError(t, tx.Stack().Create(&portainer.Stack{
-			ID: 1, GitConfig: gitCfg("https://github.com/org/app"),
-		}))
-		require.NoError(t, tx.Stack().Create(&portainer.Stack{
-			ID: 2, GitConfig: gitCfg("https://github.com/org/infra"),
-		}))
+		stackA := &portainer.Stack{ID: 1}
+		createGitWorkflow(t, tx, stackA, gitCfg("https://github.com/org/app"))
+		require.NoError(t, tx.Stack().Create(stackA))
+
+		stackB := &portainer.Stack{ID: 2}
+		createGitWorkflow(t, tx, stackB, gitCfg("https://github.com/org/infra"))
+		require.NoError(t, tx.Stack().Create(stackB))
+
 		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
 	}))
 

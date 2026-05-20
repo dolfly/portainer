@@ -234,14 +234,26 @@ func Test_redeployWhenChanged_FailsWhenCannotClone(t *testing.T) {
 	})
 	require.NoError(t, err, "error creating environment")
 
-	err = store.Stack().Create(&portainer.Stack{
-		ID:        1,
-		CreatedBy: "admin",
+	src := &portainer.Source{
+		Type: portainer.SourceTypeGit,
 		GitConfig: &gittypes.RepoConfig{
 			URL:           "url",
 			ReferenceName: "ref",
 			ConfigHash:    "oldHash",
-		}})
+		},
+	}
+	err = store.Source().Create(src)
+	require.NoError(t, err, "failed to create source")
+
+	wf := &portainer.Workflow{SourceIDs: []portainer.SourceID{src.ID}}
+	err = store.Workflow().Create(wf)
+	require.NoError(t, err, "failed to create workflow")
+
+	err = store.Stack().Create(&portainer.Stack{
+		ID:         1,
+		CreatedBy:  "admin",
+		WorkflowID: wf.ID,
+	})
 	require.NoError(t, err, "failed to create a test stack")
 
 	err = RedeployWhenChanged(t.Context(), 1, nil, store, testhelpers.NewGitService(cloneErr, "newHash"))

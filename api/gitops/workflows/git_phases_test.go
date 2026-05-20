@@ -34,7 +34,7 @@ func TestComputeGitPhases(t *testing.T) {
 		expectedArtifact Status
 	}{
 		{
-			name:             "listRefs errors → source error, artifact unknown",
+			name:             "listRefs errors: source error, artifact unknown",
 			referenceName:    "refs/heads/main",
 			configFilePath:   []GitEntries{{Name: "docker-compose.yml", IsFile: true}},
 			listRefs:         errRefs,
@@ -43,7 +43,7 @@ func TestComputeGitPhases(t *testing.T) {
 			expectedArtifact: StatusUnknown,
 		},
 		{
-			name:           "ref not in list → source error, artifact unknown",
+			name:           "ref not in list: source error, artifact unknown",
 			referenceName:  "refs/heads/missing",
 			configFilePath: []GitEntries{{Name: "docker-compose.yml", IsFile: true}},
 			listRefs: func(_ context.Context) ([]string, error) {
@@ -54,7 +54,7 @@ func TestComputeGitPhases(t *testing.T) {
 			expectedArtifact: StatusUnknown,
 		},
 		{
-			name:             "empty configFilePath → artifact error",
+			name:             "empty configFilePath: artifact error",
 			referenceName:    "refs/heads/main",
 			configFilePath:   []GitEntries{},
 			listRefs:         okRefs,
@@ -63,7 +63,7 @@ func TestComputeGitPhases(t *testing.T) {
 			expectedArtifact: StatusError,
 		},
 		{
-			name:             "listFiles errors → artifact error",
+			name:             "listFiles errors: artifact error",
 			referenceName:    "refs/heads/main",
 			configFilePath:   []GitEntries{{Name: "docker-compose.yml", IsFile: true}},
 			listRefs:         okRefs,
@@ -72,7 +72,7 @@ func TestComputeGitPhases(t *testing.T) {
 			expectedArtifact: StatusError,
 		},
 		{
-			name:           "file not in list → artifact error",
+			name:           "file not in list: artifact error",
 			referenceName:  "refs/heads/main",
 			configFilePath: []GitEntries{{Name: "docker-compose.yml", IsFile: true}},
 			listRefs:       okRefs,
@@ -92,7 +92,7 @@ func TestComputeGitPhases(t *testing.T) {
 			expectedArtifact: StatusHealthy,
 		},
 		{
-			name:             "empty referenceName → source healthy (default HEAD)",
+			name:             "empty referenceName: source healthy (default HEAD)",
 			referenceName:    "",
 			configFilePath:   []GitEntries{{Name: "docker-compose.yml", IsFile: true}},
 			listRefs:         okRefs,

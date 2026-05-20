@@ -53,6 +53,25 @@ func SanitizeURL(rawURL string) string {
 	return u.String()
 }
 
+// SanitizeRepoConfig returns a copy of gc with the URL sanitized and password cleared,
+// safe to return to clients.
+func SanitizeRepoConfig(gc *RepoConfig) *RepoConfig {
+	if gc == nil {
+		return nil
+	}
+
+	result := *gc
+	result.URL = SanitizeURL(result.URL)
+
+	if result.Authentication != nil && result.Authentication.Password != "" {
+		auth := *result.Authentication
+		auth.Password = ""
+		result.Authentication = &auth
+	}
+
+	return &result
+}
+
 type GitAuthentication struct {
 	Username          string
 	Password          string

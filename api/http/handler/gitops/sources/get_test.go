@@ -40,7 +40,9 @@ func TestGetSource_ReturnsDetail(t *testing.T) {
 	}
 
 	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
-		require.NoError(t, tx.Stack().Create(&portainer.Stack{ID: 1, Name: "my-stack", GitConfig: cfg}))
+		stack := &portainer.Stack{ID: 1, Name: "my-stack"}
+		createGitWorkflow(t, tx, stack, cfg)
+		require.NoError(t, tx.Stack().Create(stack))
 		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
 	}))
 
@@ -71,7 +73,9 @@ func TestGetSource_RedactsCredentials(t *testing.T) {
 	}
 
 	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
-		require.NoError(t, tx.Stack().Create(&portainer.Stack{ID: 1, Name: "secure-stack", GitConfig: cfg}))
+		stack := &portainer.Stack{ID: 1, Name: "secure-stack"}
+		createGitWorkflow(t, tx, stack, cfg)
+		require.NoError(t, tx.Stack().Create(stack))
 		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
 	}))
 
@@ -94,12 +98,13 @@ func TestGetSource_AutoUpdate(t *testing.T) {
 
 	cfg := gitCfg("https://github.com/org/polled")
 	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
-		require.NoError(t, tx.Stack().Create(&portainer.Stack{
+		stack := &portainer.Stack{
 			ID:         1,
 			Name:       "polled-stack",
-			GitConfig:  cfg,
 			AutoUpdate: &portainer.AutoUpdateSettings{Interval: "5m"},
-		}))
+		}
+		createGitWorkflow(t, tx, stack, cfg)
+		require.NoError(t, tx.Stack().Create(stack))
 		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
 	}))
 

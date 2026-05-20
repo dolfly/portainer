@@ -58,7 +58,7 @@ func RedeployWhenChanged(ctx context.Context, stackID portainer.StackID, deploye
 func redeployWhenChanged(ctx context.Context, stack *portainer.Stack, deployer StackDeployer, datastore dataservices.DataStore, gitService portainer.GitService, webhook bool) error {
 	log.Debug().Int("stack_id", int(stack.ID)).Msg("redeploying stack")
 
-	if stack.GitConfig == nil {
+	if stack.WorkflowID == 0 {
 		return nil // do nothing if it isn't a git-based stack
 	}
 
@@ -120,21 +120,29 @@ func redeployWhenChangedSecondStage(
 	user *portainer.User,
 	endpoint *portainer.Endpoint,
 ) error {
+	gitSrc, err := dataservices.GitSourceForWorkflow(datastore, stack.WorkflowID)
+	if err != nil {
+		return errors.WithMessagef(err, "failed to load git config for stack %v", stack.ID)
+	}
+
+	if gitSrc == nil {
+		return nil
+	}
+
+	gitConfig := gitSrc.GitConfig
+
 	var gitCommitChangedOrForceUpdate bool
 
-	// pendingHash holds the new commit hash to apply after deployment is attempted,
-	// preventing pre-deployment failures (e.g. registry lookup) from advancing the
-	// stored hash and causing subsequent polls to skip this commit.
-	var pendingHash string
-
 	if !stack.FromAppTemplate {
-		updated, newHash, err := update.UpdateGitObject(ctx, gitService, fmt.Sprintf("stack:%d", stack.ID), stack.GitConfig, false, stack.ProjectPath)
+		updated, newHash, err := update.UpdateGitObject(ctx, gitService, fmt.Sprintf("stack:%d", stack.ID), gitConfig, false, stack.ProjectPath)
 		if err != nil {
 			return err
 		}
 
 		if updated {
-			pendingHash = newHash
+			gitConfig.ConfigHash = newHash
+
+			stack.UpdateDate = time.Now().Unix()
 			gitCommitChangedOrForceUpdate = updated
 		}
 
@@ -154,16 +162,12 @@ func redeployWhenChangedSecondStage(
 		return errors.WithMessagef(err, "failed to set the deploying status for stack %v", stack.ID)
 	}
 
-	if pendingHash != "" {
-		stack.GitConfig.ConfigHash = pendingHash
-	}
-
 	stack.CurrentDeploymentInfo = &portainer.StackDeploymentInfo{
-		RepositoryURL:   stack.GitConfig.URL,
-		ReferenceName:   stack.GitConfig.ReferenceName,
-		ConfigFilePath:  stack.GitConfig.ConfigFilePath,
+		RepositoryURL:   gitConfig.URL,
+		ReferenceName:   gitConfig.ReferenceName,
+		ConfigFilePath:  gitConfig.ConfigFilePath,
 		AdditionalFiles: stack.AdditionalFiles,
-		ConfigHash:      stack.GitConfig.ConfigHash,
+		ConfigHash:      gitConfig.ConfigHash,
 	}
 
 	registries, err := getUserRegistries(datastore, user, endpoint.ID)
@@ -204,6 +208,7 @@ func redeployWhenChangedSecondStage(
 		default:
 			return errors.Errorf("cannot update stack, type %v is unsupported", stack.Type)
 		}
+
 		return nil
 	}
 
@@ -213,7 +218,18 @@ func redeployWhenChangedSecondStage(
 		stack.UpdateDate = time.Now().Unix()
 
 		stackutils.UpdateStackStatusFromDeploymentResult(stack, deployErr)
-		return tx.Stack().Update(stack.ID, stack)
+		if err := tx.Stack().Update(stack.ID, stack); err != nil {
+			return err
+		}
+
+		src, err := tx.Source().Read(gitSrc.ID)
+		if err != nil {
+			return errors.Wrap(err, "failed to read source")
+		}
+
+		src.GitConfig = gitConfig
+
+		return tx.Source().Update(src.ID, src)
 	}); err != nil {
 		return errors.WithMessagef(err, "failed to update the stack %v", stack.ID)
 	}

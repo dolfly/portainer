@@ -33,14 +33,34 @@ func TestStackUpdateGitWebhookUniqueness(t *testing.T) {
 	err = store.Endpoint().Create(endpoint)
 	require.NoError(t, err)
 
+	src1 := &portainer.Source{
+		Type:      portainer.SourceTypeGit,
+		GitConfig: &gittypes.RepoConfig{URL: "https://github.com/portainer/portainer.git"},
+	}
+	err = store.Source().Create(src1)
+	require.NoError(t, err)
+
+	wf1 := &portainer.Workflow{SourceIDs: []portainer.SourceID{src1.ID}}
+	err = store.Workflow().Create(wf1)
+	require.NoError(t, err)
+
+	src2 := &portainer.Source{
+		Type:      portainer.SourceTypeGit,
+		GitConfig: &gittypes.RepoConfig{URL: "https://github.com/portainer/portainer.git"},
+	}
+	err = store.Source().Create(src2)
+	require.NoError(t, err)
+
+	wf2 := &portainer.Workflow{SourceIDs: []portainer.SourceID{src2.ID}}
+	err = store.Workflow().Create(wf2)
+	require.NoError(t, err)
+
 	stack1 := portainer.Stack{
 		ID:         456,
 		EndpointID: endpoint.ID,
+		WorkflowID: wf1.ID,
 		AutoUpdate: &portainer.AutoUpdateSettings{
 			Webhook: webhook.String(),
-		},
-		GitConfig: &gittypes.RepoConfig{
-			URL: "https://github.com/portainer/portainer.git",
 		},
 	}
 
@@ -50,6 +70,7 @@ func TestStackUpdateGitWebhookUniqueness(t *testing.T) {
 	stack2 := stack1
 	stack2.ID++
 	stack2.AutoUpdate = nil
+	stack2.WorkflowID = wf2.ID
 
 	err = store.Stack().Create(&stack2)
 	require.NoError(t, err)

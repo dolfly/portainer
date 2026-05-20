@@ -66,7 +66,36 @@ func (b *GitMethodStackBuilder) prepare(ctx context.Context, payload *StackPaylo
 
 	// Update the latest commit id
 	repoConfig.ConfigHash = commitHash
-	b.stack.GitConfig = &repoConfig
+
+	var workflowID portainer.WorkflowID
+
+	if err := b.dataStore.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		repoConfig.URL = gittypes.SanitizeURL(repoConfig.URL)
+
+		src, err := dataservices.FindOrCreateGitSource(tx, &portainer.Source{
+			Name:      gittypes.RepoName(repoConfig.URL),
+			Type:      portainer.SourceTypeGit,
+			GitConfig: &repoConfig,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to find or create source: %w", err)
+		}
+
+		wf := &portainer.Workflow{
+			SourceIDs: []portainer.SourceID{src.ID},
+		}
+		if err := tx.Workflow().Create(wf); err != nil {
+			return fmt.Errorf("failed to create workflow: %w", err)
+		}
+
+		workflowID = wf.ID
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	b.stack.WorkflowID = workflowID
 
 	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 
+	portainer "github.com/portainer/portainer/api"
 	gittypes "github.com/portainer/portainer/api/git/types"
 	"github.com/portainer/portainer/api/gitops/workflows"
 )
@@ -41,6 +42,19 @@ func parseSourceType(s string) (string, error) {
 	}
 }
 
+func sourceTypeString(t portainer.SourceType) string {
+	switch t {
+	case portainer.SourceTypeGit:
+		return string(SourceTypeGit)
+	case portainer.SourceTypeHelm:
+		return string(SourceTypeHelm)
+	case portainer.SourceTypeRegistry:
+		return string(SourceTypeOCI)
+	default:
+		return string(SourceTypeGit)
+	}
+}
+
 type sourceGroupKey struct {
 	URL      string
 	Username string
@@ -53,6 +67,7 @@ func gitSourceKey(cfg *gittypes.RepoConfig) sourceGroupKey {
 		key.Username = cfg.Authentication.Username
 		key.Password = cfg.Authentication.Password
 	}
+
 	return key
 }
 
@@ -61,11 +76,8 @@ func sourceID(key sourceGroupKey) string {
 	return hex.EncodeToString(h[:8])
 }
 
-// repoName extracts the repository name from a URL.
-// e.g. "https://github.com/org/app-config.git" → "app-config"
 func repoName(rawURL string) string {
-	base := path.Base(rawURL)
-	return strings.TrimSuffix(base, ".git")
+	return strings.TrimSuffix(path.Base(rawURL), ".git")
 }
 
 func worstCaseStatus(statuses []workflows.Status) workflows.Status {
@@ -82,5 +94,6 @@ func worstCaseStatus(statuses []workflows.Status) workflows.Status {
 			worst = s
 		}
 	}
+
 	return worst
 }

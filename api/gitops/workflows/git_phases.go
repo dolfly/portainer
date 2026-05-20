@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"path"
 	"slices"
+
+	portainer "github.com/portainer/portainer/api"
+	gittypes "github.com/portainer/portainer/api/git/types"
 )
 
 // ListRefsFunc lists all git refs for a repository.
@@ -17,6 +20,30 @@ type ListFilesFunc func(ctx context.Context, exts []string, dirOnly bool) ([]str
 type GitEntries struct {
 	Name   string
 	IsFile bool
+}
+
+// ComputeGitPhasesForConfig computes source and artifact phases from a RepoConfig and a GitService.
+func ComputeGitPhasesForConfig(ctx context.Context, gitSvc portainer.GitService, cfg *gittypes.RepoConfig) (source, artifact WorkflowPhaseStatus) {
+	if gitSvc == nil || cfg == nil {
+		return WorkflowPhaseStatus{Status: StatusUnknown}, WorkflowPhaseStatus{Status: StatusUnknown}
+	}
+
+	username, password := gitCredentials(cfg)
+	return ComputeGitPhases(ctx, cfg.ReferenceName, []GitEntries{{Name: cfg.ConfigFilePath, IsFile: true}},
+		func(ctx context.Context) ([]string, error) {
+			return gitSvc.ListRefs(ctx, cfg.URL, username, password, false, cfg.TLSSkipVerify)
+		},
+		func(ctx context.Context, exts []string, dirOnly bool) ([]string, error) {
+			return gitSvc.ListFiles(ctx, cfg.URL, cfg.ReferenceName, username, password, dirOnly, false, exts, cfg.TLSSkipVerify)
+		},
+	)
+}
+
+func gitCredentials(cfg *gittypes.RepoConfig) (username, password string) {
+	if cfg.Authentication != nil {
+		return cfg.Authentication.Username, cfg.Authentication.Password
+	}
+	return "", ""
 }
 
 // ComputeGitPhases checks source (ref reachability) and artifact (config file presence).

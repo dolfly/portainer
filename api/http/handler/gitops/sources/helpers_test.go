@@ -1,6 +1,8 @@
 package sources
 
 import (
+	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,6 +16,26 @@ import (
 	"github.com/segmentio/encoding/json"
 	"github.com/stretchr/testify/require"
 )
+
+// createGitWorkflow creates a Source and Workflow for the given config and
+// wires them up by setting stack.WorkflowID before creating the stack.
+func createGitWorkflow(t *testing.T, tx dataservices.DataStoreTx, stack *portainer.Stack, cfg *gittypes.RepoConfig) {
+	t.Helper()
+
+	src := &portainer.Source{
+		Name:      gittypes.RepoName(cfg.URL),
+		Type:      portainer.SourceTypeGit,
+		GitConfig: cfg,
+	}
+	require.NoError(t, tx.Source().Create(src))
+
+	wf := &portainer.Workflow{
+		SourceIDs: []portainer.SourceID{src.ID},
+	}
+	require.NoError(t, tx.Workflow().Create(wf))
+
+	stack.WorkflowID = wf.ID
+}
 
 func newTestHandler(t *testing.T, store dataservices.DataStore) *Handler {
 	t.Helper()
@@ -62,4 +84,67 @@ func gitCfg(url string) *gittypes.RepoConfig {
 		ConfigFilePath: "docker-compose.yml",
 		ReferenceName:  "refs/heads/main",
 	}
+}
+
+func buildCreateReq(t *testing.T, userID portainer.UserID, body []byte) *http.Request {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodPost, "/gitops/sources/git", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req = req.WithContext(security.StoreTokenData(req, &portainer.TokenData{ID: userID}))
+	req = req.WithContext(security.StoreRestrictedRequestContext(req, &security.RestrictedRequestContext{
+		UserID: userID, IsAdmin: true,
+	}))
+	return req
+}
+
+func buildUpdateReq(t *testing.T, userID portainer.UserID, id int, body []byte) *http.Request {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/gitops/sources/%d", id), bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req = req.WithContext(security.StoreTokenData(req, &portainer.TokenData{ID: userID}))
+	req = req.WithContext(security.StoreRestrictedRequestContext(req, &security.RestrictedRequestContext{
+		UserID: userID, IsAdmin: true,
+	}))
+	return req
+}
+
+func buildDeleteReq(t *testing.T, userID portainer.UserID, id int) *http.Request {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/gitops/sources/%d", id), nil)
+	req = req.WithContext(security.StoreTokenData(req, &portainer.TokenData{ID: userID}))
+	req = req.WithContext(security.StoreRestrictedRequestContext(req, &security.RestrictedRequestContext{
+		UserID: userID, IsAdmin: true,
+	}))
+	return req
+}
+
+func buildSummaryReq(t *testing.T, userID portainer.UserID) *http.Request {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodGet, "/gitops/sources/summary", nil)
+	req = req.WithContext(security.StoreTokenData(req, &portainer.TokenData{ID: userID}))
+	req = req.WithContext(security.StoreRestrictedRequestContext(req, &security.RestrictedRequestContext{
+		UserID: userID, IsAdmin: true,
+	}))
+	return req
+}
+
+func buildUpdateReqWithRawID(t *testing.T, userID portainer.UserID, id string, body []byte) *http.Request {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodPut, "/gitops/sources/"+id, bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req = req.WithContext(security.StoreTokenData(req, &portainer.TokenData{ID: userID}))
+	req = req.WithContext(security.StoreRestrictedRequestContext(req, &security.RestrictedRequestContext{
+		UserID: userID, IsAdmin: true,
+	}))
+	return req
+}
+
+func buildDeleteReqWithRawID(t *testing.T, userID portainer.UserID, id string) *http.Request {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodDelete, "/gitops/sources/"+id, nil)
+	req = req.WithContext(security.StoreTokenData(req, &portainer.TokenData{ID: userID}))
+	req = req.WithContext(security.StoreRestrictedRequestContext(req, &security.RestrictedRequestContext{
+		UserID: userID, IsAdmin: true,
+	}))
+	return req
 }

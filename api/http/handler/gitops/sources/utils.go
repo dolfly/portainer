@@ -28,9 +28,7 @@ func buildSource(id, url string, wfs []ce.Workflow) Source {
 		if sourceError == "" && wf.Status.Source.Status == ce.StatusError {
 			sourceError = wf.Status.Source.Error
 		}
-		if wf.LastSyncDate > lastSync {
-			lastSync = wf.LastSyncDate
-		}
+		lastSync = max(lastSync, wf.LastSyncDate)
 		if wf.Target.EndpointID != 0 {
 			endpointIDs.Add(wf.Target.EndpointID)
 		}

@@ -27,7 +27,7 @@ func MapStackToWorkflow(s portainer.Stack, gitConfig *gittypes.RepoConfig, sourc
 			Namespace:  s.Namespace,
 		},
 		CreationDate: s.CreationDate,
-		LastSyncDate: stackLastSyncDate(s),
+		LastSyncDate: StackLastSyncDate(s),
 	}
 }
 
@@ -60,7 +60,7 @@ func MapEdgeStackToWorkflow(es portainer.EdgeStack, gitConfig *gittypes.RepoConf
 	}
 }
 
-func stackLastSyncDate(s portainer.Stack) int64 {
+func StackLastSyncDate(s portainer.Stack) int64 {
 	for i := len(s.DeploymentStatus) - 1; i >= 0; i-- {
 		if s.DeploymentStatus[i].Status == portainer.StackStatusActive {
 			return s.DeploymentStatus[i].Time
@@ -120,7 +120,6 @@ func resolveEdgeGroupEndpoints(groups []portainer.EdgeGroupID, groupEndpoints ma
 	for _, gid := range groups {
 		for _, epID := range groupEndpoints[gid] {
 			seen.Add(epID)
-
 		}
 	}
 	return seen.Keys()

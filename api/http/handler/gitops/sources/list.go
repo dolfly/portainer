@@ -7,7 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	gocache "github.com/patrickmn/go-cache"
+	portainer "github.com/portainer/portainer/api"
+	"github.com/portainer/portainer/api/dataservices"
+	gittypes "github.com/portainer/portainer/api/git/types"
 	ceWorkflows "github.com/portainer/portainer/api/gitops/workflows"
 	"github.com/portainer/portainer/api/http/security"
 	"github.com/portainer/portainer/api/http/utils/filters"
@@ -15,12 +17,14 @@ import (
 	httperror "github.com/portainer/portainer/pkg/libhttp/error"
 	"github.com/portainer/portainer/pkg/libhttp/request"
 	"github.com/portainer/portainer/pkg/libhttp/response"
+
+	gocache "github.com/patrickmn/go-cache"
 )
 
 // @id GitOpsSourcesList
 // @summary List all GitOps sources
 // @description Returns a deduplicated list of git repositories used across all GitOps workflows.
-// @description **Access policy**: admin
+// @description **Access policy**: authenticated
 // @tags gitops
 // @security ApiKeyAuth
 // @security jwt
@@ -107,16 +111,51 @@ func cacheKey(sc *security.RestrictedRequestContext) string {
 }
 
 func (h *Handler) fetchSources(ctx context.Context, sc *security.RestrictedRequestContext) ([]Source, error) {
-	workflows, err := ceWorkflows.FetchWorkflows(ctx, h.dataStore, h.gitService, h.k8sFactory, sc, nil)
-	if err != nil {
+	var allSrcs []portainer.Source
+	var stats map[portainer.SourceID]ceWorkflows.SourceStats
+
+	if err := h.dataStore.ViewTx(func(tx dataservices.DataStoreTx) error {
+		var err error
+		allSrcs, stats, err = ceWorkflows.FetchSourceStats(tx, h.k8sFactory, sc)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
-	byID := workflowsBySourceID(workflows)
+	result := make([]Source, 0, len(allSrcs))
+	for _, src := range allSrcs {
+		s, accessible := stats[src.ID]
+		if !accessible && !sc.IsAdmin {
+			continue
+		}
 
-	sources := make([]Source, 0, len(byID))
-	for id, wfs := range byID {
-		sources = append(sources, buildSource(id, wfs[0].GitConfig.URL, wfs))
+		var status ceWorkflows.Status
+		var sourceErr string
+		if src.GitConfig != nil {
+			phase, _ := ceWorkflows.ComputeGitPhasesForConfig(ctx, h.gitService, src.GitConfig)
+			status = phase.Status
+			sourceErr = phase.Error
+		} else {
+			status = ceWorkflows.StatusUnknown
+		}
+
+		url := ""
+		if src.GitConfig != nil {
+			url = gittypes.SanitizeURL(src.GitConfig.URL)
+		}
+
+		result = append(result, Source{
+			ID:           strconv.Itoa(int(src.ID)),
+			Name:         src.Name,
+			Type:         sourceTypeString(src.Type),
+			URL:          url,
+			Status:       status,
+			Error:        sourceErr,
+			UsedBy:       s.WorkflowCount,
+			Environments: len(s.EndpointIDs),
+			LastSync:     s.LastSync,
+		})
 	}
-	return sources, nil
+
+	return result, nil
 }

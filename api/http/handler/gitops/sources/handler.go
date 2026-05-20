@@ -37,10 +37,16 @@ func NewHandler(bouncer security.BouncerService, dataStore dataservices.DataStor
 		k8sFactory: k8sFactory,
 	}
 
+	authenticatedRouter := h.PathPrefix("/gitops/sources").Subrouter()
+	authenticatedRouter.Use(bouncer.AuthenticatedAccess)
+	authenticatedRouter.Handle("", httperror.LoggerHandler(h.list)).Methods(http.MethodGet)
+	authenticatedRouter.Handle("/summary", httperror.LoggerHandler(h.summary)).Methods(http.MethodGet)
+
 	adminRouter := h.PathPrefix("/gitops/sources").Subrouter()
 	adminRouter.Use(bouncer.AdminAccess)
-	adminRouter.Handle("", httperror.LoggerHandler(h.list)).Methods(http.MethodGet)
-	adminRouter.Handle("/summary", httperror.LoggerHandler(h.summary)).Methods(http.MethodGet)
+	adminRouter.Handle("/git", httperror.LoggerHandler(h.gitSourceCreate)).Methods(http.MethodPost)
 	adminRouter.Handle("/{id}", httperror.LoggerHandler(h.getSource)).Methods(http.MethodGet)
+	adminRouter.Handle("/{id}", httperror.LoggerHandler(h.gitSourceUpdate)).Methods(http.MethodPut)
+	adminRouter.Handle("/{id}", httperror.LoggerHandler(h.sourceDelete)).Methods(http.MethodDelete)
 	return h
 }
