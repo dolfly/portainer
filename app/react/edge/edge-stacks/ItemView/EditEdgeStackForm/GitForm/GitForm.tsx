@@ -68,7 +68,9 @@ export function GitForm({ stack }: { stack: EdgeStack }) {
   const { saveCredentials, isLoading: isSaveCredentialsLoading } =
     useSaveCredentialsIfRequired();
 
-  const [webhookId] = useState(() => stack.AutoUpdate?.Webhook || createWebhookId());
+  const [webhookId] = useState(
+    () => stack.AutoUpdate?.Webhook || createWebhookId()
+  );
 
   if (!stack.GitConfig) {
     return null;

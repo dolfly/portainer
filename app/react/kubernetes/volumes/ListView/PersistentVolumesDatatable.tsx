@@ -6,6 +6,7 @@ import { useEnvironmentId } from '@/react/hooks/useEnvironmentId';
 import { usePersistentVolumes } from '@/react/kubernetes/volumes/queries/usePersistentVolumes';
 import { useDeletePersistentVolumes } from '@/react/kubernetes/volumes/queries/useDeletePersistentVolumes';
 import { ReclaimPolicyEditForm } from '@/react/kubernetes/volumes/ListView/ReclaimPolicyEditForm';
+import { CreateFromManifestButton } from '@/react/kubernetes/components/CreateFromManifestButton';
 
 import { refreshableSettings } from '@@/datatables/types';
 import { Datatable, TableSettingsMenu } from '@@/datatables';
@@ -14,7 +15,6 @@ import { DeleteButton } from '@@/buttons/DeleteButton';
 import { Modal } from '@@/modals';
 
 import { systemResourcesSettings } from '../../datatables/SystemResourcesSettings';
-import { CreateFromManifestButton } from '../../components/CreateFromManifestButton';
 import {
   DefaultDatatableSettings,
   TableSettings,

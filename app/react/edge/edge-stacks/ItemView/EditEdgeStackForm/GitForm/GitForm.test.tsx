@@ -13,7 +13,9 @@ import { EdgeStack } from '../../../types';
 import { GitForm } from './GitForm';
 
 vi.mock('@/portainer/helpers/webhookHelper', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/portainer/helpers/webhookHelper')>()),
+  ...(await importOriginal<
+    typeof import('@/portainer/helpers/webhookHelper')
+  >()),
   createWebhookId: vi.fn(),
 }));
 

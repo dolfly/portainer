@@ -10,16 +10,16 @@ import { PersistentVolumeClaimsDatatable } from './PersistentVolumeClaimsDatatab
 export function VolumesView() {
   const tabs: Tab[] = [
     {
-      name: 'Persistent volumes',
-      icon: Database,
-      widget: <PersistentVolumesDatatable />,
-      selectedTabParam: 'volumes',
-    },
-    {
       name: 'Persistent volume claims',
       icon: Database,
       widget: <PersistentVolumeClaimsDatatable />,
       selectedTabParam: 'volume-claims',
+    },
+    {
+      name: 'Persistent volumes',
+      icon: Database,
+      widget: <PersistentVolumesDatatable />,
+      selectedTabParam: 'volumes',
     },
     {
       name: 'Storage classes',
