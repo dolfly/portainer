@@ -585,6 +585,10 @@ type (
 		EncodedValues       string             `json:"EncodedValues"`
 		PreInstallDeletions []ResourceDeletion `json:"PreInstallDeletions,omitempty"`
 		PreInstallAdoptions []ResourceAdoption `json:"PreInstallAdoptions,omitempty"`
+		// NoWait disables waiting for pods to be ready after install.
+		// Set to true for externally sourced charts whose startup timing cannot be controlled,
+		// to avoid leaving the release stuck in pending-install.
+		NoWait bool `json:"NoWait,omitempty"`
 	}
 
 	// ResourceDeletion identifies an existing Kubernetes resource to delete before policy install
