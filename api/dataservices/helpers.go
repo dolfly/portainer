@@ -109,7 +109,10 @@ func AppendFn[T any](collection *[]T) func(obj any) (any, error) {
 
 		*collection = append(*collection, *element)
 
-		return new(T), nil
+		var zero T
+		*element = zero
+
+		return element, nil
 	}
 }
 
@@ -126,7 +129,10 @@ func FilterFn[T any](collection *[]T, predicate func(T) bool) func(obj any) (any
 			*collection = append(*collection, *element)
 		}
 
-		return new(T), nil
+		var zero T
+		*element = zero
+
+		return element, nil
 	}
 }
 
@@ -142,9 +148,12 @@ func FirstFn[T any](element *T, predicate func(T) bool) func(obj any) (any, erro
 
 		if predicate(*e) {
 			*element = *e
-			return new(T), ErrStop
+			return e, ErrStop
 		}
 
-		return new(T), nil
+		var zero T
+		*e = zero
+
+		return e, nil
 	}
 }
