@@ -196,6 +196,43 @@ func TestGitSourceUpdate_NotFound(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, rr.Code)
 }
 
+func TestGitSourceUpdate_ConflictOnDuplicateURL(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	var srcID portainer.SourceID
+	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		existing := &portainer.Source{
+			Name: "existing",
+			Type: portainer.SourceTypeGit,
+			GitConfig: &gittypes.RepoConfig{
+				URL: "https://github.com/org/existing.git",
+			},
+		}
+		err := tx.Source().Create(existing)
+		require.NoError(t, err)
+
+		src := &portainer.Source{Name: "other", Type: portainer.SourceTypeGit}
+		err = tx.Source().Create(src)
+		require.NoError(t, err)
+		srcID = src.ID
+
+		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
+	}))
+
+	h := newTestHandler(t, store)
+
+	body, err := json.Marshal(GitSourceCreatePayload{
+		URL: "https://github.com/org/existing.git",
+	})
+	require.NoError(t, err)
+
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, buildUpdateReq(t, 1, int(srcID), body))
+
+	require.Equal(t, http.StatusConflict, rr.Code)
+}
+
 func TestGitSourceUpdate_NotGitSource(t *testing.T) {
 	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)

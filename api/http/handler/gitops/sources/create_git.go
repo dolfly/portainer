@@ -25,7 +25,6 @@ type GitAuthenticationPayload struct {
 type GitSourceCreatePayload struct {
 	Name                string                    `json:"name"`
 	URL                 string                    `json:"url"`
-	ReferenceName       string                    `json:"referenceName"`
 	TLSSkipVerify       bool                      `json:"tlsSkipVerify"`
 	Authentication      *GitAuthenticationPayload `json:"authentication"`
 	ClearAuthentication bool                      `json:"clearAuthentication"`
@@ -44,7 +43,6 @@ func (payload *GitSourceCreatePayload) Validate(_ *http.Request) error {
 func BuildGitSource(payload GitSourceCreatePayload) *portainer.Source {
 	gitConfig := &gittypes.RepoConfig{
 		URL:           payload.URL,
-		ReferenceName: payload.ReferenceName,
 		TLSSkipVerify: payload.TLSSkipVerify,
 	}
 

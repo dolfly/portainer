@@ -19,7 +19,7 @@ import (
 
 // createGitWorkflow creates a Source and Workflow for the given config and
 // wires them up by setting stack.WorkflowID before creating the stack.
-func createGitWorkflow(t *testing.T, tx dataservices.DataStoreTx, stack *portainer.Stack, cfg *gittypes.RepoConfig) {
+func createGitWorkflow(t *testing.T, tx dataservices.DataStoreTx, stack *portainer.Stack, cfg *gittypes.RepoConfig) portainer.SourceID {
 	t.Helper()
 
 	src := &portainer.Source{
@@ -30,11 +30,20 @@ func createGitWorkflow(t *testing.T, tx dataservices.DataStoreTx, stack *portain
 	require.NoError(t, tx.Source().Create(src))
 
 	wf := &portainer.Workflow{
-		SourceIDs: []portainer.SourceID{src.ID},
+		Artifacts: []portainer.ArtifactSources{{
+			Artifact: portainer.Artifact{
+				StackID:        stack.ID,
+				ReferenceName:  cfg.ReferenceName,
+				ConfigFilePath: cfg.ConfigFilePath,
+			},
+			SourceIDs: []portainer.SourceID{src.ID},
+		}},
 	}
 	require.NoError(t, tx.Workflow().Create(wf))
 
 	stack.WorkflowID = wf.ID
+
+	return src.ID
 }
 
 func newTestHandler(t *testing.T, store dataservices.DataStore) *Handler {

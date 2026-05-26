@@ -22,9 +22,9 @@ func TestSourcesList_GroupsByURLAndCredentials(t *testing.T) {
 		src := &portainer.Source{Name: "repo", Type: portainer.SourceTypeGit, GitConfig: cfg}
 		require.NoError(t, tx.Source().Create(src))
 
-		wfA := &portainer.Workflow{SourceIDs: []portainer.SourceID{src.ID}}
+		wfA := &portainer.Workflow{Artifacts: []portainer.ArtifactSources{{SourceIDs: []portainer.SourceID{src.ID}}}}
 		require.NoError(t, tx.Workflow().Create(wfA))
-		wfB := &portainer.Workflow{SourceIDs: []portainer.SourceID{src.ID}}
+		wfB := &portainer.Workflow{Artifacts: []portainer.ArtifactSources{{SourceIDs: []portainer.SourceID{src.ID}}}}
 		require.NoError(t, tx.Workflow().Create(wfB))
 
 		require.NoError(t, tx.Stack().Create(&portainer.Stack{ID: 1, Name: "stack-a", WorkflowID: wfA.ID}))

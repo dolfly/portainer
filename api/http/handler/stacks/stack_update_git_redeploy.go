@@ -9,6 +9,7 @@ import (
 	portainer "github.com/portainer/portainer/api"
 	"github.com/portainer/portainer/api/dataservices"
 	"github.com/portainer/portainer/api/git"
+	"github.com/portainer/portainer/api/gitops/workflows"
 	httperrors "github.com/portainer/portainer/api/http/errors"
 	"github.com/portainer/portainer/api/http/security"
 	k "github.com/portainer/portainer/api/kubernetes"
@@ -78,7 +79,7 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 		return httperror.BadRequest("Stack is not created from git", errors.New("stack has no git workflow"))
 	}
 
-	gitConfig, sourceID, err := loadGitConfigFromSource(handler.DataStore, stack.WorkflowID)
+	gitConfig, sourceID, err := loadGitConfigForStack(handler.DataStore, stack.WorkflowID, stack.ID)
 	if err != nil {
 		return httperror.InternalServerError("Unable to load git config for stack", err)
 	}
@@ -235,9 +236,9 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 				return err
 			}
 
-			gitConfig.ConfigHash = oldConfigHash
-
-			return saveSourceGitConfig(tx, sourceID, gitConfig)
+			return workflows.UpdateArtifactForStack(tx, stack.WorkflowID, stack.ID, func(a *portainer.Artifact) {
+				a.ConfigHash = oldConfigHash
+			})
 		}); err != nil {
 			log.Error().Err(err).Int("stack_id", int(stack.ID)).Msg("failed to revert config hash after failed redeploy")
 		}
@@ -252,9 +253,10 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 		if err := tx.Stack().Update(stack.ID, stack); err != nil {
 			return err
 		}
-		if err := saveSourceGitConfig(tx, sourceID, gitConfig); err != nil {
+		if err := saveStackGitConfig(tx, stack.WorkflowID, stack.ID, sourceID, gitConfig); err != nil {
 			return err
 		}
+
 		return fillStackGitConfig(tx, stack)
 	}); err != nil {
 		deployGate.abortDeploy()

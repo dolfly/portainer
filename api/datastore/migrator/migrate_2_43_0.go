@@ -41,6 +41,12 @@ func (lrc *legacyRepoConfig) toRepoConfig() *gittypes.RepoConfig {
 	}
 
 	if lrc.Authentication != nil {
+		if lrc.Authentication.GitCredentialID != 0 {
+			log.Warn().
+				Int("git_credential_id", lrc.Authentication.GitCredentialID).
+				Msg("stack has a GitCredentialID reference which is not supported in CE; credential reference will be dropped during migration")
+		}
+
 		cfg.Authentication = &gittypes.GitAuthentication{
 			Username:          lrc.Authentication.Username,
 			Password:          lrc.Authentication.Password,
@@ -138,16 +144,25 @@ func (m *Migrator) migrateGitConfigToSources_2_43_0() error {
 				newSrcID = src.ID
 			}
 
-			wf := &portainer.Workflow{
-				SourceIDs: []portainer.SourceID{srcID},
-			}
-			if err := m.workflowService.Tx(tx).Create(wf); err != nil {
-				return fmt.Errorf("failed to create workflow for stack %d: %w", ls.ID, err)
-			}
-
 			liveStack, err := m.stackService.Tx(tx).Read(portainer.StackID(ls.ID))
 			if err != nil {
 				return fmt.Errorf("failed to read stack %d: %w", ls.ID, err)
+			}
+
+			wf := &portainer.Workflow{
+				Name: liveStack.Name,
+				Artifacts: []portainer.ArtifactSources{{
+					Artifact: portainer.Artifact{
+						ReferenceName:  cfg.ReferenceName,
+						ConfigFilePath: cfg.ConfigFilePath,
+						ConfigHash:     cfg.ConfigHash,
+						StackID:        portainer.StackID(ls.ID),
+					},
+					SourceIDs: []portainer.SourceID{srcID},
+				}},
+			}
+			if err := m.workflowService.Tx(tx).Create(wf); err != nil {
+				return fmt.Errorf("failed to create workflow for stack %d: %w", ls.ID, err)
 			}
 
 			liveStack.WorkflowID = wf.ID

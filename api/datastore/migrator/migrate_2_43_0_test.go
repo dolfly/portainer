@@ -57,9 +57,10 @@ func TestMigrateGitConfigToSources_2_43_0_GitStackMigrated(t *testing.T) {
 
 	wf, err := workflowSvc.Read(migrated.WorkflowID)
 	require.NoError(t, err)
-	require.Len(t, wf.SourceIDs, 1)
+	require.Len(t, wf.Artifacts, 1)
+	require.Len(t, wf.Artifacts[0].SourceIDs, 1)
 
-	src, err := sourceSvc.Read(wf.SourceIDs[0])
+	src, err := sourceSvc.Read(wf.Artifacts[0].SourceIDs[0])
 	require.NoError(t, err)
 	require.Equal(t, portainer.SourceTypeGit, src.Type)
 	require.Equal(t, gitStack.GitConfig.URL, src.GitConfig.URL)
@@ -168,8 +169,9 @@ func TestMigrateGitConfigToSources_2_43_0_DuplicateSourcesDeduped(t *testing.T) 
 
 	sharedSourceID := sources[0].ID
 	for _, wf := range workflows {
-		require.Len(t, wf.SourceIDs, 1)
-		require.Equal(t, sharedSourceID, wf.SourceIDs[0])
+		require.Len(t, wf.Artifacts, 1)
+		require.Len(t, wf.Artifacts[0].SourceIDs, 1)
+		require.Equal(t, sharedSourceID, wf.Artifacts[0].SourceIDs[0])
 	}
 }
 

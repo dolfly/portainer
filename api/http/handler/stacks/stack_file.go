@@ -97,7 +97,7 @@ func (handler *Handler) stackFile(w http.ResponseWriter, r *http.Request) *httpe
 	var gitConfig *gittypes.RepoConfig
 	if stack.WorkflowID != 0 {
 		var err error
-		gitConfig, _, err = loadGitConfigFromSource(handler.DataStore, stack.WorkflowID)
+		gitConfig, _, err = loadGitConfigForStack(handler.DataStore, stack.WorkflowID, stack.ID)
 		if err != nil {
 			return httperror.InternalServerError("Unable to load git config for stack", err)
 		}

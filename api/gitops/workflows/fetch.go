@@ -48,12 +48,12 @@ func FetchWorkflows(
 		// First pass: filter by endpoint/stack-type match and collect workflow IDs.
 		preFiltered := make([]portainer.Stack, 0, len(stacks))
 		workflowIDSet := make(map[portainer.WorkflowID]struct{}, len(stacks))
-		for _, s := range stacks {
-			if ep, ok := endpointMap[s.EndpointID]; ok && !EndpointMatchesStackType(ep, s.Type) {
+		for _, stack := range stacks {
+			if ep, ok := endpointMap[stack.EndpointID]; ok && !EndpointMatchesStackType(ep, stack.Type) {
 				continue
 			}
-			preFiltered = append(preFiltered, s)
-			workflowIDSet[s.WorkflowID] = struct{}{}
+			preFiltered = append(preFiltered, stack)
+			workflowIDSet[stack.WorkflowID] = struct{}{}
 		}
 
 		// Batch-load all needed workflows in one scan.
@@ -66,18 +66,16 @@ func FetchWorkflows(
 		}
 
 		workflowMap := make(map[portainer.WorkflowID]portainer.Workflow, len(workflows))
-		sourceIDSet := make(map[portainer.SourceID]struct{})
+		var allArtifacts []portainer.ArtifactSources
 		for _, wf := range workflows {
 			workflowMap[wf.ID] = wf
-			for _, sid := range wf.SourceIDs {
-				sourceIDSet[sid] = struct{}{}
-			}
+			allArtifacts = append(allArtifacts, wf.Artifacts...)
 		}
+		sourceSet := ArtifactsToSourceSet(allArtifacts...)
 
 		// Batch-load all needed sources in one scan.
 		srcs, err := tx.Source().ReadAll(func(src portainer.Source) bool {
-			_, ok := sourceIDSet[src.ID]
-			return ok
+			return sourceSet.Contains(src.ID)
 		})
 		if err != nil {
 			return err
@@ -90,27 +88,34 @@ func FetchWorkflows(
 
 		// Second pass: build filtered list using in-memory lookups.
 		var filtered []portainer.Stack
-		for _, s := range preFiltered {
-			wf, ok := workflowMap[s.WorkflowID]
+		for _, stack := range preFiltered {
+			wf, ok := workflowMap[stack.WorkflowID]
 			if !ok {
-				log.Warn().Int("stackID", int(s.ID)).Msg("workflow record missing for stack, skipping")
+				log.Warn().Int("stackID", int(stack.ID)).Msg("workflow record missing for stack, skipping")
 				continue
 			}
 
-			for _, srcID := range wf.SourceIDs {
-				src, ok := sourceMap[srcID]
-				if !ok {
-					log.Warn().Int("stackID", int(s.ID)).Msg("source record missing for stack, skipping")
-					break
+		outer:
+			for _, as := range wf.Artifacts {
+				if as.Artifact.StackID != stack.ID {
+					continue
 				}
 
-				if src.Type == portainer.SourceTypeGit {
-					gitConfigs[s.ID] = src.GitConfig
-					break
+				for _, srcID := range as.SourceIDs {
+					src, ok := sourceMap[srcID]
+					if !ok {
+						log.Warn().Int("stackID", int(stack.ID)).Msg("source record missing for stack, skipping")
+						break outer
+					}
+
+					if src.Type == portainer.SourceTypeGit {
+						gitConfigs[stack.ID] = MergeSourceAndArtifact(&src, &as.Artifact)
+						break outer
+					}
 				}
 			}
 
-			filtered = append(filtered, s)
+			filtered = append(filtered, stack)
 		}
 		stacks = filtered
 
@@ -131,10 +136,10 @@ func FetchWorkflows(
 	}
 
 	items := make([]Workflow, 0, len(stacks))
-	for _, s := range stacks {
-		gitConfig := gitConfigs[s.ID]
+	for _, stack := range stacks {
+		gitConfig := gitConfigs[stack.ID]
 		source, artifact := ComputeGitPhasesForConfig(ctx, gitService, gitConfig)
-		items = append(items, MapStackToWorkflow(s, gitConfig, source, artifact))
+		items = append(items, MapStackToWorkflow(stack, gitConfig, source, artifact))
 	}
 
 	return items, nil
@@ -176,12 +181,12 @@ func FetchSourceStats(
 
 	workflowIDSet := make(map[portainer.WorkflowID]struct{}, len(allStacks))
 	preFiltered := make([]portainer.Stack, 0, len(allStacks))
-	for _, s := range allStacks {
-		if ep, ok := endpointMap[s.EndpointID]; ok && !EndpointMatchesStackType(ep, s.Type) {
+	for _, stack := range allStacks {
+		if ep, ok := endpointMap[stack.EndpointID]; ok && !EndpointMatchesStackType(ep, stack.Type) {
 			continue
 		}
-		preFiltered = append(preFiltered, s)
-		workflowIDSet[s.WorkflowID] = struct{}{}
+		preFiltered = append(preFiltered, stack)
+		workflowIDSet[stack.WorkflowID] = struct{}{}
 	}
 
 	wfs, err := tx.Workflow().ReadAll(func(wf portainer.Workflow) bool {
@@ -194,13 +199,15 @@ func FetchSourceStats(
 
 	wfSources := make(map[portainer.WorkflowID][]portainer.SourceID, len(wfs))
 	for _, wf := range wfs {
-		wfSources[wf.ID] = wf.SourceIDs
+		for _, as := range wf.Artifacts {
+			wfSources[wf.ID] = append(wfSources[wf.ID], as.SourceIDs...)
+		}
 	}
 
 	stackSourceIDs := make(map[portainer.StackID][]portainer.SourceID)
-	for _, s := range preFiltered {
-		if srcIDs := wfSources[s.WorkflowID]; len(srcIDs) > 0 {
-			stackSourceIDs[s.ID] = srcIDs
+	for _, stack := range preFiltered {
+		if srcIDs := wfSources[stack.WorkflowID]; len(srcIDs) > 0 {
+			stackSourceIDs[stack.ID] = srcIDs
 		}
 	}
 
@@ -216,12 +223,12 @@ func FetchSourceStats(
 
 	stats := make(map[portainer.SourceID]SourceStats)
 
-	for _, s := range stacks {
+	for _, stack := range stacks {
 		var epIDs []portainer.EndpointID
-		if s.EndpointID != 0 {
-			epIDs = []portainer.EndpointID{s.EndpointID}
+		if stack.EndpointID != 0 {
+			epIDs = []portainer.EndpointID{stack.EndpointID}
 		}
-		addSourceStats(stats, stackSourceIDs[s.ID], epIDs, StackLastSyncDate(s))
+		addSourceStats(stats, stackSourceIDs[stack.ID], epIDs, StackLastSyncDate(stack))
 	}
 
 	return sources, stats, nil

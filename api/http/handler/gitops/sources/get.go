@@ -2,8 +2,10 @@ package sources
 
 import (
 	"net/http"
+	"strconv"
 
 	portainer "github.com/portainer/portainer/api"
+	"github.com/portainer/portainer/api/dataservices"
 	gittypes "github.com/portainer/portainer/api/git/types"
 	ce "github.com/portainer/portainer/api/gitops/workflows"
 	"github.com/portainer/portainer/api/http/security"
@@ -40,21 +42,34 @@ type SourceDetail struct {
 // @security ApiKeyAuth
 // @security jwt
 // @produce json
-// @param id path string true "Source ID"
+// @param id path int true "Source identifier"
 // @success 200 {object} SourceDetail
+// @failure 400 "Invalid request"
 // @failure 403 "Access denied"
 // @failure 404 "Source not found"
 // @failure 500 "Server error"
 // @router /gitops/sources/{id} [get]
 func (h *Handler) getSource(w http.ResponseWriter, r *http.Request) *httperror.HandlerError {
-	id, err := request.RetrieveRouteVariableValue(r, "id")
+	srcID, err := request.RetrieveNumericRouteVariableValue(r, "id")
 	if err != nil {
-		return httperror.BadRequest("Invalid source ID", err)
+		return httperror.BadRequest("Invalid source identifier route variable", err)
 	}
 
 	securityContext, err := security.RetrieveRestrictedRequestContext(r)
 	if err != nil {
 		return httperror.InternalServerError("Unable to retrieve info from request context", err)
+	}
+
+	var src *portainer.Source
+
+	if err := h.dataStore.ViewTx(func(tx dataservices.DataStoreTx) error {
+		var err error
+		src, err = tx.Source().Read(portainer.SourceID(srcID))
+		return err
+	}); h.dataStore.IsErrObjectNotFound(err) {
+		return httperror.NotFound("Unable to find a source with the specified identifier", err)
+	} else if err != nil {
+		return httperror.InternalServerError("Unable to retrieve source", err)
 	}
 
 	workflows, err := ce.FetchWorkflows(r.Context(), h.dataStore, h.gitService, h.k8sFactory, securityContext, nil)
@@ -64,16 +79,26 @@ func (h *Handler) getSource(w http.ResponseWriter, r *http.Request) *httperror.H
 
 	byID := workflowsBySourceID(workflows)
 
-	wfs, ok := byID[id]
-	if !ok || len(wfs) == 0 || wfs[0].GitConfig == nil {
-		return httperror.NotFound("Source not found", nil)
+	var wfs []ce.Workflow
+	if src.GitConfig != nil {
+		wfs = byID[sourceID(gitSourceKey(src.GitConfig))]
 	}
 
-	url := wfs[0].GitConfig.URL
+	var autoUpdate *portainer.AutoUpdateSettings
+	if len(wfs) > 0 {
+		autoUpdate = wfs[0].AutoUpdate
+	}
+
+	id := strconv.Itoa(int(src.ID))
+	url := ""
+	if src.GitConfig != nil {
+		url = src.GitConfig.URL
+	}
+
 	detail := SourceDetail{
 		Source:     buildSource(id, url, wfs),
-		Connection: buildConnectionInfo(wfs[0].GitConfig),
-		AutoUpdate: buildAutoUpdateInfo(wfs[0].AutoUpdate),
+		Connection: buildConnectionInfo(src.GitConfig),
+		AutoUpdate: buildAutoUpdateInfo(autoUpdate),
 		Workflows:  redactWorkflowCredentials(wfs),
 	}
 	return response.JSON(w, detail)

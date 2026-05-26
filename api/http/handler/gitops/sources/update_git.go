@@ -3,7 +3,6 @@ package sources
 import (
 	"errors"
 	"net/http"
-	"strings"
 
 	portainer "github.com/portainer/portainer/api"
 	"github.com/portainer/portainer/api/dataservices"
@@ -13,7 +12,10 @@ import (
 	"github.com/portainer/portainer/pkg/libhttp/response"
 )
 
-var ErrNotGitSource = errors.New("source is not a Git source")
+var (
+	ErrNotGitSource       = errors.New("source is not a Git source")
+	ErrDuplicateSourceURL = errors.New("a source with this URL already exists")
+)
 
 // @id GitOpsSourcesUpdateGit
 // @summary Update a Git source
@@ -30,6 +32,7 @@ var ErrNotGitSource = errors.New("source is not a Git source")
 // @failure 400 "Invalid request payload"
 // @failure 403 "Access denied"
 // @failure 404 "Source not found"
+// @failure 409 "A source with this URL already exists"
 // @failure 500 "Server error"
 // @router /gitops/sources/{id} [put]
 func (h *Handler) gitSourceUpdate(w http.ResponseWriter, r *http.Request) *httperror.HandlerError {
@@ -57,34 +60,38 @@ func (h *Handler) gitSourceUpdate(w http.ResponseWriter, r *http.Request) *httpe
 			return ErrNotGitSource
 		}
 
-		name := payload.Name
-		if strings.TrimSpace(name) == "" {
-			name = gittypes.RepoName(payload.URL)
+		normalizedURL, err := gittypes.NormalizeURL(payload.URL)
+		if err != nil {
+			return err
 		}
 
-		src.Name = name
+		existing, err := tx.Source().ReadAll(func(s portainer.Source) bool {
+			if s.ID == src.ID || s.Type != portainer.SourceTypeGit || s.GitConfig == nil {
+				return false
+			}
+
+			normalized, err := gittypes.NormalizeURL(s.GitConfig.URL)
+
+			return err == nil && normalized == normalizedURL
+		})
+		if err != nil {
+			return err
+		}
+
+		if len(existing) > 0 {
+			return ErrDuplicateSourceURL
+		}
 
 		var existingAuth *gittypes.GitAuthentication
 		if src.GitConfig != nil {
 			existingAuth = src.GitConfig.Authentication
 		}
 
-		src.GitConfig = &gittypes.RepoConfig{
-			URL:           payload.URL,
-			ReferenceName: payload.ReferenceName,
-			TLSSkipVerify: payload.TLSSkipVerify,
-		}
+		updated := BuildGitSource(payload)
+		src.Name = updated.Name
+		src.GitConfig = updated.GitConfig
 
-		if payload.Authentication != nil {
-			src.GitConfig.Authentication = &gittypes.GitAuthentication{
-				Username:          payload.Authentication.Username,
-				Password:          payload.Authentication.Password,
-				Provider:          payload.Authentication.Provider,
-				AuthorizationType: payload.Authentication.AuthorizationType,
-			}
-		} else if payload.ClearAuthentication {
-			src.GitConfig.Authentication = nil
-		} else {
+		if payload.Authentication == nil && !payload.ClearAuthentication {
 			src.GitConfig.Authentication = existingAuth
 		}
 
@@ -93,6 +100,8 @@ func (h *Handler) gitSourceUpdate(w http.ResponseWriter, r *http.Request) *httpe
 		return httperror.NotFound("Unable to find a source with the specified identifier", err)
 	} else if errors.Is(err, ErrNotGitSource) {
 		return httperror.BadRequest("Source is not a Git source", err)
+	} else if errors.Is(err, ErrDuplicateSourceURL) {
+		return httperror.Conflict("A source with this URL already exists", err)
 	} else if err != nil {
 		return httperror.InternalServerError("Unable to update source", err)
 	}

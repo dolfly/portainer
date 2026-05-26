@@ -36,6 +36,8 @@ func TestStackFile_GitPendingRedeploy_Returns409(t *testing.T) {
 	handler.FileService = fileService
 	handler.DataStore = store
 
+	const stackID = portainer.StackID(1)
+
 	src := &portainer.Source{
 		Type: portainer.SourceTypeGit,
 		GitConfig: &gittypes.RepoConfig{
@@ -45,11 +47,14 @@ func TestStackFile_GitPendingRedeploy_Returns409(t *testing.T) {
 	}
 	require.NoError(t, store.Source().Create(src))
 
-	wf := &portainer.Workflow{SourceIDs: []portainer.SourceID{src.ID}}
+	wf := &portainer.Workflow{Artifacts: []portainer.ArtifactSources{{
+		Artifact:  portainer.Artifact{StackID: stackID},
+		SourceIDs: []portainer.SourceID{src.ID},
+	}}}
 	require.NoError(t, store.Workflow().Create(wf))
 
 	stack := &portainer.Stack{
-		ID:         1,
+		ID:         stackID,
 		EndpointID: endpoint.ID,
 		Type:       portainer.DockerComposeStack,
 		WorkflowID: wf.ID,

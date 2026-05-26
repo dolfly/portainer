@@ -12,6 +12,7 @@ import (
 	"github.com/portainer/portainer/api/crypto"
 	"github.com/portainer/portainer/api/dataservices"
 	"github.com/portainer/portainer/api/git/update"
+	"github.com/portainer/portainer/api/gitops/workflows"
 	"github.com/portainer/portainer/api/http/security"
 	"github.com/portainer/portainer/api/scheduler"
 	"github.com/portainer/portainer/api/stacks/stackutils"
@@ -120,7 +121,7 @@ func redeployWhenChangedSecondStage(
 	user *portainer.User,
 	endpoint *portainer.Endpoint,
 ) error {
-	gitSrc, err := dataservices.GitSourceForWorkflow(datastore, stack.WorkflowID)
+	gitSrc, artifact, err := workflows.GitSourceAndArtifactForStack(datastore, stack.WorkflowID, stack.ID)
 	if err != nil {
 		return errors.WithMessagef(err, "failed to load git config for stack %v", stack.ID)
 	}
@@ -129,7 +130,7 @@ func redeployWhenChangedSecondStage(
 		return nil
 	}
 
-	gitConfig := gitSrc.GitConfig
+	gitConfig := workflows.MergeSourceAndArtifact(gitSrc, artifact)
 
 	var gitCommitChangedOrForceUpdate bool
 
@@ -222,14 +223,11 @@ func redeployWhenChangedSecondStage(
 			return err
 		}
 
-		src, err := tx.Source().Read(gitSrc.ID)
-		if err != nil {
-			return errors.Wrap(err, "failed to read source")
-		}
+		newHash := gitConfig.ConfigHash
 
-		src.GitConfig = gitConfig
-
-		return tx.Source().Update(src.ID, src)
+		return workflows.UpdateArtifactForStack(tx, stack.WorkflowID, stack.ID, func(a *portainer.Artifact) {
+			a.ConfigHash = newHash
+		})
 	}); err != nil {
 		return errors.WithMessagef(err, "failed to update the stack %v", stack.ID)
 	}

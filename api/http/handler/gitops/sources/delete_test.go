@@ -59,7 +59,7 @@ func TestSourceDelete_InUse(t *testing.T) {
 		require.NoError(t, err)
 		srcID = src.ID
 
-		wf := &portainer.Workflow{SourceIDs: []portainer.SourceID{src.ID}}
+		wf := &portainer.Workflow{Artifacts: []portainer.ArtifactSources{{SourceIDs: []portainer.SourceID{src.ID}}}}
 		err = tx.Workflow().Create(wf)
 		require.NoError(t, err)
 

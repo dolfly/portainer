@@ -49,7 +49,9 @@ func (h *Handler) sourceDelete(w http.ResponseWriter, r *http.Request) *httperro
 		}
 
 		for _, wf := range workflows {
-			if slices.Contains(wf.SourceIDs, portainer.SourceID(sourceID)) {
+			if slices.ContainsFunc(wf.Artifacts, func(as portainer.ArtifactSources) bool {
+				return slices.Contains(as.SourceIDs, portainer.SourceID(sourceID))
+			}) {
 				return ErrSourceInUse
 			}
 		}

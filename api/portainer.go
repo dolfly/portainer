@@ -1544,10 +1544,26 @@ type (
 	// WebhookType represents the type of resource a webhook is related to
 	WebhookType int
 
+	// Artifact represents a GitOps artifact produced by a source
+	Artifact struct {
+		StackID        StackID     `json:"stackId,omitempty"`
+		EdgeStackID    EdgeStackID `json:"edgeStackId,omitempty"`
+		ReferenceName  string      `json:"referenceName,omitempty" example:"refs/heads/main"`
+		ConfigFilePath string      `json:"configFilePath,omitempty" example:"portainer.yaml"`
+		ConfigHash     string      `json:"configHash,omitempty" example:"abc123"`
+	}
+
+	// ArtifactSources is one entry in a Workflow's ordered artifact-to-sources mapping
+	ArtifactSources struct {
+		Artifact  Artifact   `json:"artifact"`
+		SourceIDs []SourceID `json:"sourceIds,omitempty"`
+	}
+
 	// Workflow represents a GitOps workflow
 	Workflow struct {
-		ID        WorkflowID `json:"id" example:"1"`
-		SourceIDs []SourceID `json:"sourceIds"`
+		ID        WorkflowID        `json:"id" example:"1"`
+		Name      string            `json:"name,omitempty" example:"my-workflow"`
+		Artifacts []ArtifactSources `json:"artifacts,omitempty"`
 	}
 
 	WorkflowID int

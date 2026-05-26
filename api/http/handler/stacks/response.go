@@ -1,42 +1,36 @@
 package stacks
 
 import (
-	"fmt"
-
 	portainer "github.com/portainer/portainer/api"
 	"github.com/portainer/portainer/api/dataservices"
 	gittypes "github.com/portainer/portainer/api/git/types"
+	"github.com/portainer/portainer/api/gitops/workflows"
 )
 
-// loadGitConfigFromSource reads the GitConfig and SourceID from the first Git-type Source in the workflow.
-func loadGitConfigFromSource(tx dataservices.DataStoreTx, workflowID portainer.WorkflowID) (*gittypes.RepoConfig, portainer.SourceID, error) {
-	src, err := dataservices.GitSourceForWorkflow(tx, workflowID)
+// loadGitConfigForStack reads the merged GitConfig (Source URL/auth/TLS + Artifact ref/path/hash)
+// and the SourceID for the given stack.
+func loadGitConfigForStack(tx dataservices.DataStoreTx, workflowID portainer.WorkflowID, stackID portainer.StackID) (*gittypes.RepoConfig, portainer.SourceID, error) {
+	src, artifact, err := workflows.GitSourceAndArtifactForStack(tx, workflowID, stackID)
 	if err != nil || src == nil {
 		return nil, 0, err
 	}
 
-	return src.GitConfig, src.ID, nil
+	return workflows.MergeSourceAndArtifact(src, artifact), src.ID, nil
 }
 
-// saveSourceGitConfig updates the GitConfig on the Source record identified by sourceID within a transaction.
-func saveSourceGitConfig(tx dataservices.DataStoreTx, sourceID portainer.SourceID, gitConfig *gittypes.RepoConfig) error {
-	src, err := tx.Source().Read(sourceID)
-	if err != nil {
-		return fmt.Errorf("failed to read source: %w", err)
-	}
-
-	src.GitConfig = gitConfig
-
-	return tx.Source().Update(src.ID, src)
+func saveStackGitConfig(tx dataservices.DataStoreTx, workflowID portainer.WorkflowID, stackID portainer.StackID, oldSourceID portainer.SourceID, cfg *gittypes.RepoConfig) error {
+	return workflows.SaveWorkflowGitConfig(tx, workflowID, func(a portainer.Artifact) bool {
+		return a.StackID == stackID
+	}, oldSourceID, cfg)
 }
 
-// fillStackGitConfig loads GitConfig from Source and sets it on the stack for backwards-compatible responses.
+// fillStackGitConfig populates stack.GitConfig from the merged Source+Artifact for backwards-compatible responses.
 func fillStackGitConfig(tx dataservices.DataStoreTx, stack *portainer.Stack) error {
 	if stack.WorkflowID == 0 {
 		return nil
 	}
 
-	gitConfig, _, err := loadGitConfigFromSource(tx, stack.WorkflowID)
+	gitConfig, _, err := loadGitConfigForStack(tx, stack.WorkflowID, stack.ID)
 	if err != nil {
 		return err
 	}

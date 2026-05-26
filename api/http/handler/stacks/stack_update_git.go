@@ -78,7 +78,7 @@ func (handler *Handler) stackUpdateGit(w http.ResponseWriter, r *http.Request) *
 		return httperror.InternalServerError(msg, errors.New(msg))
 	}
 
-	gitConfig, sourceID, err := loadGitConfigFromSource(handler.DataStore, stack.WorkflowID)
+	gitConfig, sourceID, err := loadGitConfigForStack(handler.DataStore, stack.WorkflowID, stack.ID)
 	if err != nil {
 		return httperror.InternalServerError("Unable to load git config for stack", err)
 	}
@@ -227,7 +227,7 @@ func (handler *Handler) stackUpdateGit(w http.ResponseWriter, r *http.Request) *
 		if err := tx.Stack().Update(stack.ID, stack); err != nil {
 			return err
 		}
-		if err := saveSourceGitConfig(tx, sourceID, gitConfig); err != nil {
+		if err := saveStackGitConfig(tx, stack.WorkflowID, stack.ID, sourceID, gitConfig); err != nil {
 			return err
 		}
 		return fillStackGitConfig(tx, stack)

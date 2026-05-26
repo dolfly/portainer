@@ -3,6 +3,7 @@ package sources
 import (
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	portainer "github.com/portainer/portainer/api"
@@ -24,7 +25,7 @@ func TestGetSource_NotFound(t *testing.T) {
 
 	h := newTestHandler(t, store)
 	rr := httptest.NewRecorder()
-	h.ServeHTTP(rr, buildGetReq(t, 1, "nonexistent-id"))
+	h.ServeHTTP(rr, buildGetReq(t, 1, "999"))
 	assert.Equal(t, http.StatusNotFound, rr.Code)
 }
 
@@ -39,20 +40,21 @@ func TestGetSource_ReturnsDetail(t *testing.T) {
 		TLSSkipVerify:  true,
 	}
 
+	var srcID portainer.SourceID
+
 	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
 		stack := &portainer.Stack{ID: 1, Name: "my-stack"}
-		createGitWorkflow(t, tx, stack, cfg)
+		srcID = createGitWorkflow(t, tx, stack, cfg)
 		require.NoError(t, tx.Stack().Create(stack))
 		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
 	}))
 
-	id := sourceID(gitSourceKey(cfg))
 	h := newTestHandler(t, store)
 	rr := httptest.NewRecorder()
-	h.ServeHTTP(rr, buildGetReq(t, 1, id))
+	h.ServeHTTP(rr, buildGetReq(t, 1, strconv.Itoa(int(srcID))))
 
 	detail := decodeSourceDetail(t, rr)
-	assert.Equal(t, id, detail.ID)
+	assert.Equal(t, strconv.Itoa(int(srcID)), detail.ID)
 	assert.Equal(t, "repo", detail.Name)
 	assert.Equal(t, 1, detail.UsedBy)
 	require.NotNil(t, detail.Connection)
@@ -72,17 +74,18 @@ func TestGetSource_RedactsCredentials(t *testing.T) {
 		Authentication: &gittypes.GitAuthentication{Username: "user", Password: "s3cr3t"},
 	}
 
+	var srcID portainer.SourceID
+
 	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
 		stack := &portainer.Stack{ID: 1, Name: "secure-stack"}
-		createGitWorkflow(t, tx, stack, cfg)
+		srcID = createGitWorkflow(t, tx, stack, cfg)
 		require.NoError(t, tx.Stack().Create(stack))
 		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
 	}))
 
-	id := sourceID(gitSourceKey(cfg))
 	h := newTestHandler(t, store)
 	rr := httptest.NewRecorder()
-	h.ServeHTTP(rr, buildGetReq(t, 1, id))
+	h.ServeHTTP(rr, buildGetReq(t, 1, strconv.Itoa(int(srcID))))
 
 	detail := decodeSourceDetail(t, rr)
 	require.Len(t, detail.Workflows, 1)
@@ -97,21 +100,23 @@ func TestGetSource_AutoUpdate(t *testing.T) {
 	_, store := datastore.MustNewTestStore(t, false, true)
 
 	cfg := gitCfg("https://github.com/org/polled")
+
+	var srcID portainer.SourceID
+
 	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
 		stack := &portainer.Stack{
 			ID:         1,
 			Name:       "polled-stack",
 			AutoUpdate: &portainer.AutoUpdateSettings{Interval: "5m"},
 		}
-		createGitWorkflow(t, tx, stack, cfg)
+		srcID = createGitWorkflow(t, tx, stack, cfg)
 		require.NoError(t, tx.Stack().Create(stack))
 		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
 	}))
 
-	id := sourceID(gitSourceKey(cfg))
 	h := newTestHandler(t, store)
 	rr := httptest.NewRecorder()
-	h.ServeHTTP(rr, buildGetReq(t, 1, id))
+	h.ServeHTTP(rr, buildGetReq(t, 1, strconv.Itoa(int(srcID))))
 
 	detail := decodeSourceDetail(t, rr)
 	require.NotNil(t, detail.AutoUpdate)

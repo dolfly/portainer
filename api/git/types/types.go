@@ -1,6 +1,7 @@
 package gittypes
 
 import (
+	"cmp"
 	"errors"
 	"net/url"
 	"path"
@@ -38,6 +39,24 @@ type RepoConfig struct {
 // e.g. "https://github.com/org/app-config.git" results in "app-config"
 func RepoName(rawURL string) string {
 	return strings.TrimSuffix(path.Base(rawURL), ".git")
+}
+
+// NormalizeURL returns a canonical form of rawURL for deduplication purposes:
+// scheme and host are lowercased, embedded credentials are removed, trailing
+// slashes and the .git suffix are stripped from the path. If the scheme is
+// absent it defaults to https.
+func NormalizeURL(rawURL string) (string, error) {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return "", err
+	}
+
+	u.Scheme = strings.ToLower(cmp.Or(u.Scheme, "https"))
+	u.Host = strings.ToLower(u.Host)
+	u.User = nil
+	u.Path = strings.TrimSuffix(strings.TrimRight(u.Path, "/"), ".git")
+
+	return u.String(), nil
 }
 
 // SanitizeURL strips any userinfo (username/password) embedded in rawURL,

@@ -10,8 +10,8 @@ import (
 	"time"
 
 	portainer "github.com/portainer/portainer/api"
-	"github.com/portainer/portainer/api/dataservices"
 	"github.com/portainer/portainer/api/filesystem"
+	"github.com/portainer/portainer/api/gitops/workflows"
 	"github.com/portainer/portainer/api/logs"
 	"github.com/portainer/portainer/pkg/librand"
 
@@ -169,13 +169,13 @@ func (d *stackDeployer) StopRemoteSwarmStack(ctx context.Context, stack *portain
 // * gather deployment logs and bubble them up
 func (d *stackDeployer) remoteStack(ctx context.Context, stack *portainer.Stack, endpoint *portainer.Endpoint, operation StackRemoteOperation, opts unpackerCmdBuilderOptions) error {
 	if stack.WorkflowID != 0 && opts.gitConfig == nil {
-		src, err := dataservices.GitSourceForWorkflow(d.dataStore, stack.WorkflowID)
+		src, artifact, err := workflows.GitSourceAndArtifactForStack(d.dataStore, stack.WorkflowID, stack.ID)
 		if err != nil {
 			return errors.Wrap(err, "failed to load git config for remote stack")
 		}
 
 		if src != nil {
-			opts.gitConfig = src.GitConfig
+			opts.gitConfig = workflows.MergeSourceAndArtifact(src, artifact)
 		}
 	}
 

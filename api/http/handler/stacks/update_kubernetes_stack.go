@@ -55,7 +55,7 @@ func (payload *kubernetesGitStackUpdatePayload) Validate(r *http.Request) error 
 
 func (handler *Handler) updateKubernetesStack(tx dataservices.DataStoreTx, r *http.Request, stack *portainer.Stack, endpoint *portainer.Endpoint, gate *deployGate) *httperror.HandlerError {
 	if stack.WorkflowID != 0 {
-		gitConfig, sourceID, err := loadGitConfigFromSource(tx, stack.WorkflowID)
+		gitConfig, sourceID, err := loadGitConfigForStack(tx, stack.WorkflowID, stack.ID)
 		if err != nil {
 			return httperror.InternalServerError("Unable to load git config for stack", err)
 		}
@@ -111,7 +111,7 @@ func (handler *Handler) updateKubernetesStack(tx dataservices.DataStoreTx, r *ht
 			stack.AutoUpdate.JobID = jobID
 		}
 
-		if err := saveSourceGitConfig(tx, sourceID, gitConfig); err != nil {
+		if err := saveStackGitConfig(tx, stack.WorkflowID, stack.ID, sourceID, gitConfig); err != nil {
 			return httperror.InternalServerError("Unable to update source git config", err)
 		}
 
