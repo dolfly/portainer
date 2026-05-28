@@ -9,6 +9,7 @@ import { Tooltip } from '@@/Tip/Tooltip';
 import { ExternalLink } from '@@/ExternalLink';
 import { Link } from '@@/Link';
 import { Icon } from '@@/Icon';
+import { TooltipWithChildren } from '@@/Tip/TooltipWithChildren';
 
 import { ContainerRowData } from '../types';
 
@@ -127,8 +128,9 @@ function buildActionsColumn(isServerMetricsEnabled: boolean) {
               params={{ pod: container.podName, container: container.name }}
               data-cy={`application-container-stats-${container.name}`}
             >
-              <Icon icon={BarChart} />
-              Stats
+              <TooltipWithChildren message="View statistics" position="top">
+                <Icon icon={BarChart} />
+              </TooltipWithChildren>
             </Link>
           )}
         {container.status.hasLogs !== false && (
@@ -138,8 +140,9 @@ function buildActionsColumn(isServerMetricsEnabled: boolean) {
             params={{ pod: container.podName, container: container.name }}
             data-cy={`application-container-logs-${container.name}`}
           >
-            <Icon icon={FileText} />
-            Logs
+            <TooltipWithChildren message="View logs" position="top">
+              <Icon icon={FileText} />
+            </TooltipWithChildren>
           </Link>
         )}
         {container.status.status.includes('Running') && (
@@ -150,8 +153,9 @@ function buildActionsColumn(isServerMetricsEnabled: boolean) {
               params={{ pod: container.podName, container: container.name }}
               data-cy={`application-container-console-${container.name}`}
             >
-              <Icon icon={Terminal} />
-              Console
+              <TooltipWithChildren message="Open console" position="top">
+                <Icon icon={Terminal} />
+              </TooltipWithChildren>
             </Link>
           </Authorized>
         )}

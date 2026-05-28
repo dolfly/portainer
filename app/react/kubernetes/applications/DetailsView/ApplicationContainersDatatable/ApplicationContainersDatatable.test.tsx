@@ -342,7 +342,9 @@ describe('ApplicationContainersDatatable', () => {
     await screen.findByText('test-pod-1');
     await user.click(screen.getByRole('button', { name: 'Expand' }));
 
-    expect(await screen.findByText('Stats')).toBeVisible();
+    expect(
+      await screen.findByTestId('application-container-stats-nginx')
+    ).toBeVisible();
   });
 
   it('hides the stats link when server metrics is disabled', async () => {
@@ -353,7 +355,9 @@ describe('ApplicationContainersDatatable', () => {
     await user.click(screen.getByRole('button', { name: 'Expand' }));
 
     await screen.findByText('nginx');
-    expect(screen.queryByText('Stats')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('application-container-stats-nginx')
+    ).not.toBeInTheDocument();
   });
 
   it('shows the logs link for a container that has started', async () => {
