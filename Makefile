@@ -121,6 +121,10 @@ docs-serve: docs-build ## Serve docs locally with Swagger UI on port 8080
 		-e SWAGGER_JSON=/foo/swagger.yaml \
 		-v $(PWD)/dist/docs:/foo \
 		swaggerapi/swagger-ui
+		
+.PHONY: generate-api
+generate-api: docs-validate ## Generate API client and types from OpenAPI spec
+	pnpm generate-api
 
 ##@ Helpers
 .PHONY: help
