@@ -1781,6 +1781,7 @@ type (
 		// Applications
 		GetApplications(namespace, nodeName string) ([]models.K8sApplication, error)
 		GetApplicationsResource(namespace, node string) (models.K8sApplicationResource, error)
+		GetClusterNodes() ([]corev1.Node, error)
 
 		// ClusterRole
 		GetClusterRoles() ([]models.K8sClusterRole, error)
