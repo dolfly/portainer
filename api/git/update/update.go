@@ -3,6 +3,7 @@ package update
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -27,15 +28,21 @@ func UpdateGitObject(ctx context.Context, gitService portainer.GitService, objId
 
 	username, password := git.GetCredentials(gitConfig.Authentication)
 
+	fetchCtx, cancel := context.WithTimeout(ctx, time.Minute)
 	newHash, err := gitService.LatestCommitID(
-		ctx,
+		fetchCtx,
 		gitConfig.URL,
 		gitConfig.ReferenceName,
 		username,
 		password,
 		gitConfig.TLSSkipVerify,
 	)
+	cancel()
 	if err != nil {
+		if fetchCtx.Err() == context.DeadlineExceeded {
+			log.Error().Str("object", objId).Msg("git fetch timed out after 1 minute")
+		}
+
 		return false, "", errors.WithMessagef(err, "failed to fetch latest commit id of %v", objId)
 	}
 
