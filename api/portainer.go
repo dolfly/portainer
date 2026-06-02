@@ -581,6 +581,7 @@ type (
 		PolicyChartSummary  `mapstructure:",squash"`
 		EncodedTgz          string             `json:"EncodedTgz"`
 		Namespace           string             `json:"Namespace"`
+		ReleaseName         string             `json:"ReleaseName,omitempty"`
 		PreReleaseManifest  string             `json:"PreReleaseManifest,omitempty"`
 		EncodedValues       string             `json:"EncodedValues"`
 		PreInstallDeletions []ResourceDeletion `json:"PreInstallDeletions,omitempty"`
@@ -2590,6 +2591,7 @@ const (
 	HelmInstallStatusInstalled    HelmInstallStatus = "installed"
 	HelmInstallStatusFailed       HelmInstallStatus = "failed"
 	HelmInstallStatusUninstalling HelmInstallStatus = "uninstalling"
+	HelmInstallStatusConflict     HelmInstallStatus = "conflict"
 )
 
 func DefaultEndpointSecuritySettings() EndpointSecuritySettings {
