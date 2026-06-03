@@ -45,13 +45,13 @@ export type WorkflowsWorkflow = {
   autoUpdate?: PortainerAutoUpdateSettings;
   creationDate?: number;
   gitConfig?: GittypesRepoConfig;
-  id?: number;
+  id: number;
   lastSyncDate?: number;
-  name?: string;
-  platform?: WorkflowsDeploymentPlatform;
-  status?: WorkflowsWorkflowStatusObject;
-  target?: WorkflowsTarget;
-  type?: WorkflowsType;
+  name: string;
+  platform: WorkflowsDeploymentPlatform;
+  status: WorkflowsWorkflowStatusObject;
+  target: WorkflowsTarget;
+  type: WorkflowsType;
 };
 
 export const WorkflowsType = {
@@ -3692,10 +3692,14 @@ export type SslSslUpdatePayload = {
   Key?: string;
 };
 
+export type SourcesGitAuthInfo = {
+  type?: number;
+  username?: string;
+};
+
 export type SourcesConnectionInfo = {
-  authentication?: boolean;
+  authentication?: SourcesGitAuthInfo;
   configFilePath?: string;
-  referenceName?: string;
   tlsSkipVerify?: boolean;
 };
 
@@ -3704,17 +3708,36 @@ export type SourcesAutoUpdateInfo = {
   mechanism?: string;
 };
 
+export const SourcesSourceType = {
+  /**
+   * SourceTypeGit
+   */
+  SOURCE_TYPE_GIT: 'git',
+  /**
+   * SourceTypeHelm
+   */
+  SOURCE_TYPE_HELM: 'helm',
+  /**
+   * SourceTypeOCI
+   */
+  SOURCE_TYPE_OCI: 'oci',
+} as const;
+
+export type SourcesSourceType =
+  (typeof SourcesSourceType)[keyof typeof SourcesSourceType];
+
 export type SourcesSourceDetail = {
   autoUpdate?: SourcesAutoUpdateInfo;
-  connection?: SourcesConnectionInfo;
+  connection: SourcesConnectionInfo;
   environments?: number;
   error?: string;
-  id?: string;
+  id: number;
   lastSync?: number;
-  name?: string;
-  status?: WorkflowsStatus;
-  type?: string;
-  url?: string;
+  name: string;
+  provider?: number;
+  status: WorkflowsStatus;
+  type: SourcesSourceType;
+  url: string;
   usedBy?: number;
   workflows?: Array<WorkflowsWorkflow>;
 };
@@ -3722,21 +3745,36 @@ export type SourcesSourceDetail = {
 export type SourcesSource = {
   environments?: number;
   error?: string;
-  id?: string;
+  id: number;
   lastSync?: number;
-  name?: string;
-  status?: WorkflowsStatus;
-  type?: string;
-  url?: string;
+  name: string;
+  provider?: number;
+  status: WorkflowsStatus;
+  type: SourcesSourceType;
+  url: string;
   usedBy?: number;
+};
+
+export type SourcesGitSourceUpdatePayload = {
+  authentication?: SourcesGitAuthenticationUpdatePayload;
+  name?: string;
+  referenceName?: string;
+  tlsSkipVerify?: boolean;
+  url?: string;
+};
+
+export type SourcesGitAuthenticationUpdatePayload = {
+  authorizationType?: 0 | 1;
+  password?: string;
+  provider?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  username?: string;
 };
 
 export type SourcesGitSourceCreatePayload = {
   authentication?: SourcesGitAuthenticationPayload;
-  clearAuthentication?: boolean;
   name?: string;
   tlsSkipVerify?: boolean;
-  url?: string;
+  url: string;
 };
 
 export type SourcesGitAuthenticationPayload = {
@@ -3744,6 +3782,11 @@ export type SourcesGitAuthenticationPayload = {
   password?: string;
   provider?: number;
   username?: string;
+};
+
+export type SourcesConnectionTestResult = {
+  error?: string;
+  success?: boolean;
 };
 
 export type SettingsSettingsUpdatePayload = {
@@ -7505,8 +7548,6 @@ export type KubernetesK8sIngressInfo2 = KubernetesK8sIngressInfo;
 
 export type KubernetesK8sNamespaceDetails2 = KubernetesK8sNamespaceDetails;
 
-export type SourcesGitSourceCreatePayload2 = SourcesGitSourceCreatePayload;
-
 export type EndpointsEndpointDeleteBatchPayload2 =
   EndpointsEndpointDeleteBatchPayload;
 
@@ -10704,7 +10745,7 @@ export type GitOpsSourcesUpdateGitData = {
   /**
    * Git source details
    */
-  body: SourcesGitSourceCreatePayload2;
+  body: SourcesGitSourceUpdatePayload;
   path: {
     /**
      * Source identifier
@@ -10748,11 +10789,55 @@ export type GitOpsSourcesUpdateGitResponses = {
 export type GitOpsSourcesUpdateGitResponse =
   GitOpsSourcesUpdateGitResponses[keyof GitOpsSourcesUpdateGitResponses];
 
+export type GitOpsSourcesTestGitData = {
+  /**
+   * Optional connection overrides; omitted fields fall back to stored values
+   */
+  body?: SourcesGitSourceUpdatePayload;
+  path: {
+    /**
+     * Source identifier
+     */
+    id: number;
+  };
+  query?: never;
+  url: '/gitops/sources/{id}/test';
+};
+
+export type GitOpsSourcesTestGitErrors = {
+  /**
+   * Invalid request payload
+   */
+  400: unknown;
+  /**
+   * Access denied
+   */
+  403: unknown;
+  /**
+   * Source not found
+   */
+  404: unknown;
+  /**
+   * Server error
+   */
+  500: unknown;
+};
+
+export type GitOpsSourcesTestGitResponses = {
+  /**
+   * Connection test result
+   */
+  200: SourcesConnectionTestResult;
+};
+
+export type GitOpsSourcesTestGitResponse =
+  GitOpsSourcesTestGitResponses[keyof GitOpsSourcesTestGitResponses];
+
 export type GitOpsSourcesCreateGitData = {
   /**
    * Git source details
    */
-  body: SourcesGitSourceCreatePayload2;
+  body: SourcesGitSourceCreatePayload;
   path?: never;
   query?: never;
   url: '/gitops/sources/git';

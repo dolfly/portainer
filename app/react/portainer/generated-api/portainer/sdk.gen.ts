@@ -448,6 +448,9 @@ import type {
   GitOpsSourcesSummaryData,
   GitOpsSourcesSummaryErrors,
   GitOpsSourcesSummaryResponses,
+  GitOpsSourcesTestGitData,
+  GitOpsSourcesTestGitErrors,
+  GitOpsSourcesTestGitResponses,
   GitOpsSourcesUpdateGitData,
   GitOpsSourcesUpdateGitErrors,
   GitOpsSourcesUpdateGitResponses,
@@ -1094,6 +1097,9 @@ import {
   zGitOpsSourcesListQuery,
   zGitOpsSourcesListResponse,
   zGitOpsSourcesSummaryResponse,
+  zGitOpsSourcesTestGitBody,
+  zGitOpsSourcesTestGitPath,
+  zGitOpsSourcesTestGitResponse,
   zGitOpsSourcesUpdateGitBody,
   zGitOpsSourcesUpdateGitPath,
   zGitOpsSourcesUpdateGitResponse,
@@ -3955,6 +3961,43 @@ export const gitOpsSourcesUpdateGit = <ThrowOnError extends boolean = true>(
       { name: 'Authorization', type: 'apiKey' },
     ],
     url: '/gitops/sources/{id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Test a Git source connection
+ *
+ * Tests connectivity for a GitOps source, applying optional overrides to the stored configuration.
+ * **Access policy**: admin
+ */
+export const gitOpsSourcesTestGit = <ThrowOnError extends boolean = true>(
+  options: Options<GitOpsSourcesTestGitData, ThrowOnError>
+) =>
+  (options.client ?? client).post<
+    GitOpsSourcesTestGitResponses,
+    GitOpsSourcesTestGitErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zGitOpsSourcesTestGitBody.optional(),
+          path: zGitOpsSourcesTestGitPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) =>
+      await zGitOpsSourcesTestGitResponse.parseAsync(data),
+    security: [
+      { name: 'X-API-KEY', type: 'apiKey' },
+      { name: 'Authorization', type: 'apiKey' },
+    ],
+    url: '/gitops/sources/{id}/test',
     ...options,
     headers: {
       'Content-Type': 'application/json',

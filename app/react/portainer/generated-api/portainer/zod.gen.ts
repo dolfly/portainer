@@ -24,6 +24,7 @@ import {
   PortainerTemplateType,
   PortainerUserRole,
   PortainerWebhookType,
+  SourcesSourceType,
   UsersAccessLocation,
   V1AppArmorProfileType,
   V1ContainerRestartPolicy,
@@ -109,13 +110,13 @@ export const zWorkflowsWorkflow = z.object({
   autoUpdate: zPortainerAutoUpdateSettings.optional(),
   creationDate: z.int().optional(),
   gitConfig: zGittypesRepoConfig.optional(),
-  id: z.int().optional(),
+  id: z.int(),
   lastSyncDate: z.int().optional(),
-  name: z.string().optional(),
-  platform: zWorkflowsDeploymentPlatform.optional(),
-  status: zWorkflowsWorkflowStatusObject.optional(),
-  target: zWorkflowsTarget.optional(),
-  type: zWorkflowsType.optional(),
+  name: z.string(),
+  platform: zWorkflowsDeploymentPlatform,
+  status: zWorkflowsWorkflowStatusObject,
+  target: zWorkflowsTarget,
+  type: zWorkflowsType,
 });
 
 export const zWorkflowsStatusSummary = z.object({
@@ -1002,10 +1003,14 @@ export const zSslSslUpdatePayload = z.object({
   Key: z.string().optional(),
 });
 
+export const zSourcesGitAuthInfo = z.object({
+  type: z.int().optional(),
+  username: z.string().optional(),
+});
+
 export const zSourcesConnectionInfo = z.object({
-  authentication: z.boolean().optional(),
+  authentication: zSourcesGitAuthInfo.optional(),
   configFilePath: z.string().optional(),
-  referenceName: z.string().optional(),
   tlsSkipVerify: z.boolean().optional(),
 });
 
@@ -1014,17 +1019,20 @@ export const zSourcesAutoUpdateInfo = z.object({
   mechanism: z.string().optional(),
 });
 
+export const zSourcesSourceType = z.enum(SourcesSourceType);
+
 export const zSourcesSourceDetail = z.object({
   autoUpdate: zSourcesAutoUpdateInfo.optional(),
-  connection: zSourcesConnectionInfo.optional(),
+  connection: zSourcesConnectionInfo,
   environments: z.int().optional(),
   error: z.string().optional(),
-  id: z.string().optional(),
+  id: z.int(),
   lastSync: z.int().optional(),
-  name: z.string().optional(),
-  status: zWorkflowsStatus.optional(),
-  type: z.string().optional(),
-  url: z.string().optional(),
+  name: z.string(),
+  provider: z.int().optional(),
+  status: zWorkflowsStatus,
+  type: zSourcesSourceType,
+  url: z.string(),
   usedBy: z.int().optional(),
   workflows: z.array(zWorkflowsWorkflow).optional(),
 });
@@ -1032,13 +1040,39 @@ export const zSourcesSourceDetail = z.object({
 export const zSourcesSource = z.object({
   environments: z.int().optional(),
   error: z.string().optional(),
-  id: z.string().optional(),
+  id: z.int(),
   lastSync: z.int().optional(),
-  name: z.string().optional(),
-  status: zWorkflowsStatus.optional(),
-  type: z.string().optional(),
-  url: z.string().optional(),
+  name: z.string(),
+  provider: z.int().optional(),
+  status: zWorkflowsStatus,
+  type: zSourcesSourceType,
+  url: z.string(),
   usedBy: z.int().optional(),
+});
+
+export const zSourcesGitAuthenticationUpdatePayload = z.object({
+  authorizationType: z.union([z.literal(0), z.literal(1)]).optional(),
+  password: z.string().optional(),
+  provider: z
+    .union([
+      z.literal(0),
+      z.literal(1),
+      z.literal(2),
+      z.literal(3),
+      z.literal(4),
+      z.literal(5),
+      z.literal(6),
+    ])
+    .optional(),
+  username: z.string().optional(),
+});
+
+export const zSourcesGitSourceUpdatePayload = z.object({
+  authentication: zSourcesGitAuthenticationUpdatePayload.optional(),
+  name: z.string().optional(),
+  referenceName: z.string().optional(),
+  tlsSkipVerify: z.boolean().optional(),
+  url: z.string().optional(),
 });
 
 export const zSourcesGitAuthenticationPayload = z.object({
@@ -1050,10 +1084,14 @@ export const zSourcesGitAuthenticationPayload = z.object({
 
 export const zSourcesGitSourceCreatePayload = z.object({
   authentication: zSourcesGitAuthenticationPayload.optional(),
-  clearAuthentication: z.boolean().optional(),
   name: z.string().optional(),
   tlsSkipVerify: z.boolean().optional(),
-  url: z.string().optional(),
+  url: z.string(),
+});
+
+export const zSourcesConnectionTestResult = z.object({
+  error: z.string().optional(),
+  success: z.boolean().optional(),
 });
 
 export const zOauth2AuthStyle = z.enum(Oauth2AuthStyle);
@@ -2953,8 +2991,6 @@ export const zKubernetesK8sIngressInfo2 = zKubernetesK8sIngressInfo;
 
 export const zKubernetesK8sNamespaceDetails2 = zKubernetesK8sNamespaceDetails;
 
-export const zSourcesGitSourceCreatePayload2 = zSourcesGitSourceCreatePayload;
-
 export const zEndpointsEndpointDeleteBatchPayload2 =
   zEndpointsEndpointDeleteBatchPayload;
 
@@ -3864,7 +3900,7 @@ export const zGitOpsSourceGetResponse = zSourcesSourceDetail;
 /**
  * Git source details
  */
-export const zGitOpsSourcesUpdateGitBody = zSourcesGitSourceCreatePayload2;
+export const zGitOpsSourcesUpdateGitBody = zSourcesGitSourceUpdatePayload;
 
 export const zGitOpsSourcesUpdateGitPath = z.object({
   id: z.int(),
@@ -3876,9 +3912,23 @@ export const zGitOpsSourcesUpdateGitPath = z.object({
 export const zGitOpsSourcesUpdateGitResponse = zPortainerSource;
 
 /**
+ * Optional connection overrides; omitted fields fall back to stored values
+ */
+export const zGitOpsSourcesTestGitBody = zSourcesGitSourceUpdatePayload;
+
+export const zGitOpsSourcesTestGitPath = z.object({
+  id: z.int(),
+});
+
+/**
+ * Connection test result
+ */
+export const zGitOpsSourcesTestGitResponse = zSourcesConnectionTestResult;
+
+/**
  * Git source details
  */
-export const zGitOpsSourcesCreateGitBody = zSourcesGitSourceCreatePayload2;
+export const zGitOpsSourcesCreateGitBody = zSourcesGitSourceCreatePayload;
 
 /**
  * Created
