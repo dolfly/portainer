@@ -361,9 +361,12 @@ import type {
   GetKubernetesNamespacesData,
   GetKubernetesNamespacesErrors,
   GetKubernetesNamespacesResponses,
+  GetKubernetesNodesData,
+  GetKubernetesNodesErrors,
   GetKubernetesNodesLimitsData,
   GetKubernetesNodesLimitsErrors,
   GetKubernetesNodesLimitsResponses,
+  GetKubernetesNodesResponses,
   GetKubernetesPersistentVolumeClaimData,
   GetKubernetesPersistentVolumeClaimErrors,
   GetKubernetesPersistentVolumeClaimResponses,
@@ -1043,6 +1046,8 @@ import {
   zGetKubernetesNamespacesResponse,
   zGetKubernetesNodesLimitsPath,
   zGetKubernetesNodesLimitsResponse,
+  zGetKubernetesNodesPath,
+  zGetKubernetesNodesResponse,
   zGetKubernetesPersistentVolumeClaimPath,
   zGetKubernetesPersistentVolumeClaimResponse,
   zGetKubernetesPersistentVolumeClaimsInNamespacePath,
@@ -2991,10 +2996,11 @@ export const endpointList = <ThrowOnError extends boolean = true>(
         groupIds: { array: { explode: false } },
         status: { array: { explode: false } },
         types: { array: { explode: false } },
+        platformTypes: { array: { explode: false } },
+        excludeGroupIds: { array: { explode: false } },
         tagIds: { array: { explode: false } },
         endpointIds: { array: { explode: false } },
         excludeIds: { array: { explode: false } },
-        excludeGroupIds: { array: { explode: false } },
         agentVersions: { array: { explode: false } },
         edgeGroupIds: { array: { explode: false } },
         excludeEdgeGroupIds: { array: { explode: false } },
@@ -6010,6 +6016,39 @@ export const getKubernetesNamespacesCount = <
       { name: 'Authorization', type: 'apiKey' },
     ],
     url: '/kubernetes/{id}/namespaces/count',
+    ...options,
+  });
+
+/**
+ * Get Kubernetes cluster nodes
+ *
+ * Returns the list of Kubernetes nodes for the selected environment.
+ * **Access policy**: Authenticated user.
+ */
+export const getKubernetesNodes = <ThrowOnError extends boolean = true>(
+  options: Options<GetKubernetesNodesData, ThrowOnError>
+) =>
+  (options.client ?? client).get<
+    GetKubernetesNodesResponses,
+    GetKubernetesNodesErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: zGetKubernetesNodesPath,
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) =>
+      await zGetKubernetesNodesResponse.parseAsync(data),
+    security: [
+      { name: 'X-API-KEY', type: 'apiKey' },
+      { name: 'Authorization', type: 'apiKey' },
+    ],
+    url: '/kubernetes/{id}/nodes',
     ...options,
   });
 
