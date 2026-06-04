@@ -111,6 +111,8 @@ type (
 		KubectlShellImageSet      bool
 		PullLimitCheckDisabled    *bool
 		TrustedOrigins            *string
+		NoSetupToken              *bool
+		SetupToken                *string
 	}
 
 	// CustomTemplateVariableDefinition
@@ -1489,11 +1491,11 @@ type (
 	// User represents a user account
 	User struct {
 		// User Identifier
-		ID       UserID `json:"Id" example:"1"`
-		Username string `json:"Username" example:"bob"`
+		ID       UserID `json:"Id" example:"1" validate:"required"`
+		Username string `json:"Username" example:"bob" validate:"required"`
 		Password string `json:"Password,omitempty" swaggerignore:"true"`
 		// User role (1 for administrator account and 2 for regular account)
-		Role          UserRole          `json:"Role" example:"1"`
+		Role          UserRole          `json:"Role" example:"1" validate:"required"`
 		TokenIssueAt  int64             `json:"TokenIssueAt" example:"1"`
 		ThemeSettings UserThemeSettings `json:"ThemeSettings"`
 		UseCache      bool              `json:"UseCache" example:"true"`
@@ -1501,11 +1503,11 @@ type (
 		// Deprecated fields
 
 		// Deprecated
-		UserTheme string `json:"UserTheme,omitempty" example:"dark"`
+		UserTheme string `json:"UserTheme,omitempty" example:"dark" swaggerignore:"true"`
 		// Deprecated in DBVersion == 25
-		PortainerAuthorizations Authorizations
+		PortainerAuthorizations Authorizations `swaggerignore:"true"`
 		// Deprecated in DBVersion == 25
-		EndpointAuthorizations EndpointAuthorizations
+		EndpointAuthorizations EndpointAuthorizations `swaggerignore:"true"`
 	}
 
 	// UserAccessPolicies represent the association of an access policy and a user
@@ -1527,7 +1529,7 @@ type (
 	// UserThemeSettings represents the theme settings for a user
 	UserThemeSettings struct {
 		// Color represents the color theme of the UI
-		Color string `json:"color" example:"dark" enums:"dark,light,highcontrast,auto"`
+		Color string `json:"color" example:"dark" enums:"dark,light,highcontrast,auto,"`
 	}
 
 	// Webhook represents a url webhook that can be used to update a service
@@ -2051,6 +2053,10 @@ const (
 	CSPEnvVar = "CSP"
 	// CompactDBEnvVar is the environment variable used to enable/disable the startup compaction of the database
 	CompactDBEnvVar = "COMPACT_DB"
+	// NoSetupTokenEnvVar is the environment variable used to disable the setup token requirement on an uninitialized instance
+	NoSetupTokenEnvVar = "PORTAINER_NO_SETUP_TOKEN"
+	// SetupTokenEnvVar is the environment variable used to provide a custom setup token for admin initialization and restore on an uninitialized instance
+	SetupTokenEnvVar = "PORTAINER_SETUP_TOKEN"
 )
 
 // List of supported features

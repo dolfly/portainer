@@ -4568,6 +4568,10 @@ export type SettingsPublicSettingsResponse = {
    */
   RequiredPasswordLength?: number;
   /**
+   * Whether the setup wizard must send the X-Setup-Token header for admin init / restore
+   */
+  RequiresSetupToken?: boolean;
+  /**
    * Whether team sync is enabled
    */
   TeamSync?: boolean;
@@ -5320,7 +5324,7 @@ export type PortainerUserThemeSettings = {
   /**
    * Color represents the color theme of the UI
    */
-  color?: 'dark' | 'light' | 'highcontrast' | 'auto';
+  color?: 'dark' | 'light' | 'highcontrast' | 'auto' | '';
 };
 
 export const PortainerUserRole = {
@@ -5361,37 +5365,17 @@ export type PortainerResourceAccessLevel =
 
 export type PortainerUser = {
   /**
-   * Deprecated in DBVersion == 25
-   */
-  EndpointAuthorizations?: PortainerEndpointAuthorizations;
-  /**
    * User Identifier
    */
-  Id?: number;
-  /**
-   * Deprecated in DBVersion == 25
-   */
-  PortainerAuthorizations?: PortainerAuthorizations;
+  Id: number;
   /**
    * User role (1 for administrator account and 2 for regular account)
    */
-  Role?: PortainerUserRole;
+  Role: PortainerUserRole;
   ThemeSettings?: PortainerUserThemeSettings;
   TokenIssueAt?: number;
   UseCache?: boolean;
-  /**
-   * Deprecated
-   */
-  UserTheme?: string;
-  Username?: string;
-};
-
-export type PortainerAuthorizations = {
-  [key: string]: boolean;
-};
-
-export type PortainerEndpointAuthorizations = {
-  [key: string]: PortainerAuthorizations;
+  Username: string;
 };
 
 export type PortainerTeamResourceAccess = {
@@ -6018,6 +6002,10 @@ export type PortainerRole = {
    */
   Name?: string;
   Priority?: number;
+};
+
+export type PortainerAuthorizations = {
+  [key: string]: boolean;
 };
 
 export type PortainerPerformanceMetrics = {
@@ -15837,6 +15825,12 @@ export type RestoreData = {
    * Restore request payload
    */
   body: BackupRestorePayload;
+  headers?: {
+    /**
+     * Setup token (required when instance is uninitialized and --no-setup-token is not set)
+     */
+    'X-Setup-Token'?: string;
+  };
   path?: never;
   query?: never;
   url: '/restore';
@@ -15847,6 +15841,10 @@ export type RestoreErrors = {
    * Invalid request
    */
   400: unknown;
+  /**
+   * Access denied - invalid or missing setup token
+   */
+  403: unknown;
   /**
    * Server error
    */
@@ -18374,6 +18372,12 @@ export type UserAdminInitData = {
    * User details
    */
   body: UsersAdminInitPayload;
+  headers?: {
+    /**
+     * Setup token (required when instance is uninitialized and --no-setup-token is not set)
+     */
+    'X-Setup-Token'?: string;
+  };
   path?: never;
   query?: never;
   url: '/users/admin/init';
@@ -18384,6 +18388,10 @@ export type UserAdminInitErrors = {
    * Invalid request
    */
   400: unknown;
+  /**
+   * Access denied - invalid or missing setup token
+   */
+  403: unknown;
   /**
    * Admin user already initialized
    */

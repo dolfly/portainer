@@ -1189,6 +1189,7 @@ import {
   zRestartKubernetesPodPath,
   zRestartKubernetesPodResponse,
   zRestoreBody,
+  zRestoreHeaders,
   zRoleListResponse,
   zSetDefaultKubernetesStorageClassPath,
   zSetDefaultKubernetesStorageClassResponse,
@@ -1326,6 +1327,7 @@ import {
   zUploadTlsResponse,
   zUserAdminCheckResponse,
   zUserAdminInitBody,
+  zUserAdminInitHeaders,
   zUserAdminInitResponse,
   zUserCreateBody,
   zUserCreateResponse,
@@ -7524,7 +7526,7 @@ export const resourceControlUpdate = <ThrowOnError extends boolean = true>(
  * Triggers a system restore using provided backup file
  *
  * Triggers a system restore using provided backup file
- * **Access policy**: public
+ * **Access policy**: public (requires the X-Setup-Token header on an uninitialized instance unless --no-setup-token is set)
  */
 export const restore = <ThrowOnError extends boolean = true>(
   options: Options<RestoreData, ThrowOnError>
@@ -7538,6 +7540,7 @@ export const restore = <ThrowOnError extends boolean = true>(
       await z
         .object({
           body: zRestoreBody,
+          headers: zRestoreHeaders.optional(),
           path: z.never().optional(),
           query: z.never().optional(),
         })
@@ -9811,7 +9814,7 @@ export const userAdminCheck = <ThrowOnError extends boolean = true>(
  * Initialize administrator account
  *
  * Initialize the 'admin' user account.
- * **Access policy**: public
+ * **Access policy**: public (requires the X-Setup-Token header on an uninitialized instance unless --no-setup-token is set)
  */
 export const userAdminInit = <ThrowOnError extends boolean = true>(
   options: Options<UserAdminInitData, ThrowOnError>
@@ -9825,6 +9828,7 @@ export const userAdminInit = <ThrowOnError extends boolean = true>(
       await z
         .object({
           body: zUserAdminInitBody,
+          headers: zUserAdminInitHeaders.optional(),
           path: z.never().optional(),
           query: z.never().optional(),
         })

@@ -1327,6 +1327,7 @@ export const zSettingsPublicSettingsResponse = z.object({
   OAuthLoginURI: z.string().optional(),
   OAuthLogoutURI: z.string().optional(),
   RequiredPasswordLength: z.int().optional(),
+  RequiresSetupToken: z.boolean().optional(),
   TeamSync: z.boolean().optional(),
 });
 
@@ -1637,7 +1638,7 @@ export const zPortainerWebhook = z.object({
 });
 
 export const zPortainerUserThemeSettings = z.object({
-  color: z.enum(['dark', 'light', 'highcontrast', 'auto']).optional(),
+  color: z.enum(['dark', 'light', 'highcontrast', 'auto', '']).optional(),
 });
 
 export const zPortainerUserRole = z.enum(PortainerUserRole);
@@ -1651,23 +1652,13 @@ export const zPortainerUserResourceAccess = z.object({
   UserId: z.int().optional(),
 });
 
-export const zPortainerAuthorizations = z.record(z.string(), z.boolean());
-
-export const zPortainerEndpointAuthorizations = z.record(
-  z.string(),
-  zPortainerAuthorizations
-);
-
 export const zPortainerUser = z.object({
-  EndpointAuthorizations: zPortainerEndpointAuthorizations.optional(),
-  Id: z.int().optional(),
-  PortainerAuthorizations: zPortainerAuthorizations.optional(),
-  Role: zPortainerUserRole.optional(),
+  Id: z.int(),
+  Role: zPortainerUserRole,
   ThemeSettings: zPortainerUserThemeSettings.optional(),
   TokenIssueAt: z.int().optional(),
   UseCache: z.boolean().optional(),
-  UserTheme: z.string().optional(),
-  Username: z.string().optional(),
+  Username: z.string(),
 });
 
 export const zPortainerTeamResourceAccess = z.object({
@@ -1884,6 +1875,8 @@ export const zPortainerSslSettings = z.object({
   keyPath: z.string().optional(),
   selfSigned: z.boolean().optional(),
 });
+
+export const zPortainerAuthorizations = z.record(z.string(), z.boolean());
 
 export const zPortainerRole = z.object({
   Authorizations: zPortainerAuthorizations.optional(),
@@ -5286,6 +5279,10 @@ export const zResourceControlUpdateResponse = zPortainerResourceControl;
  */
 export const zRestoreBody = zBackupRestorePayload;
 
+export const zRestoreHeaders = z.object({
+  'X-Setup-Token': z.string().optional(),
+});
+
 /**
  * Success
  */
@@ -5996,6 +5993,10 @@ export const zUserAdminCheckResponse = z.void();
  * User details
  */
 export const zUserAdminInitBody = zUsersAdminInitPayload;
+
+export const zUserAdminInitHeaders = z.object({
+  'X-Setup-Token': z.string().optional(),
+});
 
 /**
  * Success
