@@ -152,6 +152,7 @@ type (
 		ResourceControl *ResourceControl `json:"ResourceControl"`
 		Variables       []CustomTemplateVariableDefinition
 		GitConfig       *gittypes.RepoConfig `json:"GitConfig"`
+		ArtifactSources *ArtifactSources     `json:"ArtifactSources,omitempty"`
 		// IsComposeFormat indicates if the Kubernetes template is created from a Docker Compose file
 		IsComposeFormat bool `example:"false"`
 		// EdgeTemplate indicates if this template purpose for Edge Stack
