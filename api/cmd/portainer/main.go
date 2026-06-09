@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"crypto/sha256"
+	nethttp "net/http"
 	"os"
 	"path"
 	"strings"
@@ -52,10 +53,12 @@ import (
 	"github.com/portainer/portainer/pkg/featureflags"
 	"github.com/portainer/portainer/pkg/fips"
 	"github.com/portainer/portainer/pkg/libhelm"
+	"github.com/portainer/portainer/pkg/libhttp/ssrf"
 	"github.com/portainer/portainer/pkg/libstack/compose"
 	libswarm "github.com/portainer/portainer/pkg/libstack/swarm"
 	"github.com/portainer/portainer/pkg/validate"
 
+	gogithttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
@@ -383,6 +386,19 @@ func buildServer(flags *portainer.CLIFlags, shutdownCtx context.Context, shutdow
 
 	// -ce can not ever be run in FIPS mode
 	fips.InitFIPS(false)
+
+	ssrf.Configure(ssrf.Policy{
+		Mode:         ssrf.Mode(*flags.SSRFMode),
+		AllowedHosts: *flags.SSRFAllowedHosts,
+	})
+
+	if ssrf.IsEnabled() {
+		if dt, ok := nethttp.DefaultTransport.(*nethttp.Transport); ok {
+			nethttp.DefaultTransport = ssrf.WrapTransport(dt)
+		}
+
+		gogithttp.DefaultClient = gogithttp.NewClient(&nethttp.Client{Transport: nethttp.DefaultTransport})
+	}
 
 	fileService := initFileService(*flags.Data)
 	encryptionKey := loadEncryptionSecretKey(dbSecretPath(*flags.SecretKeyName))

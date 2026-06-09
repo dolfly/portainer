@@ -71,6 +71,10 @@ func (config *ComposeStackDeploymentConfig) Deploy(ctx context.Context) error {
 		}
 	}
 
+	if err := stackutils.ValidateComposeURLs(ctx, config.stack, config.FileService); err != nil {
+		return err
+	}
+
 	if stackutils.IsRelativePathStack(config.stack) {
 		return config.StackDeployer.DeployRemoteComposeStack(ctx, config.stack, config.endpoint, config.registries, config.prune, config.forcePullImage, config.ForceCreate)
 	}

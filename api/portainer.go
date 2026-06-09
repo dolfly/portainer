@@ -111,6 +111,8 @@ type (
 		KubectlShellImageSet      bool
 		PullLimitCheckDisabled    *bool
 		TrustedOrigins            *string
+		SSRFMode                  *string
+		SSRFAllowedHosts          *[]string
 		NoSetupToken              *bool
 		SetupToken                *string
 	}
