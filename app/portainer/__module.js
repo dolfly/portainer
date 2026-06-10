@@ -340,6 +340,9 @@ angular
             component: 'sourcesListView',
           },
         },
+        data: {
+          access: AccessHeaders.Admin,
+        },
       };
 
       var gitopsSourceDetail = {
@@ -351,6 +354,16 @@ angular
         views: {
           'content@': {
             component: 'sourceItemView',
+          },
+        },
+      };
+
+      const gitopsSourceCreate = {
+        name: 'portainer.gitops.sources.new',
+        url: '/new',
+        views: {
+          'content@': {
+            component: 'sourceCreateView',
           },
         },
       };
@@ -479,6 +492,7 @@ angular
       $stateRegistryProvider.register(workflows);
       $stateRegistryProvider.register(gitopsSources);
       $stateRegistryProvider.register(gitopsSourceDetail);
+      $stateRegistryProvider.register(gitopsSourceCreate);
       $stateRegistryProvider.register(init);
       $stateRegistryProvider.register(initAdmin);
       $stateRegistryProvider.register(settings);

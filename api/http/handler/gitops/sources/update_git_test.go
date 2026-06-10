@@ -300,6 +300,57 @@ func TestGitSourceUpdate_MalformedJSON(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, rr.Code)
 }
 
+func TestGitSourceUpdate_ConflictWhenAuthChangesMatchAnotherSource(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	var srcID portainer.SourceID
+	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		existing := &portainer.Source{
+			Name: "existing",
+			Type: portainer.SourceTypeGit,
+			Git: &gittypes.RepoConfig{
+				URL: "https://github.com/org/repo.git",
+				Authentication: &gittypes.GitAuthentication{
+					Username: "alice",
+					Password: "secret",
+				},
+			},
+		}
+		if err := tx.Source().Create(existing); err != nil {
+			return err
+		}
+
+		other := &portainer.Source{
+			Name: "other",
+			Type: portainer.SourceTypeGit,
+			Git:  &gittypes.RepoConfig{URL: "https://github.com/org/repo.git"},
+		}
+		if err := tx.Source().Create(other); err != nil {
+			return err
+		}
+		srcID = other.ID
+
+		return tx.User().Create(&portainer.User{ID: 1, Role: portainer.AdministratorRole})
+	}))
+
+	h := newTestHandler(t, store)
+
+	alice := "alice"
+	secret := "secret"
+	body, err := json.Marshal(GitSourceUpdatePayload{
+		Authentication: &GitAuthenticationUpdatePayload{
+			Username: &alice,
+			Password: &secret,
+		},
+	})
+	require.NoError(t, err)
+
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, buildUpdateReq(t, 1, int(srcID), body))
+	require.Equal(t, http.StatusConflict, rr.Code)
+}
+
 func TestGitSourceUpdate_NonNumericID(t *testing.T) {
 	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)

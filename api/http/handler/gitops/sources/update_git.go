@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	ErrNotGitSource       = errors.New("source is not a Git source")
-	ErrDuplicateSourceURL = errors.New("a source with this URL already exists")
+	ErrNotGitSource    = errors.New("source is not a Git source")
+	ErrDuplicateSource = errors.New("a source with this URL and credentials already exists")
 )
 
 // GitSourceUpdatePayload holds the parameters for creating a git-backed source
@@ -29,10 +29,8 @@ type GitSourceUpdatePayload struct {
 }
 
 type GitAuthenticationUpdatePayload struct {
-	Username          *string                         `json:"username"`
-	Password          *string                         `json:"password"`
-	Provider          *gittypes.GitProvider           `json:"provider" swaggertype:"integer" enums:"0,1,2,3,4,5,6"`
-	AuthorizationType *gittypes.GitCredentialAuthType `json:"authorizationType" swaggertype:"integer" enums:"0,1"`
+	Username *string `json:"username"`
+	Password *string `json:"password"`
 }
 
 // Validate implements the portainer.Validatable interface
@@ -43,7 +41,7 @@ func (payload *GitSourceUpdatePayload) Validate(_ *http.Request) error {
 // @id GitOpsSourcesUpdateGit
 // @summary Update a Git source
 // @description Updates an existing GitOps source backed by a Git repository.
-// @description **Access policy**: admin
+// @description **Access policy**: administrator
 // @tags gitops
 // @security ApiKeyAuth
 // @security jwt
@@ -55,7 +53,7 @@ func (payload *GitSourceUpdatePayload) Validate(_ *http.Request) error {
 // @failure 400 "Invalid request payload"
 // @failure 403 "Access denied"
 // @failure 404 "Source not found"
-// @failure 409 "A source with this URL already exists"
+// @failure 409 "A source with this URL and credentials already exists"
 // @failure 500 "Server error"
 // @router /gitops/sources/{id} [put]
 func (h *Handler) gitSourceUpdate(w http.ResponseWriter, r *http.Request) *httperror.HandlerError {
@@ -77,14 +75,6 @@ func (h *Handler) gitSourceUpdate(w http.ResponseWriter, r *http.Request) *httpe
 	if err := h.dataStore.UpdateTx(func(tx dataservices.DataStoreTx) error {
 		var err error
 
-		if payload.URL != nil {
-			if isUnique, err := workflows.ValidateUniqueSourceURL(tx, *payload.URL, sourceID); err != nil {
-				return err
-			} else if !isUnique {
-				return ErrDuplicateSourceURL
-			}
-		}
-
 		if src, err = tx.Source().Read(sourceID); err != nil {
 			return err
 		}
@@ -93,13 +83,25 @@ func (h *Handler) gitSourceUpdate(w http.ResponseWriter, r *http.Request) *httpe
 			return err
 		}
 
+		username, password := "", ""
+		if src.Git != nil && src.Git.Authentication != nil {
+			username = src.Git.Authentication.Username
+			password = src.Git.Authentication.Password
+		}
+
+		if isUnique, err := workflows.ValidateUniqueSource(tx, src.Git.URL, username, password, sourceID); err != nil {
+			return err
+		} else if !isUnique {
+			return ErrDuplicateSource
+		}
+
 		return tx.Source().Update(src.ID, src)
 	}); h.dataStore.IsErrObjectNotFound(err) {
 		return httperror.NotFound("Unable to find a source with the specified identifier", err)
 	} else if errors.Is(err, ErrNotGitSource) {
 		return httperror.BadRequest("Source is not a Git source", err)
-	} else if errors.Is(err, ErrDuplicateSourceURL) {
-		return httperror.Conflict("A source with this URL already exists", err)
+	} else if errors.Is(err, ErrDuplicateSource) {
+		return httperror.Conflict("A source with this URL and credentials already exists", err)
 	} else if err != nil {
 		return httperror.InternalServerError("Unable to update source", err)
 	}
@@ -111,6 +113,27 @@ func (h *Handler) gitSourceUpdate(w http.ResponseWriter, r *http.Request) *httpe
 
 // ApplyGitSourceChanges applies the payload changes to the source in place
 func ApplyGitSourceChanges(src *portainer.Source, payload GitSourceUpdatePayload) error {
+	if err := ApplyBaseGitSourceChanges(src, payload); err != nil {
+		return err
+	}
+
+	if payload.Authentication == nil {
+		return nil
+	}
+
+	if *payload.Authentication == (GitAuthenticationUpdatePayload{}) {
+		src.Git.Authentication = nil
+		return nil
+	}
+
+	src.Git.Authentication = ApplyAuthChanges(src.Git.Authentication, *payload.Authentication)
+
+	return nil
+}
+
+// ApplyBaseGitSourceChanges applies the non-authentication field changes (name,
+// URL, reference, TLS) to the source in place, ensuring src.Git is set
+func ApplyBaseGitSourceChanges(src *portainer.Source, payload GitSourceUpdatePayload) error {
 	if src.Type != portainer.SourceTypeGit {
 		return ErrNotGitSource
 	}
@@ -119,55 +142,41 @@ func ApplyGitSourceChanges(src *portainer.Source, payload GitSourceUpdatePayload
 		src.Name = *payload.Name
 	}
 
-	gitConfig := src.Git
-	if gitConfig == nil {
-		gitConfig = &gittypes.RepoConfig{}
+	if src.Git == nil {
+		src.Git = &gittypes.RepoConfig{}
 	}
 
 	if payload.URL != nil {
-		gitConfig.URL = *payload.URL
+		src.Git.URL = *payload.URL
 	}
 
 	if payload.ReferenceName != nil {
-		gitConfig.ReferenceName = *payload.ReferenceName
+		src.Git.ReferenceName = *payload.ReferenceName
 	}
 
 	if payload.TLSSkipVerify != nil {
-		gitConfig.TLSSkipVerify = *payload.TLSSkipVerify
+		src.Git.TLSSkipVerify = *payload.TLSSkipVerify
 	}
-
-	var auth *gittypes.GitAuthentication
-	if payload.Authentication == nil {
-		auth = gitConfig.Authentication
-	} else if *payload.Authentication != (GitAuthenticationUpdatePayload{}) {
-		existing := gitConfig.Authentication
-		if existing != nil {
-			copied := *existing
-			auth = &copied
-		} else {
-			auth = &gittypes.GitAuthentication{}
-		}
-
-		authPayload := *payload.Authentication
-		if authPayload.AuthorizationType != nil {
-			auth.AuthorizationType = *authPayload.AuthorizationType
-		}
-
-		if authPayload.Username != nil {
-			auth.Username = *authPayload.Username
-		}
-
-		if authPayload.Password != nil {
-			auth.Password = *authPayload.Password
-		}
-
-		if authPayload.Provider != nil {
-			auth.Provider = *authPayload.Provider
-		}
-	}
-
-	gitConfig.Authentication = auth
-	src.Git = gitConfig
 
 	return nil
+}
+
+// ApplyAuthChanges returns a copy of the existing authentication (or a fresh
+// one) with the basic credential changes applied.
+func ApplyAuthChanges(existing *gittypes.GitAuthentication, payload GitAuthenticationUpdatePayload) *gittypes.GitAuthentication {
+	auth := &gittypes.GitAuthentication{}
+	if existing != nil {
+		copied := *existing
+		auth = &copied
+	}
+
+	if payload.Username != nil {
+		auth.Username = *payload.Username
+	}
+
+	if payload.Password != nil {
+		auth.Password = *payload.Password
+	}
+
+	return auth
 }

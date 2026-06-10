@@ -4208,7 +4208,6 @@ export type SslSslUpdatePayload = {
 };
 
 export type SourcesGitAuthInfo = {
-  type?: number;
   username?: string;
 };
 
@@ -4216,11 +4215,6 @@ export type SourcesConnectionInfo = {
   authentication?: SourcesGitAuthInfo;
   configFilePath?: string;
   tlsSkipVerify?: boolean;
-};
-
-export type SourcesAutoUpdateInfo = {
-  fetchInterval?: string;
-  mechanism?: string;
 };
 
 export const SourcesSourceType = {
@@ -4249,12 +4243,16 @@ export type SourcesSourceDetail = {
   id: number;
   lastSync?: number;
   name: string;
-  provider?: number;
   status: WorkflowsStatus;
   type: SourcesSourceType;
   url: string;
   usedBy?: number;
   workflows?: Array<WorkflowsWorkflow>;
+};
+
+export type SourcesAutoUpdateInfo = {
+  fetchInterval?: string;
+  mechanism?: string;
 };
 
 export type SourcesSource = {
@@ -4263,7 +4261,6 @@ export type SourcesSource = {
   id: number;
   lastSync?: number;
   name: string;
-  provider?: number;
   status: WorkflowsStatus;
   type: SourcesSourceType;
   url: string;
@@ -4279,9 +4276,7 @@ export type SourcesGitSourceUpdatePayload = {
 };
 
 export type SourcesGitAuthenticationUpdatePayload = {
-  authorizationType?: 0 | 1;
   password?: string;
-  provider?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   username?: string;
 };
 
@@ -4293,9 +4288,7 @@ export type SourcesGitSourceCreatePayload = {
 };
 
 export type SourcesGitAuthenticationPayload = {
-  authorizationType?: number;
   password?: string;
-  provider?: number;
   username?: string;
 };
 
@@ -5714,8 +5707,8 @@ export type PortainerSourceType =
   (typeof PortainerSourceType)[keyof typeof PortainerSourceType];
 
 export type PortainerSource = {
-  gitConfig?: GittypesRepoConfig;
-  helmConfig?: PortainerHelmConfig;
+  git?: GittypesRepoConfig;
+  helm?: PortainerHelmConfig;
   id?: number;
   lastSync?: number;
   name?: string;
@@ -6614,7 +6607,6 @@ export type PortainerCustomTemplatePlatform =
   (typeof PortainerCustomTemplatePlatform)[keyof typeof PortainerCustomTemplatePlatform];
 
 export type PortainerCustomTemplate = {
-  ArtifactSources?: PortainerArtifactSources;
   /**
    * User identifier who created this template
    */
@@ -6670,19 +6662,23 @@ export type PortainerCustomTemplate = {
    */
   Type?: 1 | 2 | 3;
   Variables?: Array<PortainerCustomTemplateVariableDefinition>;
+  artifact?: PortainerArtifact;
+};
+
+export type PortainerArtifactFile = {
+  hash?: string;
+  path?: string;
+  ref?: string;
+  sourceId?: number;
 };
 
 export type PortainerArtifact = {
-  configFilePath?: string;
-  configHash?: string;
+  edgeGroups?: Array<number>;
   edgeStackId?: number;
-  referenceName?: string;
+  envGroups?: Array<number>;
+  envIds?: Array<number>;
+  files?: Array<PortainerArtifactFile>;
   stackId?: number;
-};
-
-export type PortainerArtifactSources = {
-  artifact?: PortainerArtifact;
-  sourceIds?: Array<number>;
 };
 
 export type MotdMotd = {
@@ -11285,7 +11281,7 @@ export type GitOpsSourcesUpdateGitErrors = {
    */
   404: unknown;
   /**
-   * A source with this URL already exists
+   * A source with this URL and credentials already exists
    */
   409: unknown;
   /**
@@ -11304,7 +11300,7 @@ export type GitOpsSourcesUpdateGitResponses = {
 export type GitOpsSourcesUpdateGitResponse =
   GitOpsSourcesUpdateGitResponses[keyof GitOpsSourcesUpdateGitResponses];
 
-export type GitOpsSourcesTestGitData = {
+export type GitOpsSourcesTestByIdData = {
   /**
    * Optional connection overrides; omitted fields fall back to stored values
    */
@@ -11319,7 +11315,7 @@ export type GitOpsSourcesTestGitData = {
   url: '/gitops/sources/{id}/test';
 };
 
-export type GitOpsSourcesTestGitErrors = {
+export type GitOpsSourcesTestByIdErrors = {
   /**
    * Invalid request payload
    */
@@ -11338,15 +11334,15 @@ export type GitOpsSourcesTestGitErrors = {
   500: unknown;
 };
 
-export type GitOpsSourcesTestGitResponses = {
+export type GitOpsSourcesTestByIdResponses = {
   /**
    * Connection test result
    */
   200: SourcesConnectionTestResult;
 };
 
-export type GitOpsSourcesTestGitResponse =
-  GitOpsSourcesTestGitResponses[keyof GitOpsSourcesTestGitResponses];
+export type GitOpsSourcesTestByIdResponse =
+  GitOpsSourcesTestByIdResponses[keyof GitOpsSourcesTestByIdResponses];
 
 export type GitOpsSourcesCreateGitData = {
   /**
@@ -11367,6 +11363,10 @@ export type GitOpsSourcesCreateGitErrors = {
    * Access denied
    */
   403: unknown;
+  /**
+   * A source with this URL and credentials already exists
+   */
+  409: unknown;
   /**
    * Server error
    */
@@ -11410,6 +11410,41 @@ export type GitOpsSourcesSummaryResponses = {
 
 export type GitOpsSourcesSummaryResponse =
   GitOpsSourcesSummaryResponses[keyof GitOpsSourcesSummaryResponses];
+
+export type GitOpsSourcesTestData = {
+  /**
+   * Git connection details
+   */
+  body: SourcesGitSourceCreatePayload;
+  path?: never;
+  query?: never;
+  url: '/gitops/sources/test';
+};
+
+export type GitOpsSourcesTestErrors = {
+  /**
+   * Invalid request payload
+   */
+  400: unknown;
+  /**
+   * Access denied
+   */
+  403: unknown;
+  /**
+   * Server error
+   */
+  500: unknown;
+};
+
+export type GitOpsSourcesTestResponses = {
+  /**
+   * Connection test result
+   */
+  200: SourcesConnectionTestResult;
+};
+
+export type GitOpsSourcesTestResponse =
+  GitOpsSourcesTestResponses[keyof GitOpsSourcesTestResponses];
 
 export type GitOpsWorkflowsListData = {
   body?: never;

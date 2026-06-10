@@ -769,3 +769,97 @@ func TestFindOrCreateGitSource_StripsEmbeddedCredentialsFromURL(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "https://github.com/example/repo", src.Git.URL)
 }
+
+func newSourceWithAuth(url, username, password string) *portainer.Source {
+	return &portainer.Source{
+		Type: portainer.SourceTypeGit,
+		Git: &gittypes.RepoConfig{
+			URL: url,
+			Authentication: &gittypes.GitAuthentication{
+				Username: username,
+				Password: password,
+			},
+		},
+	}
+}
+
+func newAuthlessSource(url string) *portainer.Source {
+	return &portainer.Source{
+		Type: portainer.SourceTypeGit,
+		Git:  &gittypes.RepoConfig{URL: url},
+	}
+}
+
+func validateUniqueSourceInStore(t *testing.T, store *datastore.Store, url, username, password string, sourceID portainer.SourceID) bool {
+	t.Helper()
+
+	var isUnique bool
+	require.NoError(t, store.ViewTx(func(tx dataservices.DataStoreTx) error {
+		var err error
+		isUnique, err = ValidateUniqueSource(tx, url, username, password, sourceID)
+		return err
+	}))
+
+	return isUnique
+}
+
+func TestValidateUniqueSource_SameURLAndCreds_IsDuplicate(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return tx.Source().Create(newSourceWithAuth("https://github.com/org/repo.git", "alice", "secret"))
+	}))
+
+	require.False(t, validateUniqueSourceInStore(t, store, "https://github.com/org/repo.git", "alice", "secret", 0))
+}
+
+func TestValidateUniqueSource_SameURLDifferentCreds_IsUnique(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return tx.Source().Create(newSourceWithAuth("https://github.com/org/repo.git", "alice", "secret"))
+	}))
+
+	require.True(t, validateUniqueSourceInStore(t, store, "https://github.com/org/repo.git", "bob", "other", 0))
+}
+
+func TestValidateUniqueSource_TwoAuthlessSameURL_IsDuplicate(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return tx.Source().Create(newAuthlessSource("https://github.com/org/repo.git"))
+	}))
+
+	require.False(t, validateUniqueSourceInStore(t, store, "https://github.com/org/repo.git", "", "", 0))
+}
+
+func TestValidateUniqueSource_AuthlessVsAuthenticated_IsUnique(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return tx.Source().Create(newAuthlessSource("https://github.com/org/repo.git"))
+	}))
+
+	require.True(t, validateUniqueSourceInStore(t, store, "https://github.com/org/repo.git", "alice", "secret", 0))
+}
+
+func TestValidateUniqueSource_ExcludesSelf(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	var srcID portainer.SourceID
+	require.NoError(t, store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		src := newSourceWithAuth("https://github.com/org/repo.git", "alice", "secret")
+		if err := tx.Source().Create(src); err != nil {
+			return err
+		}
+		srcID = src.ID
+		return nil
+	}))
+
+	require.True(t, validateUniqueSourceInStore(t, store, "https://github.com/org/repo.git", "alice", "secret", srcID))
+}

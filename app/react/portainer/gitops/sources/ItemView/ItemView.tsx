@@ -79,11 +79,11 @@ function PageContent({ source }: { source: SourceDetail }) {
         name: (
           <>
             Workflows{' '}
-            <CountDot value={source?.workflows.length} type="workflow" />
+            <CountDot value={source.workflows?.length ?? 0} type="workflow" />
           </>
         ),
         icon: GitCommit,
-        widget: <WorkflowsTab workflows={source?.workflows ?? []} />,
+        widget: <WorkflowsTab workflows={source.workflows ?? []} />,
         selectedTabParam: 'workflows',
       },
     ],

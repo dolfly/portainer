@@ -13,8 +13,7 @@ import (
 )
 
 type gitAuthInfo struct {
-	Type     gittypes.GitCredentialAuthType `json:"type"`
-	Username string                         `json:"username"`
+	Username string `json:"username"`
 }
 
 type connectionInfo struct {
@@ -23,7 +22,7 @@ type connectionInfo struct {
 	Authentication *gitAuthInfo `json:"authentication,omitempty"`
 }
 
-type autoUpdateInfo struct {
+type AutoUpdateInfo struct {
 	Mechanism     string `json:"mechanism,omitempty"`
 	FetchInterval string `json:"fetchInterval,omitempty"`
 }
@@ -32,7 +31,7 @@ type autoUpdateInfo struct {
 type SourceDetail struct {
 	Source
 	Connection connectionInfo       `json:"connection" validate:"required"`
-	AutoUpdate *autoUpdateInfo      `json:"autoUpdate,omitempty"`
+	AutoUpdate *AutoUpdateInfo      `json:"autoUpdate,omitempty"`
 	Workflows  []workflows.Workflow `json:"workflows"`
 }
 
@@ -85,9 +84,9 @@ func (h *Handler) getSource(w http.ResponseWriter, r *http.Request) *httperror.H
 }
 
 func BuildSourceDetail(baseSource Source, cfg *gittypes.RepoConfig, sourceWfs []workflows.Workflow) SourceDetail {
-	var autoUpdate *autoUpdateInfo
+	var autoUpdate *AutoUpdateInfo
 	if len(sourceWfs) > 0 {
-		autoUpdate = buildAutoUpdateInfo(sourceWfs[0].AutoUpdate)
+		autoUpdate = BuildAutoUpdateInfo(sourceWfs[0].AutoUpdate)
 	}
 
 	return SourceDetail{
@@ -114,24 +113,23 @@ func buildGitAuthInfo(auth *gittypes.GitAuthentication) *gitAuthInfo {
 		return nil
 	}
 	return &gitAuthInfo{
-		Type:     auth.AuthorizationType,
 		Username: auth.Username,
 	}
 }
 
-func buildAutoUpdateInfo(autoUpdate *portainer.AutoUpdateSettings) *autoUpdateInfo {
+func BuildAutoUpdateInfo(autoUpdate *portainer.AutoUpdateSettings) *AutoUpdateInfo {
 	if autoUpdate == nil {
 		return nil
 	}
 
 	switch {
 	case autoUpdate.Interval != "":
-		return &autoUpdateInfo{
+		return &AutoUpdateInfo{
 			Mechanism:     "Interval",
 			FetchInterval: autoUpdate.Interval,
 		}
 	case autoUpdate.Webhook != "":
-		return &autoUpdateInfo{
+		return &AutoUpdateInfo{
 			Mechanism: "Webhook",
 		}
 	default:

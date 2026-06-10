@@ -49,15 +49,15 @@ func TestRedactWorkflowCredentials(t *testing.T) {
 func TestBuildAutoUpdateInfo(t *testing.T) {
 	t.Parallel()
 
-	assert.Nil(t, buildAutoUpdateInfo(nil))
-	assert.Nil(t, buildAutoUpdateInfo(&portainer.AutoUpdateSettings{}))
+	assert.Nil(t, BuildAutoUpdateInfo(nil))
+	assert.Nil(t, BuildAutoUpdateInfo(&portainer.AutoUpdateSettings{}))
 
-	got := buildAutoUpdateInfo(&portainer.AutoUpdateSettings{Interval: "5m"})
+	got := BuildAutoUpdateInfo(&portainer.AutoUpdateSettings{Interval: "5m"})
 	require.NotNil(t, got)
 	assert.Equal(t, "Interval", got.Mechanism)
 	assert.Equal(t, "5m", got.FetchInterval)
 
-	got = buildAutoUpdateInfo(&portainer.AutoUpdateSettings{Webhook: "abc123"})
+	got = BuildAutoUpdateInfo(&portainer.AutoUpdateSettings{Webhook: "abc123"})
 	require.NotNil(t, got)
 	assert.Equal(t, "Webhook", got.Mechanism)
 	assert.Empty(t, got.FetchInterval)

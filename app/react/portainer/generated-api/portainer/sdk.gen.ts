@@ -451,9 +451,12 @@ import type {
   GitOpsSourcesSummaryData,
   GitOpsSourcesSummaryErrors,
   GitOpsSourcesSummaryResponses,
-  GitOpsSourcesTestGitData,
-  GitOpsSourcesTestGitErrors,
-  GitOpsSourcesTestGitResponses,
+  GitOpsSourcesTestByIdData,
+  GitOpsSourcesTestByIdErrors,
+  GitOpsSourcesTestByIdResponses,
+  GitOpsSourcesTestData,
+  GitOpsSourcesTestErrors,
+  GitOpsSourcesTestResponses,
   GitOpsSourcesUpdateGitData,
   GitOpsSourcesUpdateGitErrors,
   GitOpsSourcesUpdateGitResponses,
@@ -1103,9 +1106,11 @@ import {
   zGitOpsSourcesListQuery,
   zGitOpsSourcesListResponse,
   zGitOpsSourcesSummaryResponse,
-  zGitOpsSourcesTestGitBody,
-  zGitOpsSourcesTestGitPath,
-  zGitOpsSourcesTestGitResponse,
+  zGitOpsSourcesTestBody,
+  zGitOpsSourcesTestByIdBody,
+  zGitOpsSourcesTestByIdPath,
+  zGitOpsSourcesTestByIdResponse,
+  zGitOpsSourcesTestResponse,
   zGitOpsSourcesUpdateGitBody,
   zGitOpsSourcesUpdateGitPath,
   zGitOpsSourcesUpdateGitResponse,
@@ -3944,7 +3949,7 @@ export const gitOpsSourceGet = <ThrowOnError extends boolean = true>(
  * Update a Git source
  *
  * Updates an existing GitOps source backed by a Git repository.
- * **Access policy**: admin
+ * **Access policy**: administrator
  */
 export const gitOpsSourcesUpdateGit = <ThrowOnError extends boolean = true>(
   options: Options<GitOpsSourcesUpdateGitData, ThrowOnError>
@@ -3978,30 +3983,30 @@ export const gitOpsSourcesUpdateGit = <ThrowOnError extends boolean = true>(
   });
 
 /**
- * Test a Git source connection
+ * Test the connection of a stored source
  *
  * Tests connectivity for a GitOps source, applying optional overrides to the stored configuration.
- * **Access policy**: admin
+ * **Access policy**: administrator
  */
-export const gitOpsSourcesTestGit = <ThrowOnError extends boolean = true>(
-  options: Options<GitOpsSourcesTestGitData, ThrowOnError>
+export const gitOpsSourcesTestById = <ThrowOnError extends boolean = true>(
+  options: Options<GitOpsSourcesTestByIdData, ThrowOnError>
 ) =>
   (options.client ?? client).post<
-    GitOpsSourcesTestGitResponses,
-    GitOpsSourcesTestGitErrors,
+    GitOpsSourcesTestByIdResponses,
+    GitOpsSourcesTestByIdErrors,
     ThrowOnError
   >({
     requestValidator: async (data) =>
       await z
         .object({
-          body: zGitOpsSourcesTestGitBody.optional(),
-          path: zGitOpsSourcesTestGitPath,
+          body: zGitOpsSourcesTestByIdBody.optional(),
+          path: zGitOpsSourcesTestByIdPath,
           query: z.never().optional(),
         })
         .parseAsync(data),
     responseType: 'json',
     responseValidator: async (data) =>
-      await zGitOpsSourcesTestGitResponse.parseAsync(data),
+      await zGitOpsSourcesTestByIdResponse.parseAsync(data),
     security: [
       { name: 'X-API-KEY', type: 'apiKey' },
       { name: 'Authorization', type: 'apiKey' },
@@ -4018,7 +4023,7 @@ export const gitOpsSourcesTestGit = <ThrowOnError extends boolean = true>(
  * Create a Git source
  *
  * Creates a new GitOps source backed by a Git repository.
- * **Access policy**: admin
+ * **Access policy**: administrator
  */
 export const gitOpsSourcesCreateGit = <ThrowOnError extends boolean = true>(
   options: Options<GitOpsSourcesCreateGitData, ThrowOnError>
@@ -4082,6 +4087,43 @@ export const gitOpsSourcesSummary = <ThrowOnError extends boolean = true>(
     ],
     url: '/gitops/sources/summary',
     ...options,
+  });
+
+/**
+ * Test a Git source connection
+ *
+ * Tests connectivity for Git connection details that have not been persisted yet.
+ * **Access policy**: administrator
+ */
+export const gitOpsSourcesTest = <ThrowOnError extends boolean = true>(
+  options: Options<GitOpsSourcesTestData, ThrowOnError>
+) =>
+  (options.client ?? client).post<
+    GitOpsSourcesTestResponses,
+    GitOpsSourcesTestErrors,
+    ThrowOnError
+  >({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: zGitOpsSourcesTestBody,
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) =>
+      await zGitOpsSourcesTestResponse.parseAsync(data),
+    security: [
+      { name: 'X-API-KEY', type: 'apiKey' },
+      { name: 'Authorization', type: 'apiKey' },
+    ],
+    url: '/gitops/sources/test',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**

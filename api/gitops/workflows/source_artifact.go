@@ -348,8 +348,9 @@ func gitAuthMatches(a, b *gittypes.GitAuthentication) bool {
 	return a.Username == b.Username && a.Password == b.Password && a.GitCredentialID == b.GitCredentialID
 }
 
-// ValidateUniqueSourceURL validates there are no other sources with the same URL
-func ValidateUniqueSourceURL(tx gitSourceStore, url string, sourceID portainer.SourceID) (bool, error) {
+// ValidateUniqueSource validates there are no other sources with the same URL and credentials.
+// Pass empty strings for username and password when the source has no authentication.
+func ValidateUniqueSource(tx gitSourceStore, url, username, password string, sourceID portainer.SourceID) (bool, error) {
 	normalizedURL, err := gittypes.NormalizeURL(gittypes.SanitizeURL(url))
 	if err != nil {
 		return false, err
@@ -361,8 +362,12 @@ func ValidateUniqueSourceURL(tx gitSourceStore, url string, sourceID portainer.S
 		}
 
 		normalized, err := gittypes.NormalizeURL(gittypes.SanitizeURL(s.Git.URL))
+		if err != nil || normalized != normalizedURL {
+			return false
+		}
 
-		return err == nil && normalized == normalizedURL
+		existingUsername, existingPassword := gitAuthCredentials(s.Git.Authentication)
+		return existingUsername == username && existingPassword == password
 	})
 
 	if err != nil {
@@ -370,4 +375,11 @@ func ValidateUniqueSourceURL(tx gitSourceStore, url string, sourceID portainer.S
 	}
 
 	return len(existing) == 0, nil
+}
+
+func gitAuthCredentials(auth *gittypes.GitAuthentication) (username, password string) {
+	if auth == nil {
+		return "", ""
+	}
+	return auth.Username, auth.Password
 }

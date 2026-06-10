@@ -1118,7 +1118,6 @@ export const zSslSslUpdatePayload = z.object({
 });
 
 export const zSourcesGitAuthInfo = z.object({
-  type: z.int().optional(),
   username: z.string().optional(),
 });
 
@@ -1128,12 +1127,12 @@ export const zSourcesConnectionInfo = z.object({
   tlsSkipVerify: z.boolean().optional(),
 });
 
+export const zSourcesSourceType = z.enum(SourcesSourceType);
+
 export const zSourcesAutoUpdateInfo = z.object({
   fetchInterval: z.string().optional(),
   mechanism: z.string().optional(),
 });
-
-export const zSourcesSourceType = z.enum(SourcesSourceType);
 
 export const zSourcesSourceDetail = z.object({
   autoUpdate: zSourcesAutoUpdateInfo.optional(),
@@ -1143,7 +1142,6 @@ export const zSourcesSourceDetail = z.object({
   id: z.int(),
   lastSync: z.int().optional(),
   name: z.string(),
-  provider: z.int().optional(),
   status: zWorkflowsStatus,
   type: zSourcesSourceType,
   url: z.string(),
@@ -1157,7 +1155,6 @@ export const zSourcesSource = z.object({
   id: z.int(),
   lastSync: z.int().optional(),
   name: z.string(),
-  provider: z.int().optional(),
   status: zWorkflowsStatus,
   type: zSourcesSourceType,
   url: z.string(),
@@ -1165,19 +1162,7 @@ export const zSourcesSource = z.object({
 });
 
 export const zSourcesGitAuthenticationUpdatePayload = z.object({
-  authorizationType: z.union([z.literal(0), z.literal(1)]).optional(),
   password: z.string().optional(),
-  provider: z
-    .union([
-      z.literal(0),
-      z.literal(1),
-      z.literal(2),
-      z.literal(3),
-      z.literal(4),
-      z.literal(5),
-      z.literal(6),
-    ])
-    .optional(),
   username: z.string().optional(),
 });
 
@@ -1190,9 +1175,7 @@ export const zSourcesGitSourceUpdatePayload = z.object({
 });
 
 export const zSourcesGitAuthenticationPayload = z.object({
-  authorizationType: z.int().optional(),
   password: z.string().optional(),
-  provider: z.int().optional(),
   username: z.string().optional(),
 });
 
@@ -1802,8 +1785,8 @@ export const zPortainerHelmConfig = z.object({
 });
 
 export const zPortainerSource = z.object({
-  gitConfig: zGittypesRepoConfig.optional(),
-  helmConfig: zPortainerHelmConfig.optional(),
+  git: zGittypesRepoConfig.optional(),
+  helm: zPortainerHelmConfig.optional(),
   id: z.int().optional(),
   lastSync: z.int().optional(),
   name: z.string().optional(),
@@ -2159,21 +2142,23 @@ export const zPortainerCustomTemplatePlatform = z.enum(
   PortainerCustomTemplatePlatform
 );
 
+export const zPortainerArtifactFile = z.object({
+  hash: z.string().optional(),
+  path: z.string().optional(),
+  ref: z.string().optional(),
+  sourceId: z.int().optional(),
+});
+
 export const zPortainerArtifact = z.object({
-  configFilePath: z.string().optional(),
-  configHash: z.string().optional(),
+  edgeGroups: z.array(z.int()).optional(),
   edgeStackId: z.int().optional(),
-  referenceName: z.string().optional(),
+  envGroups: z.array(z.int()).optional(),
+  envIds: z.array(z.int()).optional(),
+  files: z.array(zPortainerArtifactFile).optional(),
   stackId: z.int().optional(),
 });
 
-export const zPortainerArtifactSources = z.object({
-  artifact: zPortainerArtifact.optional(),
-  sourceIds: z.array(z.int()).optional(),
-});
-
 export const zPortainerCustomTemplate = z.object({
-  ArtifactSources: zPortainerArtifactSources.optional(),
   CreatedByUserId: z.int().optional(),
   Description: z.string().optional(),
   EdgeTemplate: z.boolean().optional(),
@@ -2189,6 +2174,7 @@ export const zPortainerCustomTemplate = z.object({
   Title: z.string().optional(),
   Type: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
   Variables: z.array(zPortainerCustomTemplateVariableDefinition).optional(),
+  artifact: zPortainerArtifact.optional(),
 });
 
 export const zMotdMotd = z.object({
@@ -4066,16 +4052,16 @@ export const zGitOpsSourcesUpdateGitResponse = zPortainerSource;
 /**
  * Optional connection overrides; omitted fields fall back to stored values
  */
-export const zGitOpsSourcesTestGitBody = zSourcesGitSourceUpdatePayload;
+export const zGitOpsSourcesTestByIdBody = zSourcesGitSourceUpdatePayload;
 
-export const zGitOpsSourcesTestGitPath = z.object({
+export const zGitOpsSourcesTestByIdPath = z.object({
   id: z.int(),
 });
 
 /**
  * Connection test result
  */
-export const zGitOpsSourcesTestGitResponse = zSourcesConnectionTestResult;
+export const zGitOpsSourcesTestByIdResponse = zSourcesConnectionTestResult;
 
 /**
  * Git source details
@@ -4091,6 +4077,16 @@ export const zGitOpsSourcesCreateGitResponse = zPortainerSource;
  * OK
  */
 export const zGitOpsSourcesSummaryResponse = zWorkflowsStatusSummary;
+
+/**
+ * Git connection details
+ */
+export const zGitOpsSourcesTestBody = zSourcesGitSourceCreatePayload;
+
+/**
+ * Connection test result
+ */
+export const zGitOpsSourcesTestResponse = zSourcesConnectionTestResult;
 
 export const zGitOpsWorkflowsListQuery = z.object({
   search: z.string().optional(),
