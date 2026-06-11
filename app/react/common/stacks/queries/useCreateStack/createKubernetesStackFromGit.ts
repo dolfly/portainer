@@ -22,8 +22,6 @@ export type KubernetesGitRepositoryPayload = {
   repositoryUsername?: string;
   /** Password used in basic authentication. Required when RepositoryAuthentication is true. */
   repositoryPassword?: string;
-  /** GitCredentialID used to identify the binded git credential */
-  repositoryGitCredentialId?: number;
   /** Path to the Stack file inside the Git repository */
   manifestFile?: string;
 

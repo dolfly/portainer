@@ -33,7 +33,6 @@ import { Registry } from '@/react/portainer/registries/types/registry';
 import { useRegistries } from '@/react/portainer/registries/queries/useRegistries';
 import { RelativePathFieldset } from '@/react/portainer/gitops/RelativePathFieldset/RelativePathFieldset';
 import { parseRelativePathResponse } from '@/react/portainer/gitops/RelativePathFieldset/utils';
-import { useSaveCredentialsIfRequired } from '@/react/portainer/account/git-credentials/queries/useCreateGitCredentialsMutation';
 import { GitReferenceCard } from '@/react/portainer/gitops/GitReferenceCard';
 
 import { LoadingButton } from '@@/buttons';
@@ -65,8 +64,6 @@ interface FormValues {
 export function GitForm({ stack }: { stack: EdgeStack }) {
   const router = useRouter();
   const updateStackMutation = useUpdateEdgeStackGitMutation();
-  const { saveCredentials, isLoading: isSaveCredentialsLoading } =
-    useSaveCredentialsIfRequired();
 
   const [webhookId] = useState(
     () => stack.AutoUpdate?.Webhook || createWebhookId()
@@ -96,9 +93,7 @@ export function GitForm({ stack }: { stack: EdgeStack }) {
             webhookId={webhookId}
             onUpdateSettingsClick={handleUpdateSettings}
             gitUrl={gitConfig.URL}
-            isLoading={
-              updateStackMutation.isLoading || isSaveCredentialsLoading
-            }
+            isLoading={updateStackMutation.isLoading}
             isUpdateVersion={!!updateStackMutation.variables?.updateVersion}
             stack={stack}
           />
@@ -109,9 +104,7 @@ export function GitForm({ stack }: { stack: EdgeStack }) {
             return;
           }
 
-          const credentialId = await saveCredentials(values.authentication);
-
-          updateStackMutation.mutate(getPayload(values, credentialId, false), {
+          updateStackMutation.mutate(getPayload(values, false), {
             onSuccess() {
               notifySuccess('Success', 'Stack updated successfully');
               router.stateService.reload();
@@ -123,9 +116,7 @@ export function GitForm({ stack }: { stack: EdgeStack }) {
   );
 
   async function handleSubmit(values: FormValues) {
-    const credentialId = await saveCredentials(values.authentication);
-
-    updateStackMutation.mutate(getPayload(values, credentialId, true), {
+    updateStackMutation.mutate(getPayload(values, true), {
       onSuccess() {
         notifySuccess('Success', 'Stack updated successfully');
         router.stateService.reload();
@@ -135,16 +126,12 @@ export function GitForm({ stack }: { stack: EdgeStack }) {
 
   function getPayload(
     { authentication, autoUpdate, privateRegistryId, ...values }: FormValues,
-    credentialId: number | undefined,
     updateVersion: boolean
   ): UpdateEdgeStackGitPayload {
     return {
       updateVersion,
       id: stack.Id,
-      authentication: transformGitAuthenticationViewModel({
-        ...authentication,
-        RepositoryGitCredentialID: credentialId,
-      }),
+      authentication: transformGitAuthenticationViewModel(authentication),
       autoUpdate: transformAutoUpdateViewModel(autoUpdate, webhookId),
       registries:
         typeof privateRegistryId !== 'undefined'

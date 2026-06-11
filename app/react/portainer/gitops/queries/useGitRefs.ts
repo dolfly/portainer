@@ -12,7 +12,6 @@ interface RefsPayload {
   username?: string;
   password?: string;
   authorizationType?: AuthTypeOption;
-  gitCredentialId?: number;
   stackId?: number;
   fromEdgeStack?: boolean;
   createdFromCustomTemplateID?: number;

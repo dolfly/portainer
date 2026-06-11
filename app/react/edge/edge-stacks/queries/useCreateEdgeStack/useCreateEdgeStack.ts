@@ -8,8 +8,6 @@ import {
   GitFormModel,
   RelativePathModel,
 } from '@/react/portainer/gitops/types';
-import { saveGitCredentialsIfNeeded } from '@/react/portainer/account/git-credentials/queries/useCreateGitCredentialsMutation';
-import { UserId } from '@/portainer/users/types';
 
 import { DeploymentType, StaggerConfig } from '../../types';
 
@@ -22,7 +20,6 @@ export function useCreateEdgeStack() {
 }
 
 export type BasePayload = {
-  userId: UserId;
   /** Name of the stack */
   name: string;
   /** Content of the Stack file */
@@ -92,7 +89,7 @@ function createEdgeStack({ method, payload }: CreateEdgeStackPayload) {
         Webhook: payload.webhook,
       });
     case 'git':
-      return createStackAndGitCredential(payload.userId, payload);
+      return createEdgeStackFromGit(payload);
     case 'string':
       return createStackFromFileContent({
         deploymentType: payload.deploymentType,
@@ -112,16 +109,13 @@ function createEdgeStack({ method, payload }: CreateEdgeStackPayload) {
   }
 }
 
-async function createStackAndGitCredential(
-  userId: UserId,
+function createEdgeStackFromGit(
   payload: BasePayload & {
     git: GitFormModel;
     relativePathSettings?: RelativePathModel;
     autoUpdate: AutoUpdateResponse | null;
   }
 ) {
-  const resolvedAuth = await saveGitCredentialsIfNeeded(userId, payload.git);
-
   return createStackFromGit({
     deploymentType: payload.deploymentType,
     edgeGroups: payload.edgeGroups,
@@ -135,10 +129,9 @@ async function createStackAndGitCredential(
     repositoryUrl: payload.git.RepositoryURL,
     repositoryReferenceName: payload.git.RepositoryReferenceName,
     filePathInRepository: payload.git.ComposeFilePathInRepository,
-    repositoryAuthentication: resolvedAuth.RepositoryAuthentication,
-    repositoryUsername: resolvedAuth.RepositoryUsername,
-    repositoryPassword: resolvedAuth.RepositoryPassword,
-    repositoryGitCredentialId: resolvedAuth.RepositoryGitCredentialID,
+    repositoryAuthentication: payload.git.RepositoryAuthentication,
+    repositoryUsername: payload.git.RepositoryUsername,
+    repositoryPassword: payload.git.RepositoryPassword,
     filesystemPath: payload.relativePathSettings?.FilesystemPath,
     supportRelativePath: payload.relativePathSettings?.SupportRelativePath,
     perDeviceConfigsGroupMatchType:

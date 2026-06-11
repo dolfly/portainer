@@ -1,7 +1,4 @@
-import {
-  AuthTypeOption,
-  GitCredential,
-} from '@/react/portainer/account/git-credentials/types';
+import { AuthTypeOption } from '@/react/portainer/account/git-credentials/types';
 
 import {
   AutoUpdateModel,
@@ -20,7 +17,6 @@ export interface GitAuthenticationResponse {
   Username?: string;
   Password?: string;
   AuthorizationType?: AuthTypeOption;
-  GitCredentialID?: number;
 }
 
 export interface RepoConfigResponse {
@@ -32,20 +28,12 @@ export interface RepoConfigResponse {
   TLSSkipVerify: boolean;
 }
 
-export type GitCredentialsModel = {
+export type GitAuthModel = {
   RepositoryAuthentication?: boolean;
   RepositoryUsername?: string;
   RepositoryPassword?: string;
-  RepositoryGitCredentialID?: GitCredential['id'];
   RepositoryAuthorizationType?: AuthTypeOption;
 };
-
-export type GitNewCredentialModel = {
-  NewCredentialName?: string;
-  SaveCredential?: boolean;
-};
-
-export type GitAuthModel = GitCredentialsModel & GitNewCredentialModel;
 
 export type DeployMethod = 'compose' | 'manifest' | 'helm';
 
@@ -94,14 +82,10 @@ export function toGitFormModel(
     RepositoryURL: URL,
     ComposeFilePathInRepository: ConfigFilePath,
     RepositoryReferenceName: ReferenceName,
-    RepositoryAuthentication: !!(
-      Authentication &&
-      (Authentication?.GitCredentialID || Authentication?.Username)
-    ),
+    RepositoryAuthentication: !!Authentication?.Username,
     RepositoryUsername: Authentication?.Username,
     RepositoryPassword: Authentication?.Password,
     RepositoryAuthorizationType: Authentication?.AuthorizationType,
-    RepositoryGitCredentialID: Authentication?.GitCredentialID,
     TLSSkipVerify,
     AutoUpdate: autoUpdate,
   };

@@ -102,7 +102,6 @@ export interface GitStackPayload {
   prune?: boolean;
   RepositoryReferenceName?: string;
   RepositoryAuthentication?: boolean;
-  RepositoryGitCredentialID?: number;
   RepositoryUsername?: string;
   RepositoryPassword?: string;
   RepositoryAuthorizationType?: AuthTypeOption;

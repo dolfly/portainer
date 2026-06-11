@@ -43,10 +43,8 @@ type RepositoryConfigPayload struct {
 	// Use basic authentication to clone the Git repository
 	Authentication bool `example:"true"`
 	// Username used in basic authentication. Required when RepositoryAuthentication is true
-	// and RepositoryGitCredentialID is 0
 	Username string `example:"myGitUsername"`
 	// Password used in basic authentication. Required when RepositoryAuthentication is true
-	// and RepositoryGitCredentialID is 0
 	Password string `example:"myGitPassword"`
 	// TLSSkipVerify skips SSL verification when cloning the Git repository
 	TLSSkipVerify bool `example:"false"`

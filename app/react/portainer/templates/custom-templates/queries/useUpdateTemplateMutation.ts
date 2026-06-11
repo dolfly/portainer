@@ -75,11 +75,6 @@ interface CustomTemplateUpdatePayload {
   RepositoryUsername?: string;
   /** Password used in basic authentication. Required when RepositoryAuthentication is true */
   RepositoryPassword?: string;
-  /**
-   * GitCredentialID used to identify the bound git credential.
-   * Required when RepositoryAuthentication is true and RepositoryUsername/RepositoryPassword are not provided
-   */
-  RepositoryGitCredentialID?: number;
   /** Path to the Stack file inside the Git repository */
   ComposeFilePathInRepository?: string;
   /** Content of stack file */

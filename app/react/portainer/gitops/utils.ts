@@ -7,18 +7,11 @@ import { GitFormModel, RepoConfigResponse } from './types';
 export function getAuthentication(
   model: Pick<
     GitFormModel,
-    | 'RepositoryAuthentication'
-    | 'RepositoryPassword'
-    | 'RepositoryUsername'
-    | 'RepositoryGitCredentialID'
+    'RepositoryAuthentication' | 'RepositoryPassword' | 'RepositoryUsername'
   >
 ) {
   if (!model.RepositoryAuthentication) {
     return undefined;
-  }
-
-  if (model.RepositoryGitCredentialID) {
-    return { gitCredentialId: model.RepositoryGitCredentialID };
   }
 
   return {

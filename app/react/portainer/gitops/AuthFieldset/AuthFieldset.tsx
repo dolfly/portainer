@@ -1,19 +1,15 @@
 import { FormikErrors } from 'formik';
-import { boolean, mixed, number, object, SchemaOf, string } from 'yup';
+import { boolean, mixed, object, SchemaOf, string } from 'yup';
 import { useState } from 'react';
 
 import { GitAuthModel } from '@/react/portainer/gitops/types';
-import {
-  AuthTypeOption,
-  GitCredential,
-} from '@/react/portainer/account/git-credentials/types';
+import { AuthTypeOption } from '@/react/portainer/account/git-credentials/types';
 
 import { SwitchField } from '@@/form-components/SwitchField';
 import { TextTip } from '@@/Tip/TextTip';
 
 import { isBE } from '../../feature-flags/feature-flags.service';
 
-import { CredentialSelector } from './CredentialSelector';
 import { CredentialsSection } from './CredentialsSection';
 
 interface Props {
@@ -57,42 +53,15 @@ export function AuthFieldset({
             </TextTip>
           )}
 
-          {isBE && (
-            <CredentialSelector
-              onChange={handleChangeGitCredential}
-              value={value.RepositoryGitCredentialID}
-            />
-          )}
-
-          {!value.RepositoryGitCredentialID && (
-            <CredentialsSection
-              value={value}
-              onChange={handleChange}
-              errors={errors}
-            />
-          )}
+          <CredentialsSection
+            value={value}
+            onChange={handleChange}
+            errors={errors}
+          />
         </>
       )}
     </>
   );
-
-  function handleChangeGitCredential(gitCredential?: GitCredential | null) {
-    handleChange(
-      gitCredential
-        ? {
-            RepositoryGitCredentialID: gitCredential.id,
-            RepositoryUsername: gitCredential?.username,
-            RepositoryPassword: '',
-            SaveCredential: false,
-            NewCredentialName: '',
-          }
-        : {
-            RepositoryGitCredentialID: 0,
-            RepositoryUsername: '',
-            RepositoryPassword: '',
-          }
-    );
-  }
 
   function handleChange(partialValue: Partial<GitAuthModel>) {
     onChange(partialValue);
@@ -101,51 +70,31 @@ export function AuthFieldset({
 }
 
 export function gitAuthValidation(
-  gitCredentials: Array<GitCredential>,
   isAuthEdit: boolean,
   isCreatedFromCustomTemplate: boolean
 ): SchemaOf<GitAuthModel> {
   return object({
     RepositoryAuthentication: boolean().default(false),
-    RepositoryGitCredentialID: number().default(0),
     RepositoryUsername: string()
-      .when(['RepositoryAuthentication', 'RepositoryGitCredentialID'], {
-        is: (auth: boolean, id: number) => auth && !id,
+      .when(['RepositoryAuthentication'], {
+        is: (auth: boolean) => auth,
         then: string().required('Username is required'),
       })
       .default(''),
     RepositoryPassword: string()
-      .when(['RepositoryAuthentication', 'RepositoryGitCredentialID'], {
-        is: (auth: boolean, id: number) =>
-          auth && !id && !isAuthEdit && !isCreatedFromCustomTemplate,
+      .when(['RepositoryAuthentication'], {
+        is: (auth: boolean) =>
+          auth && !isAuthEdit && !isCreatedFromCustomTemplate,
         then: string().required('Personal Access Token is required'),
       })
       .default(''),
     RepositoryAuthorizationType: mixed()
       .oneOf(Object.values(AuthTypeOption))
-      .when(['RepositoryAuthentication', 'RepositoryGitCredentialID'], {
-        is: (auth: boolean, id: number) =>
-          isBE && auth && !id && !isAuthEdit && !isCreatedFromCustomTemplate,
+      .when(['RepositoryAuthentication'], {
+        is: (auth: boolean) =>
+          isBE && auth && !isAuthEdit && !isCreatedFromCustomTemplate,
         then: mixed().required('Authorization type is required'),
       })
       .default(AuthTypeOption.Basic),
-    SaveCredential: boolean().default(false),
-    NewCredentialName: string()
-      .default('')
-      .when(['RepositoryAuthentication', 'SaveCredential'], {
-        is: (RepositoryAuthentication: boolean, SaveCredential: boolean) =>
-          RepositoryAuthentication && SaveCredential && !isAuthEdit,
-        then: string()
-          .required('Name is required')
-          .test(
-            'is-unique',
-            'This name is already been used, please try another one',
-            (name) => !!name && !gitCredentials.find((x) => x.name === name)
-          )
-          .matches(
-            /^[-_a-z0-9]+$/,
-            "This field must consist of lower case alphanumeric characters, '_' or '-' (e.g. 'my-name', or 'abc-123')."
-          ),
-      }),
   });
 }

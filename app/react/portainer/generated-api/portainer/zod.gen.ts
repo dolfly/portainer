@@ -87,7 +87,6 @@ export const zWorkflowsDeploymentPlatform = z.enum(WorkflowsDeploymentPlatform);
 
 export const zGittypesGitAuthentication = z.object({
   AuthorizationType: z.int().optional(),
-  GitCredentialID: z.int().optional(),
   Password: z.string().optional(),
   Provider: z.int().optional(),
   Username: z.string().optional(),
@@ -2986,7 +2985,6 @@ export const zCustomtemplatesCustomTemplateUpdatePayload = z.object({
   Note: z.string().optional(),
   Platform: z.union([z.literal(1), z.literal(2)]).optional(),
   RepositoryAuthentication: z.boolean().optional(),
-  RepositoryGitCredentialID: z.int().optional(),
   RepositoryPassword: z.string().optional(),
   RepositoryReferenceName: z.string().optional(),
   RepositoryURL: z.string(),

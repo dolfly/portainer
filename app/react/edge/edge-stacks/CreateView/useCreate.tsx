@@ -1,6 +1,5 @@
 import { useRouter } from '@uirouter/react';
 
-import { useCurrentUser } from '@/react/hooks/useUser';
 import { TemplateViewModel } from '@/react/portainer/templates/app-templates/view-model';
 import { CustomTemplate } from '@/react/portainer/templates/custom-templates/types';
 import { notifySuccess } from '@/portainer/services/notifications';
@@ -26,7 +25,6 @@ export function useCreate({
 }) {
   const router = useRouter();
   const mutation = useCreateEdgeStack();
-  const { user } = useCurrentUser();
 
   return {
     isLoading: mutation.isLoading,
@@ -105,7 +103,6 @@ export function useCreate({
         value,
       }));
       return {
-        userId: user.Id,
         deploymentType: values.deploymentType,
         edgeGroups: values.groupIds,
         name: values.name,

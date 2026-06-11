@@ -43,14 +43,10 @@ type customTemplateUpdatePayload struct {
 	// Use authentication to clone the Git repository
 	RepositoryAuthentication bool `example:"true"`
 	// Username used in basic authentication. Required when RepositoryAuthentication is true
-	// and RepositoryGitCredentialID is 0. Ignored if RepositoryAuthType is token
 	RepositoryUsername string `example:"myGitUsername"`
 	// Password used in basic authentication or token used in token authentication.
-	// Required when RepositoryAuthentication is true and RepositoryGitCredentialID is 0
+	// Required when RepositoryAuthentication is true
 	RepositoryPassword string `example:"myGitPassword"`
-	// GitCredentialID used to identify the bound git credential. Required when RepositoryAuthentication
-	// is true and RepositoryUsername/RepositoryPassword are not provided
-	RepositoryGitCredentialID int `example:"0"`
 	// Path to the Stack file inside the Git repository
 	ComposeFilePathInRepository string `example:"docker-compose.yml" default:"docker-compose.yml"`
 	// Content of stack file

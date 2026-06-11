@@ -3,11 +3,6 @@ import { FormikErrors } from 'formik';
 
 import { DeployMethod, GitFormModel } from '@/react/portainer/gitops/types';
 import { validateGitForm } from '@/react/portainer/gitops/GitForm';
-import { notifyError } from '@/portainer/services/notifications';
-import { IAuthenticationService } from '@/portainer/services/types';
-import { getGitCredentials } from '@/react/portainer/account/git-credentials/git-credentials.service';
-import { GitCredential } from '@/react/portainer/account/git-credentials/types';
-import { isBE } from '@/react/portainer/feature-flags/feature-flags.service';
 
 export default class GitFormController {
   errors?: FormikErrors<GitFormModel>;
@@ -15,10 +10,6 @@ export default class GitFormController {
   $async: <T>(fn: () => Promise<T>) => Promise<T>;
 
   gitForm?: IFormController;
-
-  gitCredentials: Array<GitCredential> = [];
-
-  Authentication: IAuthenticationService;
 
   value?: GitFormModel;
 
@@ -29,12 +20,8 @@ export default class GitFormController {
   deployMethod?: DeployMethod;
 
   /* @ngInject */
-  constructor(
-    $async: <T>(fn: () => Promise<T>) => Promise<T>,
-    Authentication: IAuthenticationService
-  ) {
+  constructor($async: <T>(fn: () => Promise<T>) => Promise<T>) {
     this.$async = $async;
-    this.Authentication = Authentication;
 
     this.handleChange = this.handleChange.bind(this);
     this.runGitFormValidation = this.runGitFormValidation.bind(this);
@@ -67,7 +54,6 @@ export default class GitFormController {
       this.gitForm?.$setValidity('gitForm', true, this.gitForm);
 
       this.errors = await validateGitForm(
-        this.gitCredentials,
         value,
         isCreatedFromCustomTemplate,
         this.deployMethod
@@ -79,20 +65,6 @@ export default class GitFormController {
   }
 
   async $onInit() {
-    if (isBE) {
-      try {
-        this.gitCredentials = await getGitCredentials(
-          this.Authentication.getUserDetails().ID
-        );
-      } catch (err) {
-        notifyError(
-          'Failure',
-          err as Error,
-          'Unable to retrieve user saved git credentials'
-        );
-      }
-    }
-
     // this should never happen, but just in case
     if (!this.value) {
       throw new Error('GitFormController: value is required');

@@ -12,7 +12,6 @@ export interface GitFilePreviewParams {
   username?: string;
   password?: string;
   authorizationType?: AuthTypeOption;
-  gitCredentialId?: number;
   tlsSkipVerify?: boolean;
 }
 

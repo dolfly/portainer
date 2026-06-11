@@ -1,6 +1,6 @@
-import { GitCredentialsModel } from '../types';
+import { GitAuthModel } from '../types';
 
-export interface RefFieldModel extends GitCredentialsModel {
+export interface RefFieldModel extends GitAuthModel {
   RepositoryURL: string;
   TLSSkipVerify?: boolean;
 }

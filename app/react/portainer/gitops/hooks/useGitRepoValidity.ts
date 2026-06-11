@@ -7,7 +7,6 @@ import { useGitRefs } from '../queries/useGitRefs';
 interface Creds {
   username?: string;
   password?: string;
-  gitCredentialId?: number;
   authorizationType?: AuthTypeOption;
 }
 
@@ -62,8 +61,7 @@ export function useGitRepoValidity({
     }
   );
 
-  const hasCreds =
-    !!(creds?.username && creds?.password) || !!creds?.gitCredentialId;
+  const hasCreds = !!(creds?.username && creds?.password);
 
   const errorMessage = getGitValidityError(query.error, hasCreds);
 

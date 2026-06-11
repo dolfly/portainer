@@ -12,8 +12,6 @@ import { FormSection } from '@@/form-components/FormSection';
 import { validateForm } from '@@/form-components/validate-form';
 import { SwitchField } from '@@/form-components/SwitchField';
 
-import { GitCredential } from '../account/git-credentials/types';
-
 import { AdditionalFileField } from './AdditionalFilesField';
 import { gitAuthValidation, AuthFieldset } from './AuthFieldset';
 import { AutoUpdateFieldset } from './AutoUpdateFieldset';
@@ -152,24 +150,17 @@ export function GitForm({
 }
 
 export async function validateGitForm(
-  gitCredentials: Array<GitCredential>,
   formValues: GitFormModel,
   isCreatedFromCustomTemplate: boolean,
   deployMethod: DeployMethod = 'compose'
 ) {
   return validateForm<GitFormModel>(
-    () =>
-      buildGitValidationSchema(
-        gitCredentials,
-        isCreatedFromCustomTemplate,
-        deployMethod
-      ),
+    () => buildGitValidationSchema(isCreatedFromCustomTemplate, deployMethod),
     formValues
   );
 }
 
 export function buildGitValidationSchema(
-  gitCredentials: Array<GitCredential>,
   isCreatedFromCustomTemplate: boolean,
   deployMethod: DeployMethod,
   isEdit = false
@@ -200,6 +191,6 @@ export function buildGitValidationSchema(
     AutoUpdate: autoUpdateValidation().nullable(),
     TLSSkipVerify: boolean().default(false),
   }).concat(
-    gitAuthValidation(gitCredentials, isEdit, isCreatedFromCustomTemplate)
+    gitAuthValidation(isEdit, isCreatedFromCustomTemplate)
   ) as SchemaOf<GitFormModel>;
 }

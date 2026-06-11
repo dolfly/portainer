@@ -10,8 +10,6 @@ import { AuthTypeOption } from '../../account/git-credentials/types';
 import { isBE } from '../../feature-flags/feature-flags.service';
 import { GitAuthModel } from '../types';
 
-import { NewCredentialForm } from './NewCredentialForm';
-
 export const defaultAuthTypeOptions = [
   {
     value: AuthTypeOption.Basic,
@@ -71,12 +69,9 @@ export function CredentialsSection({
             <Input
               value={username}
               name="repository_username"
-              placeholder={
-                value.RepositoryGitCredentialID ? '' : 'git username'
-              }
+              placeholder="git username"
               onChange={(e) => setUsername(e.target.value)}
               data-cy="component-gitUsernameInput"
-              readOnly={!!value.RepositoryGitCredentialID}
             />
           </FormControl>
         </div>
@@ -95,14 +90,10 @@ export function CredentialsSection({
               placeholder="*******"
               onChange={(e) => setPassword(e.target.value)}
               data-cy="component-gitPasswordInput"
-              readOnly={!!value.RepositoryGitCredentialID}
             />
           </FormControl>
         </div>
       </div>
-      {isBE && value.RepositoryPassword && (
-        <NewCredentialForm value={value} onChange={onChange} errors={errors} />
-      )}
     </>
   );
 }

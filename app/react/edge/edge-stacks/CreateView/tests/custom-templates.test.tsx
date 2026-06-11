@@ -52,7 +52,6 @@ const expectedCustomTemplatePayload = {
   repositoryReferenceName: 'refs/heads/main',
   filePathInRepository: 'docker/voting.yaml',
   repositoryAuthentication: false,
-  repositoryGitCredentialId: 0,
   repositoryPassword: '',
   filesystemPath: '/test',
   supportRelativePath: true,

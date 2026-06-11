@@ -22,7 +22,5 @@ export const dummyGitForm: GitFormModel = {
   AdditionalFiles: [],
   RepositoryReferenceName: '',
   ComposeFilePathInRepository: '',
-  NewCredentialName: '',
-  SaveCredential: false,
   TLSSkipVerify: false,
 };

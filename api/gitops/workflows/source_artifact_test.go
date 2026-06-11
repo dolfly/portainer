@@ -751,6 +751,186 @@ func TestSaveWorkflowGitConfig_OnlyMatchingArtifactUpdated(t *testing.T) {
 	require.Equal(t, "hash-2", wf.Artifacts[1].Files[0].Hash)
 }
 
+func TestUpdateArtifactFileForStack_MultipleArtifactsOnlyMatchingUpdated(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	var workflowID portainer.WorkflowID
+	var srcID portainer.SourceID
+	err := store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		src := &portainer.Source{Type: portainer.SourceTypeGit, Git: &gittypes.RepoConfig{URL: "https://example.com"}}
+		err := tx.Source().Create(src)
+		require.NoError(t, err)
+		srcID = src.ID
+
+		wf := &portainer.Workflow{
+			Artifacts: []portainer.Artifact{
+				{StackID: 10, Files: []portainer.ArtifactFile{{SourceID: srcID, Hash: "hash-10"}}},
+				{StackID: 20, Files: []portainer.ArtifactFile{{SourceID: srcID, Hash: "hash-20"}}},
+			},
+		}
+		err = tx.Workflow().Create(wf)
+		require.NoError(t, err)
+		workflowID = wf.ID
+
+		return nil
+	})
+	require.NoError(t, err)
+
+	err = store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return UpdateArtifactFileForStack(tx, workflowID, 10, srcID, func(a *portainer.ArtifactFile) {
+			a.Hash = "updated-hash-10"
+		})
+	})
+	require.NoError(t, err)
+
+	wf, err := store.Workflow().Read(workflowID)
+	require.NoError(t, err)
+	require.Equal(t, "updated-hash-10", wf.Artifacts[0].Files[0].Hash)
+	require.Equal(t, "hash-20", wf.Artifacts[1].Files[0].Hash)
+}
+
+func TestUpdateArtifactFileForEdgeStack_MultipleArtifactsOnlyMatchingUpdated(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	var workflowID portainer.WorkflowID
+	var srcID portainer.SourceID
+	err := store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		src := &portainer.Source{Type: portainer.SourceTypeGit, Git: &gittypes.RepoConfig{URL: "https://example.com"}}
+		err := tx.Source().Create(src)
+		require.NoError(t, err)
+		srcID = src.ID
+
+		wf := &portainer.Workflow{
+			Artifacts: []portainer.Artifact{
+				{EdgeStackID: 10, Files: []portainer.ArtifactFile{{SourceID: srcID, Hash: "hash-10"}}},
+				{EdgeStackID: 20, Files: []portainer.ArtifactFile{{SourceID: srcID, Hash: "hash-20"}}},
+			},
+		}
+		err = tx.Workflow().Create(wf)
+		require.NoError(t, err)
+		workflowID = wf.ID
+
+		return nil
+	})
+	require.NoError(t, err)
+
+	err = store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return UpdateArtifactFileForEdgeStack(tx, workflowID, 10, srcID, func(a *portainer.ArtifactFile) {
+			a.Hash = "updated-hash-10"
+		})
+	})
+	require.NoError(t, err)
+
+	wf, err := store.Workflow().Read(workflowID)
+	require.NoError(t, err)
+	require.Equal(t, "updated-hash-10", wf.Artifacts[0].Files[0].Hash)
+	require.Equal(t, "hash-20", wf.Artifacts[1].Files[0].Hash)
+}
+
+func TestGitSourceAndArtifactForStack_MultipleArtifactsReturnsCorrectOne(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	var workflowID portainer.WorkflowID
+	err := store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		gitSrc := &portainer.Source{
+			Type: portainer.SourceTypeGit,
+			Git:  &gittypes.RepoConfig{URL: "https://github.com/example/shared-repo"},
+		}
+		err := tx.Source().Create(gitSrc)
+		require.NoError(t, err)
+
+		wf := &portainer.Workflow{
+			Artifacts: []portainer.Artifact{
+				{StackID: 10, Files: []portainer.ArtifactFile{{SourceID: gitSrc.ID, Ref: "refs/heads/main", Hash: "hash-10"}}},
+				{StackID: 20, Files: []portainer.ArtifactFile{{SourceID: gitSrc.ID, Ref: "refs/heads/dev", Hash: "hash-20"}}},
+			},
+		}
+		err = tx.Workflow().Create(wf)
+		require.NoError(t, err)
+		workflowID = wf.ID
+
+		return nil
+	})
+	require.NoError(t, err)
+
+	var src *portainer.Source
+	var file *portainer.ArtifactFile
+	err = store.ViewTx(func(tx dataservices.DataStoreTx) error {
+		var txErr error
+		src, file, txErr = GitSourceAndArtifactForStack(tx, workflowID, 20)
+		return txErr
+	})
+	require.NoError(t, err)
+	require.NotNil(t, src)
+	require.NotNil(t, file)
+	require.Equal(t, "refs/heads/dev", file.Ref)
+	require.Equal(t, "hash-20", file.Hash)
+}
+
+func TestGitSourceAndArtifactForEdgeStack_MultipleArtifactsReturnsCorrectOne(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	var workflowID portainer.WorkflowID
+	err := store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		gitSrc := &portainer.Source{
+			Type: portainer.SourceTypeGit,
+			Git:  &gittypes.RepoConfig{URL: "https://github.com/example/shared-edge-repo"},
+		}
+		err := tx.Source().Create(gitSrc)
+		require.NoError(t, err)
+
+		wf := &portainer.Workflow{
+			Artifacts: []portainer.Artifact{
+				{EdgeStackID: 10, Files: []portainer.ArtifactFile{{SourceID: gitSrc.ID, Ref: "refs/heads/main", Hash: "hash-10"}}},
+				{EdgeStackID: 20, Files: []portainer.ArtifactFile{{SourceID: gitSrc.ID, Ref: "refs/heads/dev", Hash: "hash-20"}}},
+			},
+		}
+		err = tx.Workflow().Create(wf)
+		require.NoError(t, err)
+		workflowID = wf.ID
+
+		return nil
+	})
+	require.NoError(t, err)
+
+	var src *portainer.Source
+	var file *portainer.ArtifactFile
+	err = store.ViewTx(func(tx dataservices.DataStoreTx) error {
+		var txErr error
+		src, file, txErr = GitSourceAndArtifactForEdgeStack(tx, workflowID, 20)
+		return txErr
+	})
+	require.NoError(t, err)
+	require.NotNil(t, src)
+	require.NotNil(t, file)
+	require.Equal(t, "refs/heads/dev", file.Ref)
+	require.Equal(t, "hash-20", file.Hash)
+}
+
+func TestMergeSourceAndFile_ConfigHashComesFromFileNotSource(t *testing.T) {
+	t.Parallel()
+
+	// ConfigHash must come from ArtifactFile.Hash, not src.Git.
+	// A Source shared by two stacks has one Git.ConfigHash field;
+	// if reads used it instead of ArtifactFile.Hash they would clobber each other.
+	src := &portainer.Source{
+		Git: &gittypes.RepoConfig{
+			URL: "https://github.com/example/repo",
+		},
+	}
+	file := &portainer.ArtifactFile{
+		Hash: "artifact-hash",
+	}
+
+	cfg := MergeSourceAndFile(src, file)
+	require.NotNil(t, cfg)
+	require.Equal(t, "artifact-hash", cfg.ConfigHash)
+}
+
 func TestFindOrCreateGitSource_StripsEmbeddedCredentialsFromURL(t *testing.T) {
 	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)

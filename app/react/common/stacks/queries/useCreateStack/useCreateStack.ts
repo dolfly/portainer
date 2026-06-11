@@ -199,7 +199,6 @@ function createSwarmStack({ method, payload }: SwarmCreatePayload) {
         repositoryAuthentication: payload.git.RepositoryAuthentication,
         repositoryUsername: payload.git.RepositoryUsername,
         repositoryPassword: payload.git.RepositoryPassword,
-        repositoryGitCredentialId: payload.git.RepositoryGitCredentialID,
         filesystemPath: payload.relativePathSettings?.FilesystemPath,
         supportRelativePath: payload.relativePathSettings?.SupportRelativePath,
         tlsSkipVerify: payload.git.TLSSkipVerify,
@@ -250,7 +249,6 @@ function createStandaloneStack({ method, payload }: StandaloneCreatePayload) {
         repositoryAuthentication: payload.git.RepositoryAuthentication,
         repositoryUsername: payload.git.RepositoryUsername,
         repositoryPassword: payload.git.RepositoryPassword,
-        repositoryGitCredentialId: payload.git.RepositoryGitCredentialID,
         filesystemPath: payload.relativePathSettings?.FilesystemPath,
         supportRelativePath: payload.relativePathSettings?.SupportRelativePath,
         tlsSkipVerify: payload.git.TLSSkipVerify,
@@ -299,7 +297,6 @@ function createKubernetesStack({ method, payload }: KubernetesCreatePayload) {
         repositoryAuthentication: payload.git.RepositoryAuthentication,
         repositoryUsername: payload.git.RepositoryUsername,
         repositoryPassword: payload.git.RepositoryPassword,
-        repositoryGitCredentialId: payload.git.RepositoryGitCredentialID,
 
         tlsSkipVerify: payload.git.TLSSkipVerify,
         autoUpdate: transformAutoUpdateViewModel(

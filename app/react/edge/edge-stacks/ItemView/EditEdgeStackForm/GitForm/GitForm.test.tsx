@@ -46,7 +46,6 @@ describe('GitForm', () => {
       Authentication: {
         Username: '',
         Password: '',
-        RepositoryGitCredentialID: 0,
       },
     },
     PrePullImage: false,

@@ -24,7 +24,6 @@ type legacyGitAuthentication struct {
 	Password          string
 	Provider          int `json:",omitempty"`
 	AuthorizationType int `json:",omitempty"`
-	GitCredentialID   int
 }
 
 func (lrc *legacyRepoConfig) toRepoConfig() *gittypes.RepoConfig {
@@ -41,12 +40,6 @@ func (lrc *legacyRepoConfig) toRepoConfig() *gittypes.RepoConfig {
 	}
 
 	if lrc.Authentication != nil {
-		if lrc.Authentication.GitCredentialID != 0 {
-			log.Warn().
-				Int("git_credential_id", lrc.Authentication.GitCredentialID).
-				Msg("stack has a GitCredentialID reference which is not supported in CE; credential reference will be dropped during migration")
-		}
-
 		cfg.Authentication = &gittypes.GitAuthentication{
 			Username:          lrc.Authentication.Username,
 			Password:          lrc.Authentication.Password,
@@ -211,14 +204,6 @@ func (m *Migrator) migrateCustomTemplateGitConfigToSources_2_43_0() error {
 			URL:            gittypes.SanitizeURL(t.GitConfig.URL),
 			Authentication: t.GitConfig.Authentication,
 			TLSSkipVerify:  t.GitConfig.TLSSkipVerify,
-		}
-
-		if cfg.Authentication != nil && cfg.Authentication.GitCredentialID != 0 {
-			log.Warn().
-				Int("git_credential_id", cfg.Authentication.GitCredentialID).
-				Msg("custom template has a GitCredentialID reference which is not supported in CE; credential reference will be dropped during migration")
-
-			cfg.Authentication.GitCredentialID = 0
 		}
 
 		key := gitSourceKey(cfg)

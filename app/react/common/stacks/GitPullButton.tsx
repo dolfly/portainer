@@ -51,8 +51,6 @@ export function GitPullButton({ stack }: { stack: Stack }) {
         Prune: stack.Option?.Prune,
         RepositoryAuthorizationType:
           stack.GitConfig?.Authentication?.AuthorizationType,
-        RepositoryGitCredentialID:
-          stack.GitConfig?.Authentication?.GitCredentialID,
         RepositoryUsername: stack.GitConfig?.Authentication?.Username,
       },
       {

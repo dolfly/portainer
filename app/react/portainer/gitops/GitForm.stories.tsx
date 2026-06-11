@@ -1,9 +1,7 @@
 import { Meta } from '@storybook/react-webpack5';
 import { Form, Formik } from 'formik';
-import { http, HttpResponse } from 'msw';
 
 import { withUserProvider } from '@/react/test-utils/withUserProvider';
-import { GitCredential } from '@/react/portainer/account/git-credentials/types';
 
 import { GitForm, buildGitValidationSchema } from './GitForm';
 import { DeployMethod, GitFormModel } from './types';
@@ -11,32 +9,6 @@ import { DeployMethod, GitFormModel } from './types';
 export default {
   component: GitForm,
   title: 'Components/Forms/GitForm',
-  parameters: {
-    msw: {
-      handlers: [
-        http.get<{ userId: string }, Array<GitCredential>>(
-          '/api/users/:userId/gitcredentials',
-          ({ params }) =>
-            HttpResponse.json([
-              {
-                id: 1,
-                name: 'credential-1',
-                username: 'username-1',
-                userId: parseInt(params.userId, 10),
-                creationDate: 0,
-              },
-              {
-                id: 2,
-                name: 'credential-2',
-                username: 'username-2',
-                userId: parseInt(params.userId, 10),
-                creationDate: 0,
-              },
-            ])
-        ),
-      ],
-    },
-  },
 } as Meta;
 
 const WrappedComponent = withUserProvider(GitForm);
@@ -65,15 +37,13 @@ export function Primary({
     AdditionalFiles: [],
     RepositoryReferenceName: '',
     ComposeFilePathInRepository: '',
-    NewCredentialName: '',
-    SaveCredential: false,
     TLSSkipVerify: false,
   };
 
   return (
     <Formik
       initialValues={initialValues}
-      validationSchema={() => buildGitValidationSchema([], false, 'compose')}
+      validationSchema={() => buildGitValidationSchema(false, 'compose')}
       onSubmit={() => {}}
     >
       {({ values, errors, setValues }) => (

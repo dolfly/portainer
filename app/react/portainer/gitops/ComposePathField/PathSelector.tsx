@@ -10,7 +10,6 @@ export type PathSelectorGitModel = Pick<
   | 'RepositoryAuthentication'
   | 'RepositoryPassword'
   | 'RepositoryUsername'
-  | 'RepositoryGitCredentialID'
   | 'RepositoryAuthorizationType'
   | 'RepositoryURL'
   | 'RepositoryReferenceName'

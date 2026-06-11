@@ -5,8 +5,6 @@ import { updateGitStack } from '@/react/portainer/gitops/queries/useUpdateGitSta
 import { updateGitStackSettings } from '@/react/portainer/gitops/queries/useUpdateGitStackSettings';
 import { queryKeys } from '@/react/common/stacks/queries/query-keys';
 import { transformAutoUpdateViewModel } from '@/react/portainer/gitops/AutoUpdateFieldset/utils';
-import { saveGitCredentialsIfNeeded } from '@/react/portainer/account/git-credentials/queries/useCreateGitCredentialsMutation';
-import { useCurrentUser } from '@/react/hooks/useUser';
 import { withError } from '@/react-tools/react-query';
 
 import { FormValues } from './types';
@@ -19,18 +17,12 @@ interface MutationArgs {
 
 export function useUpdateGitStack(stack: Stack) {
   const queryClient = useQueryClient();
-  const { user } = useCurrentUser();
   return useMutation({
     mutationFn: async ({
       values,
       repullImageAndRedeploy,
       webhookId,
     }: MutationArgs) => {
-      const resolvedAuth = await saveGitCredentialsIfNeeded(
-        user.Id,
-        values.git
-      );
-
       const autoUpdate = transformAutoUpdateViewModel(
         values.git.AutoUpdate,
         webhookId
@@ -40,11 +32,9 @@ export function useUpdateGitStack(stack: Stack) {
         RepositoryURL: values.git.RepositoryURL,
         ConfigFilePath: values.git.ComposeFilePathInRepository,
         RepositoryReferenceName: values.git.RepositoryReferenceName,
-        RepositoryAuthentication: resolvedAuth.RepositoryAuthentication,
-        RepositoryGitCredentialID: resolvedAuth.RepositoryGitCredentialID,
-        RepositoryUsername: resolvedAuth.RepositoryUsername,
-        RepositoryPassword: resolvedAuth.RepositoryPassword || undefined,
-        RepositoryAuthorizationType: resolvedAuth.RepositoryAuthorizationType,
+        RepositoryAuthentication: values.git.RepositoryAuthentication,
+        RepositoryUsername: values.git.RepositoryUsername,
+        RepositoryPassword: values.git.RepositoryPassword || undefined,
         TLSSkipVerify: values.git.TLSSkipVerify,
         AutoUpdate: autoUpdate,
         AdditionalFiles: values.git.AdditionalFiles,
@@ -61,11 +51,9 @@ export function useUpdateGitStack(stack: Stack) {
           Env: values.env,
           Prune: values.prune,
           StackName: values.kube.name.trim() || undefined,
-          RepositoryAuthentication: resolvedAuth.RepositoryAuthentication,
-          RepositoryGitCredentialID: resolvedAuth.RepositoryGitCredentialID,
-          RepositoryUsername: resolvedAuth.RepositoryUsername,
-          RepositoryPassword: resolvedAuth.RepositoryPassword || undefined,
-          RepositoryAuthorizationType: resolvedAuth.RepositoryAuthorizationType,
+          RepositoryAuthentication: values.git.RepositoryAuthentication,
+          RepositoryUsername: values.git.RepositoryUsername,
+          RepositoryPassword: values.git.RepositoryPassword || undefined,
           RepullImageAndRedeploy: repullImageAndRedeploy,
         });
         return { redeployAttempted: true, redeployFailed: false };

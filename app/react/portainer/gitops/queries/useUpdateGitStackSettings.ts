@@ -17,7 +17,6 @@ export interface GitStackPayload {
   ConfigFilePath?: string;
   RepositoryReferenceName?: string;
   RepositoryAuthentication?: boolean;
-  RepositoryGitCredentialID?: number;
   RepositoryUsername?: string;
   RepositoryPassword?: string;
   RepositoryAuthorizationType?: AuthTypeOption;

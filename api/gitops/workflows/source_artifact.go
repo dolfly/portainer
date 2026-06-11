@@ -10,6 +10,7 @@ import (
 )
 
 // gitSourceStore is the minimal intersection of CE and EE DataStoreTx that these functions need.
+// Both EE and CE DataStoreTx satisfy it, even though they are incompatible as full interface types.
 type gitSourceStore interface {
 	Workflow() dataservices.WorkflowService
 	Source() dataservices.SourceService
@@ -345,7 +346,7 @@ func gitAuthMatches(a, b *gittypes.GitAuthentication) bool {
 		return false
 	}
 
-	return a.Username == b.Username && a.Password == b.Password && a.GitCredentialID == b.GitCredentialID
+	return a.Username == b.Username && a.Password == b.Password
 }
 
 // ValidateUniqueSource validates there are no other sources with the same URL and credentials.

@@ -18,7 +18,6 @@ interface DeployGitPayload {
   Prune?: boolean;
   // RepullImageAndRedeploy indicates whether to force repulling images and redeploying the stack
   RepullImageAndRedeploy?: boolean;
-  RepositoryGitCredentialID?: number;
 
   StackName?: string;
 }

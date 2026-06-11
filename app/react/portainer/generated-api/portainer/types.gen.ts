@@ -96,12 +96,6 @@ export type WorkflowsDeploymentPlatform =
 
 export type GittypesGitAuthentication = {
   AuthorizationType?: number;
-  /**
-   * Git credentials identifier when the value is not 0
-   * When the value is 0, Username and Password are set without using saved credential
-   * This is introduced since 2.15.0
-   */
-  GitCredentialID?: number;
   Password?: string;
   Provider?: number;
   Username?: string;
@@ -7845,13 +7839,8 @@ export type CustomtemplatesCustomTemplateUpdatePayload = {
    */
   RepositoryAuthentication?: boolean;
   /**
-   * GitCredentialID used to identify the bound git credential. Required when RepositoryAuthentication
-   * is true and RepositoryUsername/RepositoryPassword are not provided
-   */
-  RepositoryGitCredentialID?: number;
-  /**
    * Password used in basic authentication or token used in token authentication.
-   * Required when RepositoryAuthentication is true and RepositoryGitCredentialID is 0
+   * Required when RepositoryAuthentication is true
    */
   RepositoryPassword?: string;
   /**
@@ -7864,7 +7853,6 @@ export type CustomtemplatesCustomTemplateUpdatePayload = {
   RepositoryURL: string;
   /**
    * Username used in basic authentication. Required when RepositoryAuthentication is true
-   * and RepositoryGitCredentialID is 0. Ignored if RepositoryAuthType is token
    */
   RepositoryUsername?: string;
   /**

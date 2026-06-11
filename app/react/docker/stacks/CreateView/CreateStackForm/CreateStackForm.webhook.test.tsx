@@ -102,7 +102,6 @@ describe('CreateStackForm - Webhook ID Integration', () => {
           RepositoryAuthentication: false,
           RepositoryUsername: '',
           RepositoryPassword: '',
-          RepositoryGitCredentialID: 0,
           TLSSkipVerify: false,
           AdditionalFiles: [],
           AutoUpdate: {
@@ -115,8 +114,6 @@ describe('CreateStackForm - Webhook ID Integration', () => {
           RepositoryAuthorizationType: undefined,
           SupportRelativePath: false,
           FilesystemPath: '',
-          SaveCredential: false,
-          NewCredentialName: '',
         },
       }),
     });
