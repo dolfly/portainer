@@ -7,7 +7,6 @@ import { withUIRouter } from '@/react-tools/withUIRouter';
 import { AnnotationsBeTeaser } from '@/react/kubernetes/annotations/AnnotationsBeTeaser';
 import { withFormValidation } from '@/react-tools/withFormValidation';
 import { withControlledInput } from '@/react-tools/withControlledInput';
-import { NamespacePortainerSelect } from '@/react/kubernetes/applications/components/NamespaceSelector/NamespaceSelector';
 
 import {
   EnvironmentVariablesFieldset,
@@ -210,15 +209,6 @@ export const ngModule = angular
       'loadingMessage',
       'getOptionValue',
       'onBlur',
-    ])
-  )
-  .component(
-    'namespacePortainerSelect',
-    r2a(NamespacePortainerSelect, [
-      'value',
-      'onChange',
-      'isDisabled',
-      'options',
     ])
   )
   .component(

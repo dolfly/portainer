@@ -371,10 +371,6 @@ class KubernetesDeployController {
       if (this.namespaces.length > 0) {
         this.formValues.Namespace = this.namespaces[0].Name;
       }
-      this.namespaceOptions = _.map(namespaces, (namespace) => ({
-        label: namespace.Name,
-        value: namespace.Name,
-      }));
     } catch (err) {
       this.Notifications.error('Failure', err, 'Unable to load namespaces data');
     }
