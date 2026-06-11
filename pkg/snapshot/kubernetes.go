@@ -66,8 +66,37 @@ func kubernetesSnapshotNodes(snapshot *portainer.KubernetesSnapshot, cli kuberne
 	snapshot.TotalCPU = totalCPUs
 	snapshot.TotalMemory = totalMemory
 	snapshot.NodeCount = len(nodeList.Items)
+	snapshot.ClusterType = clusterTypeFromProviderID(nodeList.Items[0].Spec.ProviderID)
 
 	return nil
+}
+
+const (
+	ClusterTypeGKEAutopilot = "gke-autopilot"
+	ClusterTypeEKSFargate   = "eks-fargate"
+	ClusterTypeAKS          = "aks"
+	ClusterTypeUnknown      = ""
+)
+
+func clusterTypeFromProviderID(providerID string) string {
+	switch {
+	case strings.HasPrefix(providerID, "gce://") && isGKEAutopilotProviderID(providerID):
+		return ClusterTypeGKEAutopilot
+	case strings.HasPrefix(providerID, "aws://") && strings.Contains(strings.ToLower(providerID), "fargate"):
+		return ClusterTypeEKSFargate
+	case strings.HasPrefix(providerID, "azure://"):
+		return ClusterTypeAKS
+	default:
+		return ClusterTypeUnknown
+	}
+}
+
+// isGKEAutopilotProviderID detects GKE Autopilot via the gk3- node-name prefix.
+// ProviderID format: gce://PROJECT/REGION/NODE-NAME
+// Autopilot nodes: gk3-CLUSTER-POOL-SUFFIX; Standard nodes: gke-CLUSTER-POOL-SUFFIX
+func isGKEAutopilotProviderID(providerID string) bool {
+	parts := strings.Split(providerID, "/")
+	return len(parts) > 0 && strings.HasPrefix(parts[len(parts)-1], "gk3-")
 }
 
 // KubernetesSnapshotDiagnostics returns the diagnostics data for the agent

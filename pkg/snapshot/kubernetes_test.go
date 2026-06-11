@@ -15,6 +15,29 @@ import (
 	ktesting "k8s.io/client-go/testing"
 )
 
+func TestClusterTypeFromProviderID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		providerID string
+		expected   string
+	}{
+		{"gce://my-project/us-central1/gk3-my-cluster-pool-abc123", ClusterTypeGKEAutopilot},
+		{"gce://my-project/us-central1/gke-my-cluster-pool-abc123", ClusterTypeUnknown},
+		{"aws:///us-east-1/fargate-12345", ClusterTypeEKSFargate},
+		{"aws:///us-east-1/i-1234567890abcdef0", ClusterTypeUnknown},
+		{"azure:///subscriptions/x/resourceGroups/y/providers/Microsoft.Compute/virtualMachines/NODE", ClusterTypeAKS},
+		{"", ClusterTypeUnknown},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.providerID, func(t *testing.T) {
+			t.Parallel()
+			require.Equal(t, tt.expected, clusterTypeFromProviderID(tt.providerID))
+		})
+	}
+}
+
 func TestKubernetesSnapshotNodes(t *testing.T) {
 	t.Parallel()
 	// Create a fake client
@@ -24,6 +47,9 @@ func TestKubernetesSnapshotNodes(t *testing.T) {
 	node1 := &corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test-node-1",
+		},
+		Spec: corev1.NodeSpec{
+			ProviderID: "gce://my-project/us-central1/gk3-my-cluster-pool-abc123",
 		},
 		Status: corev1.NodeStatus{
 			Capacity: corev1.ResourceList{
@@ -72,10 +98,11 @@ func TestKubernetesSnapshotNodes(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify the results - these should match what kubernetesSnapshotNodes would produce
-	require.Equal(t, 3, snapshot.NodeCount)                    // 3 nodes
-	require.Equal(t, int64(12), snapshot.TotalCPU)             // 6 + 4 + 2 = 12 CPUs
-	require.Equal(t, int64(25769803776), snapshot.TotalMemory) // 12GB + 8GB + 4GB = 24GB in bytes
-	require.Nil(t, snapshot.PerformanceMetrics)                // Performance metrics are no longer collected server-side
+	require.Equal(t, 3, snapshot.NodeCount)                         // 3 nodes
+	require.Equal(t, int64(12), snapshot.TotalCPU)                  // 6 + 4 + 2 = 12 CPUs
+	require.Equal(t, int64(25769803776), snapshot.TotalMemory)      // 12GB + 8GB + 4GB = 24GB in bytes
+	require.Equal(t, ClusterTypeGKEAutopilot, snapshot.ClusterType) // detected from node1's ProviderID
+	require.Nil(t, snapshot.PerformanceMetrics)                     // Performance metrics are no longer collected server-side
 
 	t.Logf("kubernetesSnapshotNodes test result: Nodes=%d, CPUs=%d, Memory=%d bytes",
 		snapshot.NodeCount, snapshot.TotalCPU, snapshot.TotalMemory)
@@ -94,6 +121,7 @@ func TestKubernetesSnapshotNodesEmptyCluster(t *testing.T) {
 	require.Equal(t, 0, snapshot.NodeCount)
 	require.Equal(t, int64(0), snapshot.TotalCPU)
 	require.Equal(t, int64(0), snapshot.TotalMemory)
+	require.Equal(t, ClusterTypeUnknown, snapshot.ClusterType)
 	require.Nil(t, snapshot.PerformanceMetrics) // Performance metrics should not be set for empty cluster
 
 	t.Log("Empty cluster test passed - no nodes found, early return behavior confirmed")

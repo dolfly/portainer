@@ -838,6 +838,7 @@ type (
 		NodeCount          int                 `json:"NodeCount" validate:"required"`
 		TotalCPU           int64               `json:"TotalCPU" validate:"required"`
 		TotalMemory        int64               `json:"TotalMemory" validate:"required"`
+		ClusterType        string              `json:"ClusterType,omitempty"`
 		DiagnosticsData    *DiagnosticsData    `json:"DiagnosticsData,omitempty"`
 		PerformanceMetrics *PerformanceMetrics `json:"PerformanceMetrics,omitempty"`
 	}
@@ -2641,6 +2642,7 @@ const (
 	RegistryDocker     PolicyType = "registry-docker"
 	ChangeConfirmation PolicyType = "change-confirmation"
 	CleanupDocker      PolicyType = "cleanup-docker"
+	ObservabilityK8s   PolicyType = "observability-k8s"
 )
 
 type HelmInstallStatus string
