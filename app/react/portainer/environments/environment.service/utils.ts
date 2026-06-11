@@ -36,7 +36,7 @@ export function toEnvironment(endpoint: PortainerEndpoint): Environment {
   return {
     ...endpoint,
     Type: endpoint.Type !== 0 ? endpoint.Type : EnvironmentType.Docker,
-    Status: endpoint.Status !== 0 ? endpoint.Status : EnvironmentStatus.Down,
+    Status: endpoint.Status ?? EnvironmentStatus.Down,
     ContainerEngine: toContainerEngine(endpoint.ContainerEngine),
     TagIds: endpoint.TagIds ?? [],
     Gpus: endpoint.Gpus ?? [],

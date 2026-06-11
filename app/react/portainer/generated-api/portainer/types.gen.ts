@@ -6281,9 +6281,9 @@ export type PortainerEndpoint = {
    */
   Snapshots?: Array<PortainerDockerSnapshot>;
   /**
-   * The status of the environment(endpoint) (1 - up, 2 - down)
+   * The status of the environment(endpoint) (1 - up, 2 - down, 3 - provisioning, 4 - error)
    */
-  Status: PortainerEndpointStatus;
+  Status?: 1 | 2 | 3 | 4;
   TLSConfig: PortainerTlsConfiguration;
   /**
    * List of tag identifiers to which this environment(endpoint) is associated

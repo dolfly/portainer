@@ -2027,7 +2027,9 @@ export const zPortainerEndpoint = z.object({
   PublicURL: z.string(),
   SecuritySettings: zPortainerEndpointSecuritySettings,
   Snapshots: z.array(zPortainerDockerSnapshot).optional(),
-  Status: zPortainerEndpointStatus,
+  Status: z
+    .union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)])
+    .optional(),
   TLSConfig: zPortainerTlsConfiguration,
   TagIds: z.array(z.int()).optional(),
   TeamAccessPolicies: zPortainerTeamAccessPolicies.optional(),

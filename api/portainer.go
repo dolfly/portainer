@@ -462,8 +462,8 @@ type (
 		AzureCredentials AzureCredentials `json:"AzureCredentials,omitzero"`
 		// List of tag identifiers to which this environment(endpoint) is associated
 		TagIDs []TagID `json:"TagIds,omitempty"`
-		// The status of the environment(endpoint) (1 - up, 2 - down)
-		Status EndpointStatus `json:"Status" example:"1" validate:"required"`
+		// The status of the environment(endpoint) (1 - up, 2 - down, 3 - provisioning, 4 - error)
+		Status EndpointStatus `json:"Status,omitempty" example:"1" enums:"1,2,3,4"`
 		// List of snapshots
 		Snapshots []DockerSnapshot `json:"Snapshots,omitempty"`
 		// List of user identifiers authorized to connect to this environment(endpoint)
