@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"time"
 
@@ -111,8 +112,6 @@ type (
 		KubectlShellImageSet      bool
 		PullLimitCheckDisabled    *bool
 		TrustedOrigins            *string
-		SSRFMode                  *string
-		SSRFAllowedHosts          *[]string
 		NoSetupToken              *bool
 		SetupToken                *string
 	}
@@ -1214,6 +1213,21 @@ type (
 
 	// SoftwareEdition represents an edition of Portainer
 	SoftwareEdition int
+
+	// AllowList holds the list of permitted outbound proxy destinations.
+	AllowList struct {
+		ID      AllowListKey `json:"Id"`
+		Mode    SSRFMode     `json:"Mode"`
+		Entries []string     `json:"Entries"`
+	}
+
+	// ParsedAllowList holds the three parsed forms of allow list entries.
+	ParsedAllowList struct {
+		Mode  SSRFMode
+		Nets  []*net.IPNet
+		Hosts map[string]bool
+		Wilds []string // stored as ".foo.com" ("*." prefix stripped)
+	}
 
 	// SSLSettings represents a pair of SSL certificate and key
 	SSLSettings struct {
@@ -2670,3 +2684,17 @@ func DefaultEndpointSecuritySettings() EndpointSecuritySettings {
 		AllowStackManagementForRegularUsers: true,
 	}
 }
+
+type AllowListKey int
+
+const (
+	AllowListSSRF AllowListKey = iota
+)
+
+type SSRFMode int
+
+const (
+	SSRFModeOff SSRFMode = iota
+	SSRFModeAudit
+	SSRFModeEnforce
+)

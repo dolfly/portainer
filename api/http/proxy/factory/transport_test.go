@@ -45,10 +45,24 @@ func (s *stubTunnelService) UpdateLastActivity(endpointID portainer.EndpointID) 
 func (s *stubTunnelService) KeepTunnelAlive(endpointID portainer.EndpointID, ctx context.Context, maxKeepAlive time.Duration) {
 }
 
+type staticAllowListService struct {
+	parsed portainer.ParsedAllowList
+}
+
+func (s *staticAllowListService) ReadParsed(id portainer.AllowListKey) (*portainer.ParsedAllowList, error) {
+	return &s.parsed, nil
+}
+
 func enableSSRF(t *testing.T) {
 	t.Helper()
-	ssrf.Configure(ssrf.Policy{Mode: ssrf.ModeEnforce, AllowedHosts: []string{"example.com"}})
-	t.Cleanup(func() { ssrf.Configure(ssrf.Policy{}) })
+	parsed := ssrf.ParseAllowedHosts([]string{"example.com"})
+	parsed.Mode = portainer.SSRFModeEnforce
+	err := ssrf.Configure(&staticAllowListService{parsed: parsed})
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		err := ssrf.Configure(&staticAllowListService{})
+		require.NoError(t, err)
+	})
 }
 
 // TestNewDockerHTTPProxy_NonEdgeNoTLS verifies that a plain non-edge endpoint

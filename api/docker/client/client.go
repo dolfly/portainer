@@ -90,7 +90,7 @@ func createTCPClient(endpoint *portainer.Endpoint, timeout *time.Duration) (*cli
 		client.WithHTTPClient(httpCli),
 	}
 
-	if nnTransport, ok := httpCli.Transport.(*NodeNameTransport); ok && nnTransport.TLSClientConfig != nil {
+	if endpoint.TLSConfig.TLS {
 		opts = append(opts, client.WithScheme("https"))
 	}
 
@@ -124,7 +124,7 @@ func createAgentClient(endpoint *portainer.Endpoint, endpointURL string, signatu
 		client.WithHTTPHeaders(headers),
 	}
 
-	if nnTransport, ok := httpCli.Transport.(*NodeNameTransport); ok && nnTransport.TLSClientConfig != nil {
+	if endpoint.TLSConfig.TLS {
 		opts = append(opts, client.WithScheme("https"))
 	}
 
