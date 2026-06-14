@@ -1,13 +1,16 @@
 package swarm
 
 import (
+	"context"
 	"os"
 	"slices"
 	"testing"
 
+	"github.com/docker/cli/cli/compose/convert"
 	composetypes "github.com/docker/cli/cli/compose/types"
 	configtypes "github.com/docker/cli/cli/config/types"
 	"github.com/docker/docker/api/types/swarm"
+	"github.com/docker/docker/client"
 	dockerregistry "github.com/docker/docker/registry"
 	"github.com/portainer/portainer/api/filesystem"
 	"github.com/portainer/portainer/pkg/libstack"
@@ -459,6 +462,103 @@ services:
 			} else {
 				require.Equal(t, tt.expectedCfg, cfg)
 			}
+		})
+	}
+}
+
+type mockAPIClient struct {
+	client.APIClient
+	serviceListFn   func(context.Context, swarm.ServiceListOptions) ([]swarm.Service, error)
+	serviceUpdateFn func(
+		context.Context,
+		string,
+		swarm.Version,
+		swarm.ServiceSpec,
+		swarm.ServiceUpdateOptions,
+	) (swarm.ServiceUpdateResponse, error)
+}
+
+func (m *mockAPIClient) ServiceList(ctx context.Context, opts swarm.ServiceListOptions) ([]swarm.Service, error) {
+	if m.serviceListFn == nil {
+		return nil, nil
+	}
+
+	return m.serviceListFn(ctx, opts)
+}
+
+func (m *mockAPIClient) ServiceUpdate(
+	ctx context.Context,
+	id string,
+	ver swarm.Version,
+	spec swarm.ServiceSpec,
+	opts swarm.ServiceUpdateOptions,
+) (swarm.ServiceUpdateResponse, error) {
+	if m.serviceUpdateFn == nil {
+		return swarm.ServiceUpdateResponse{}, nil
+	}
+
+	return m.serviceUpdateFn(ctx, id, ver, spec, opts)
+}
+
+func Test_deployServices_forceRecreate(t *testing.T) {
+	t.Parallel()
+
+	const initialForceUpdate = uint64(3)
+
+	tests := []struct {
+		name                string
+		forceRecreate       bool
+		expectedForceUpdate uint64
+	}{
+		{"true increments ForceUpdate", true, initialForceUpdate + 1},
+		{"false preserves ForceUpdate", false, initialForceUpdate},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			existingSvc := swarm.Service{
+				ID:   "svc-id-1",
+				Meta: swarm.Meta{Version: swarm.Version{Index: 10}},
+				Spec: swarm.ServiceSpec{
+					Annotations: swarm.Annotations{Name: "mystack_web"},
+					TaskTemplate: swarm.TaskSpec{
+						ForceUpdate:   initialForceUpdate,
+						ContainerSpec: &swarm.ContainerSpec{Image: "nginx:latest"},
+					},
+				},
+			}
+
+			var capturedForceUpdate uint64
+			mock := &mockAPIClient{
+				serviceListFn: func(_ context.Context, _ swarm.ServiceListOptions) ([]swarm.Service, error) {
+					return []swarm.Service{existingSvc}, nil
+				},
+				serviceUpdateFn: func(
+					_ context.Context,
+					_ string,
+					_ swarm.Version,
+					spec swarm.ServiceSpec,
+					_ swarm.ServiceUpdateOptions,
+				) (swarm.ServiceUpdateResponse, error) {
+					capturedForceUpdate = spec.TaskTemplate.ForceUpdate
+					return swarm.ServiceUpdateResponse{}, nil
+				},
+			}
+
+			services := map[string]swarm.ServiceSpec{
+				"web": {
+					TaskTemplate: swarm.TaskSpec{
+						ContainerSpec: &swarm.ContainerSpec{Image: "nginx:latest"},
+					},
+				},
+			}
+
+			namespace := convert.NewNamespace("mystack")
+			err := deployServices(context.Background(), mock, nil, services, namespace, false, tt.forceRecreate)
+			require.NoError(t, err)
+			require.Equal(t, tt.expectedForceUpdate, capturedForceUpdate)
 		})
 	}
 }

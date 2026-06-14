@@ -49,6 +49,9 @@ type DeployOptions struct {
 	//   true  - query the registry (ResolveImageAlways)
 	//   false - never contact the registry; reuse the existing digest (ResolveImageNever)
 	PullImage bool
+	// ForceRecreate increments ForceUpdate on every existing service so that
+	// Docker re-schedules all tasks even when nothing in the spec has changed.
+	ForceRecreate bool
 }
 
 // RemoveOptions extends Options with removal settings.
@@ -220,6 +223,7 @@ func deployStack(ctx context.Context, dockerCLI *command.DockerCli, filePaths []
 		services,
 		namespace,
 		options.PullImage,
+		options.ForceRecreate,
 	)
 }
 
@@ -410,6 +414,7 @@ func deployServices(
 	services map[string]swarm.ServiceSpec,
 	namespace convert.Namespace,
 	pullImage bool,
+	forceRecreate bool,
 ) error {
 	existingServices, err := getStackServices(ctx, apiClient, namespace.Name())
 	if err != nil {
@@ -446,8 +451,12 @@ func deployServices(
 				}
 			}
 
-			// Preserve ForceUpdate so that tasks are not re-deployed if nothing changed.
-			serviceSpec.TaskTemplate.ForceUpdate = existing.Spec.TaskTemplate.ForceUpdate
+			if forceRecreate {
+				serviceSpec.TaskTemplate.ForceUpdate = existing.Spec.TaskTemplate.ForceUpdate + 1
+			} else {
+				// Preserve ForceUpdate so that tasks are not re-deployed if nothing changed.
+				serviceSpec.TaskTemplate.ForceUpdate = existing.Spec.TaskTemplate.ForceUpdate
+			}
 
 			response, err := apiClient.ServiceUpdate(ctx, existing.ID, existing.Version, serviceSpec, updateOpts)
 			if err != nil {
