@@ -129,15 +129,15 @@ func (handler *Handler) customTemplateUpdate(w http.ResponseWriter, r *http.Requ
 		return httperror.BadRequest("Invalid request payload", err)
 	}
 
-	customTemplates, err := handler.DataStore.CustomTemplate().ReadAll()
+	duplicates, err := handler.DataStore.CustomTemplate().ReadAll(func(t portainer.CustomTemplate) bool {
+		return t.ID != portainer.CustomTemplateID(customTemplateID) && t.Title == payload.Title
+	})
 	if err != nil {
 		return httperror.InternalServerError("Unable to retrieve custom templates from the database", err)
 	}
 
-	for _, existingTemplate := range customTemplates {
-		if existingTemplate.ID != portainer.CustomTemplateID(customTemplateID) && existingTemplate.Title == payload.Title {
-			return httperror.InternalServerError("Template name must be unique", errors.New("Template name must be unique"))
-		}
+	if len(duplicates) > 0 {
+		return httperror.InternalServerError("Template name must be unique", errors.New("Template name must be unique"))
 	}
 
 	customTemplate, err := handler.DataStore.CustomTemplate().Read(portainer.CustomTemplateID(customTemplateID))
@@ -152,8 +152,13 @@ func (handler *Handler) customTemplateUpdate(w http.ResponseWriter, r *http.Requ
 		return httperror.InternalServerError("Unable to retrieve info from request context", err)
 	}
 
-	access := userCanEditTemplate(customTemplate, securityContext)
-	if !access {
+	resourceControl, err := handler.DataStore.ResourceControl().ResourceControlByResourceIDAndType(strconv.Itoa(customTemplateID), portainer.CustomTemplateResourceControl)
+	if err != nil {
+		return httperror.InternalServerError("Unable to retrieve a resource control associated to the custom template", err)
+	}
+
+	customTemplate.ResourceControl = resourceControl
+	if !userCanEditTemplate(customTemplate, securityContext) {
 		return httperror.Forbidden("Access denied to resource", httperrors.ErrResourceAccessDenied)
 	}
 

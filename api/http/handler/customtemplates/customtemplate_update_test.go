@@ -162,43 +162,6 @@ func TestCustomTemplateUpdate_Success_FileContent(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestCustomTemplateUpdate_OwnerCanUpdate(t *testing.T) {
-	t.Parallel()
-
-	handler, ds, _ := newTestHandler(t)
-
-	require.NoError(t, ds.UpdateTx(func(tx dataservices.DataStoreTx) error {
-		return tx.CustomTemplate().Create(&portainer.CustomTemplate{
-			ID:              1,
-			Title:           "User Template",
-			EntryPoint:      filesystem.ComposeFileDefaultName,
-			Type:            portainer.DockerComposeStack,
-			Platform:        portainer.CustomTemplatePlatformLinux,
-			CreatedByUserID: 2,
-		})
-	}))
-
-	payload := customTemplateUpdatePayload{
-		Title:       "User Template Updated",
-		Description: "Updated by owner",
-		FileContent: "version: '3'",
-		Type:        portainer.DockerComposeStack,
-		Platform:    portainer.CustomTemplatePlatformLinux,
-	}
-
-	// User 2 is the creator, not an admin
-	r := updateTemplateRequest(t, "1", payload, &security.RestrictedRequestContext{UserID: 2})
-	rr := httptest.NewRecorder()
-
-	herr := handler.customTemplateUpdate(rr, r)
-	require.Nil(t, herr)
-	require.Equal(t, http.StatusOK, rr.Code)
-
-	var tmpl portainer.CustomTemplate
-	require.NoError(t, json.NewDecoder(rr.Body).Decode(&tmpl))
-	require.Equal(t, "User Template Updated", tmpl.Title)
-}
-
 func TestCustomTemplateUpdate_SameTitleAllowed(t *testing.T) {
 	t.Parallel()
 
@@ -439,6 +402,94 @@ func TestCustomTemplateUpdate_ClearsArtifact(t *testing.T) {
 		return nil
 	})
 	require.NoError(t, err)
+}
+
+func TestCustomTemplateUpdate_CreatorDeniedWhenAdminOnly(t *testing.T) {
+	t.Parallel()
+
+	handler, store, _ := newTestHandler(t)
+
+	err := store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		err := tx.CustomTemplate().Create(&portainer.CustomTemplate{
+			ID:              1,
+			Title:           "User Template",
+			EntryPoint:      filesystem.ComposeFileDefaultName,
+			Type:            portainer.DockerComposeStack,
+			Platform:        portainer.CustomTemplatePlatformLinux,
+			CreatedByUserID: 2,
+		})
+		require.NoError(t, err)
+
+		err = tx.ResourceControl().Create(&portainer.ResourceControl{
+			ID:                 1,
+			ResourceID:         "1",
+			Type:               portainer.CustomTemplateResourceControl,
+			AdministratorsOnly: true,
+		})
+		require.NoError(t, err)
+
+		return nil
+	})
+	require.NoError(t, err)
+
+	payload := customTemplateUpdatePayload{
+		Title:       "User Template Updated",
+		Description: "Attempted update by creator after adminonly change",
+		FileContent: "version: '3'",
+		Type:        portainer.DockerComposeStack,
+		Platform:    portainer.CustomTemplatePlatformLinux,
+	}
+
+	r := updateTemplateRequest(t, "1", payload, &security.RestrictedRequestContext{UserID: 2})
+	rr := httptest.NewRecorder()
+
+	herr := handler.customTemplateUpdate(rr, r)
+	require.NotNil(t, herr)
+	require.Equal(t, http.StatusForbidden, herr.StatusCode)
+}
+
+func TestCustomTemplateUpdate_AdminCanUpdateAdminOnly(t *testing.T) {
+	t.Parallel()
+
+	handler, store, _ := newTestHandler(t)
+
+	err := store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		err := tx.CustomTemplate().Create(&portainer.CustomTemplate{
+			ID:              1,
+			Title:           "User Template",
+			EntryPoint:      filesystem.ComposeFileDefaultName,
+			Type:            portainer.DockerComposeStack,
+			Platform:        portainer.CustomTemplatePlatformLinux,
+			CreatedByUserID: 2,
+		})
+		require.NoError(t, err)
+
+		err = tx.ResourceControl().Create(&portainer.ResourceControl{
+			ID:                 1,
+			ResourceID:         "1",
+			Type:               portainer.CustomTemplateResourceControl,
+			AdministratorsOnly: true,
+		})
+		require.NoError(t, err)
+
+		return nil
+	})
+	require.NoError(t, err)
+
+	payload := customTemplateUpdatePayload{
+		Title:       "Updated by Admin",
+		Description: "Admin update of adminonly template",
+		FileContent: "version: '3'",
+		Type:        portainer.DockerComposeStack,
+		Platform:    portainer.CustomTemplatePlatformLinux,
+	}
+
+	r := updateTemplateRequest(t, "1", payload, &security.RestrictedRequestContext{UserID: 1, IsAdmin: true})
+	rr := httptest.NewRecorder()
+
+	herr := handler.customTemplateUpdate(rr, r)
+	require.Nil(t, herr)
+	require.Equal(t, http.StatusOK, rr.Code)
 }
 
 func TestCustomTemplateUpdate_GitRepository_Success(t *testing.T) {

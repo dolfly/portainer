@@ -126,6 +126,40 @@ func TestInspectHandler(t *testing.T) {
 	})
 }
 
+func TestInspectHandler_CreatorDeniedWhenAdminOnly(t *testing.T) {
+	t.Parallel()
+
+	handler, store, _ := newTestHandler(t)
+
+	err := store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		err := tx.CustomTemplate().Create(&portainer.CustomTemplate{
+			ID:              5,
+			CreatedByUserID: 2,
+		})
+		require.NoError(t, err)
+
+		err = tx.ResourceControl().Create(&portainer.ResourceControl{
+			ID:                 5,
+			ResourceID:         "5",
+			Type:               portainer.CustomTemplateResourceControl,
+			AdministratorsOnly: true,
+		})
+		require.NoError(t, err)
+
+		return nil
+	})
+	require.NoError(t, err)
+
+	r := httptest.NewRequest(http.MethodGet, "/custom_templates/5", nil)
+	r = mux.SetURLVars(r, map[string]string{"id": "5"})
+	r = r.WithContext(security.StoreRestrictedRequestContext(r, &security.RestrictedRequestContext{UserID: 2}))
+	rr := httptest.NewRecorder()
+
+	herr := handler.customTemplateInspect(rr, r)
+	require.NotNil(t, herr)
+	require.Equal(t, http.StatusForbidden, herr.StatusCode)
+}
+
 func TestInspectHandler_GitConfigPopulatedFromSource(t *testing.T) {
 	t.Parallel()
 
@@ -142,6 +176,7 @@ func TestInspectHandler_GitConfigPopulatedFromSource(t *testing.T) {
 		}
 		err := tx.Source().Create(src)
 		require.NoError(t, err)
+
 		srcID = src.ID
 
 		return tx.CustomTemplate().Create(&portainer.CustomTemplate{
