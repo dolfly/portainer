@@ -35,7 +35,7 @@ export function buildUrl(id?: EnvironmentId, action?: string) {
 export function toEnvironment(endpoint: PortainerEndpoint): Environment {
   return {
     ...endpoint,
-    Type: endpoint.Type !== 0 ? endpoint.Type : EnvironmentType.Docker,
+    Type: endpoint.Type ? endpoint.Type : EnvironmentType.Docker,
     Status: endpoint.Status ?? EnvironmentStatus.Down,
     ContainerEngine: toContainerEngine(endpoint.ContainerEngine),
     TagIds: endpoint.TagIds ?? [],

@@ -5998,6 +5998,7 @@ export type PortainerKubernetesStorageClassConfig = {
 };
 
 export type PortainerKubernetesSnapshot = {
+  ClusterType?: string;
   DiagnosticsData?: PortainerDiagnosticsData;
   KubernetesVersion: string;
   NodeCount: number;

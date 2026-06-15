@@ -1875,6 +1875,7 @@ export const zPortainerDiagnosticsData = z.object({
 });
 
 export const zPortainerKubernetesSnapshot = z.object({
+  ClusterType: z.string().optional(),
   DiagnosticsData: zPortainerDiagnosticsData.optional(),
   KubernetesVersion: z.string(),
   NodeCount: z.int(),
