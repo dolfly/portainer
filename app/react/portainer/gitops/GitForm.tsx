@@ -1,12 +1,13 @@
-import { array, boolean, object, SchemaOf, string } from 'yup';
-import { FormikErrors } from 'formik';
 import { useState } from 'react';
+import { array, boolean, number, object, SchemaOf, string } from 'yup';
+import { FormikErrors } from 'formik';
 
 import { ComposePathField } from '@/react/portainer/gitops/ComposePathField';
 import { RefField } from '@/react/portainer/gitops/RefField';
 import { GitFormUrlField } from '@/react/portainer/gitops/GitFormUrlField';
 import { DeployMethod, GitFormModel } from '@/react/portainer/gitops/types';
 import { TimeWindowDisplay } from '@/react/portainer/gitops/TimeWindowDisplay';
+import { GitSourceSelector } from '@/react/portainer/gitops/sources/GitSourceSelector';
 
 import { FormSection } from '@@/form-components/FormSection';
 import { validateForm } from '@@/form-components/validate-form';
@@ -33,6 +34,8 @@ interface Props {
   webhooksDocs?: string;
   createdFromCustomTemplateId?: number;
   isAutoUpdateVisible?: boolean;
+  /** When true, shows a SourceSelector instead of the manual git fields. The manual git fields are deprecated and will be removed (BE-13047). */
+  isSourceSelectionVisible?: boolean;
 }
 
 export function GitForm({
@@ -50,52 +53,72 @@ export function GitForm({
   webhooksDocs,
   createdFromCustomTemplateId,
   isAutoUpdateVisible = true,
+  isSourceSelectionVisible = false,
 }: Props) {
   const [value, setValue] = useState(initialValue); // TODO: remove this state when form is not inside angularjs
 
   return (
     <FormSection title="Git repository">
-      <AuthFieldset
-        value={value}
-        onChange={handleChange}
-        isAuthExplanationVisible={isAuthExplanationVisible}
-        errors={errors}
-      />
-
-      <GitFormUrlField
-        value={value.RepositoryURL}
-        onChange={(value) => {
-          handleChange({
-            RepositoryURL: value,
-            RepositoryReferenceName: initialValue.RepositoryReferenceName,
-            ComposeFilePathInRepository:
-              initialValue.ComposeFilePathInRepository,
-            RepositoryURLValid: false,
-          });
-        }}
-        onChangeRepositoryValid={(isValid) =>
-          handleChange({
-            RepositoryURLValid: isValid,
-          })
-        }
-        model={value}
-        createdFromCustomTemplateId={createdFromCustomTemplateId}
-        errors={errors.RepositoryURL}
-      />
-
-      <div className="form-group">
-        <div className="col-sm-12">
-          <SwitchField
-            label="Skip TLS Verification"
-            data-cy="gitops-skip-tls-verification-switch"
-            checked={value.TLSSkipVerify || false}
-            onChange={(value) => handleChange({ TLSSkipVerify: value })}
-            name="TLSSkipVerify"
-            tooltip="Enabling this will allow skipping TLS validation for any self-signed certificate."
-            labelClass="col-sm-3 col-lg-2"
+      {isSourceSelectionVisible ? (
+        <GitSourceSelector
+          value={value.SourceId}
+          onChange={(source) =>
+            handleChange({
+              SourceId: source?.id,
+              RepositoryURL: source?.url ?? '',
+              RepositoryReferenceName: initialValue.RepositoryReferenceName,
+              ComposeFilePathInRepository:
+                initialValue.ComposeFilePathInRepository,
+              RepositoryURLValid: !!source,
+            })
+          }
+          error={errors.SourceId as string | undefined}
+        />
+      ) : (
+        <>
+          <AuthFieldset
+            value={value}
+            onChange={handleChange}
+            isAuthExplanationVisible={isAuthExplanationVisible}
+            errors={errors}
           />
-        </div>
-      </div>
+
+          <GitFormUrlField
+            value={value.RepositoryURL}
+            onChange={(value) => {
+              handleChange({
+                RepositoryURL: value,
+                RepositoryReferenceName: initialValue.RepositoryReferenceName,
+                ComposeFilePathInRepository:
+                  initialValue.ComposeFilePathInRepository,
+                RepositoryURLValid: false,
+              });
+            }}
+            onChangeRepositoryValid={(isValid) =>
+              handleChange({
+                RepositoryURLValid: isValid,
+              })
+            }
+            model={value}
+            createdFromCustomTemplateId={createdFromCustomTemplateId}
+            errors={errors.RepositoryURL}
+          />
+
+          <div className="form-group">
+            <div className="col-sm-12">
+              <SwitchField
+                label="Skip TLS Verification"
+                data-cy="gitops-skip-tls-verification-switch"
+                checked={value.TLSSkipVerify || false}
+                onChange={(value) => handleChange({ TLSSkipVerify: value })}
+                name="TLSSkipVerify"
+                tooltip="Enabling this will allow skipping TLS validation for any self-signed certificate."
+                labelClass="col-sm-3 col-lg-2"
+              />
+            </div>
+          </div>
+        </>
+      )}
 
       <RefField
         value={value.RepositoryReferenceName || ''}
@@ -163,23 +186,18 @@ export async function validateGitForm(
 export function buildGitValidationSchema(
   isCreatedFromCustomTemplate: boolean,
   deployMethod: DeployMethod,
-  isEdit = false
+  isEdit = false,
+  isSourceSelection = false
 ): SchemaOf<GitFormModel> {
   return object({
-    RepositoryURL: string()
-      .test('valid URL', 'The URL must be a valid URL', (value) => {
-        if (!value) {
-          return true;
-        }
-
-        try {
-          const url = new URL(value);
-          return !!url.hostname;
-        } catch {
-          return false;
-        }
-      })
-      .required('Repository URL is required'),
+    // In source-selection mode the repository URL is derived from the selected
+    // source (not user-editable), so the user provides a SourceId instead and
+    // the URL itself needs no validation.
+    RepositoryURL: isSourceSelection
+      ? string()
+      : string()
+          .test('valid URL', 'The URL must be a valid URL', isValidGitUrl)
+          .required('Repository URL is required'),
     RepositoryReferenceName: refFieldValidation(),
     ComposeFilePathInRepository: string().required(
       deployMethod === 'compose'
@@ -190,7 +208,22 @@ export function buildGitValidationSchema(
     RepositoryURLValid: boolean().default(false),
     AutoUpdate: autoUpdateValidation().nullable(),
     TLSSkipVerify: boolean().default(false),
+    SourceId: isSourceSelection
+      ? number().min(1, 'Source is required').required('Source is required')
+      : number().optional().nullable(),
   }).concat(
     gitAuthValidation(isEdit, isCreatedFromCustomTemplate)
   ) as SchemaOf<GitFormModel>;
+}
+
+function isValidGitUrl(value?: string) {
+  if (!value) {
+    return true;
+  }
+
+  try {
+    return !!new URL(value).hostname;
+  } catch {
+    return false;
+  }
 }

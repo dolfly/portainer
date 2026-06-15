@@ -23,7 +23,7 @@ import (
 // @security jwt
 // @produce json
 // @param id path int true "Stack identifier"
-// @success 200 {object} portainer.Stack "Success"
+// @success 200 {object} stackResponse "Success"
 // @failure 400 "Invalid request"
 // @failure 403 "Permission denied"
 // @failure 404 "Stack not found"
@@ -91,9 +91,10 @@ func (handler *Handler) stackInspect(w http.ResponseWriter, r *http.Request) *ht
 		}
 	}
 
-	if err := fillStackGitConfig(handler.DataStore, stack); err != nil {
+	resp, err := newStackResponse(handler.DataStore, stack)
+	if err != nil {
 		return httperror.InternalServerError("Unable to load git config for stack", err)
 	}
 
-	return response.JSON(w, stack)
+	return response.JSON(w, resp)
 }

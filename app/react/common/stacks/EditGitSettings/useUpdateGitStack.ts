@@ -40,6 +40,7 @@ export function useUpdateGitStack(stack: Stack) {
         AdditionalFiles: values.git.AdditionalFiles,
         env: values.env,
         prune: values.prune,
+        SourceID: values.git.SourceId,
       });
 
       if (repullImageAndRedeploy === undefined) {
@@ -66,7 +67,12 @@ export function useUpdateGitStack(stack: Stack) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      queryClient.removeQueries({
+        queryKey: queryKeys.stackFile(stack.Id, {
+          commitHash: stack?.GitConfig?.ConfigHash,
+        }),
+      });
+      return queryClient.invalidateQueries({
         queryKey: queryKeys.stack(stack.Id),
       });
     },

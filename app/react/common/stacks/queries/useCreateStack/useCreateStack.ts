@@ -202,6 +202,7 @@ function createSwarmStack({ method, payload }: SwarmCreatePayload) {
         filesystemPath: payload.relativePathSettings?.FilesystemPath,
         supportRelativePath: payload.relativePathSettings?.SupportRelativePath,
         tlsSkipVerify: payload.git.TLSSkipVerify,
+        sourceId: payload.git.SourceId,
         autoUpdate: transformAutoUpdateViewModel(
           payload.git.AutoUpdate,
           payload.webhook
@@ -252,6 +253,7 @@ function createStandaloneStack({ method, payload }: StandaloneCreatePayload) {
         filesystemPath: payload.relativePathSettings?.FilesystemPath,
         supportRelativePath: payload.relativePathSettings?.SupportRelativePath,
         tlsSkipVerify: payload.git.TLSSkipVerify,
+        sourceId: payload.git.SourceId,
         autoUpdate: transformAutoUpdateViewModel(
           payload.git.AutoUpdate,
           payload.webhook

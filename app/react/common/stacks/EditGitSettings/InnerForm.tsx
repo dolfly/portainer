@@ -24,12 +24,14 @@ import { FormValues } from './types';
 export function InnerForm({
   stackName,
   stackType,
+  gitSourceId,
   onDismiss,
   isSubmitting,
   webhookId,
 }: {
   stackName: string;
   stackType: StackType;
+  gitSourceId?: number;
   onDismiss: () => void;
   isSubmitting: boolean;
   webhookId: string;
@@ -105,6 +107,7 @@ export function InnerForm({
                   stackType === StackType.Kubernetes ? 'manifest' : 'compose'
                 }
                 isDockerStandalone={isDockerStandalone}
+                isSourceSelectionVisible={!!gitSourceId}
               />
 
               <StackEnvironmentVariablesPanel

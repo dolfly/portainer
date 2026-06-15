@@ -101,6 +101,7 @@ export function StackInfoTab({
                   autoUpdate={stack.AutoUpdate}
                   currentDeploymentInfo={stack.CurrentDeploymentInfo}
                   stackType="docker"
+                  sourceId={stack.GitSourceId}
                 />
               )}
 

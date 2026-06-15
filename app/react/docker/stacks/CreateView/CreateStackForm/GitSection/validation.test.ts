@@ -18,6 +18,7 @@ describe('Git validation', () => {
       RepositoryAuthorizationType: undefined,
       SupportRelativePath: false,
       FilesystemPath: '',
+      SourceId: 1,
     };
 
     await expect(schema.validate(validData)).resolves.toBeDefined();

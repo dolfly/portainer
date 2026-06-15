@@ -43,15 +43,15 @@ export interface GitFormModel extends GitAuthModel {
   ComposeFilePathInRepository?: string;
   RepositoryReferenceName?: string;
   AdditionalFiles?: string[];
-
   TLSSkipVerify?: boolean;
-
   /**
    * Auto update
    *
    * if undefined, GitForm won't show the AutoUpdate fieldset
    */
   AutoUpdate?: AutoUpdateModel;
+  /** ID of an existing Source. When set, inline URL and credentials are ignored. */
+  SourceId?: number;
 }
 
 export function getDefaultModel(

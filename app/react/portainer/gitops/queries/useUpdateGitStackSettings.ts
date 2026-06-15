@@ -27,6 +27,7 @@ export interface GitStackPayload {
   HelmChartPath?: string;
   HelmValuesFiles?: string[];
   Atomic?: boolean;
+  SourceID?: number;
 }
 
 export async function updateGitStackSettings(

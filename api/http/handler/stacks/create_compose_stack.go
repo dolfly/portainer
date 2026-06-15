@@ -171,15 +171,18 @@ func (handler *Handler) createComposeStackFromFileContent(w http.ResponseWriter,
 type composeStackFromGitRepositoryPayload struct {
 	// Name of the stack
 	Name string `example:"myStack" validate:"required"`
-	// URL of a Git repository hosting the Stack file
-	RepositoryURL string `example:"https://github.com/openfaas/faas" validate:"required"`
+	// SourceID references an existing Source for git credentials/URL.
+	// When set, the inline URL and authentication fields are ignored.
+	SourceID portainer.SourceID `example:"1"`
+	// Deprecated: use SourceID instead. URL of a Git repository hosting the Stack file.
+	RepositoryURL string `example:"https://github.com/openfaas/faas"`
 	// Reference name of a Git repository hosting the Stack file
 	RepositoryReferenceName string `example:"refs/heads/master"`
-	// Use basic authentication to clone the Git repository
+	// Deprecated: use SourceID instead. Use basic authentication to clone the Git repository.
 	RepositoryAuthentication bool `example:"true"`
-	// Username used in basic authentication. Required when RepositoryAuthentication is true.
+	// Deprecated: use SourceID instead. Username used in basic authentication.
 	RepositoryUsername string `example:"myGitUsername"`
-	// Password used in basic authentication. Required when RepositoryAuthentication is true.
+	// Deprecated: use SourceID instead. Password used in basic authentication.
 	RepositoryPassword string `example:"myGitPassword"`
 	// Path to the Stack file inside the Git repository
 	ComposeFile string `example:"docker-compose.yml" default:"docker-compose.yml"`
@@ -191,14 +194,15 @@ type composeStackFromGitRepositoryPayload struct {
 	Env []portainer.Pair
 	// Whether the stack is from a app template
 	FromAppTemplate bool `example:"false"`
-	// TLSSkipVerify skips SSL verification when cloning the Git repository
+	// Deprecated: use SourceID instead. TLSSkipVerify skips SSL verification when cloning the Git repository.
 	TLSSkipVerify bool `example:"false"`
 }
 
-func createStackPayloadFromComposeGitPayload(name, repoUrl, repoReference, repoUsername, repoPassword string, repoAuthentication bool, composeFile string, additionalFiles []string, autoUpdate *portainer.AutoUpdateSettings, env []portainer.Pair, fromAppTemplate bool, repoSkipSSLVerify bool) stackbuilders.StackPayload {
+func createStackPayloadFromComposeGitPayload(name, repoUrl, repoReference, repoUsername, repoPassword string, repoAuthentication bool, composeFile string, additionalFiles []string, autoUpdate *portainer.AutoUpdateSettings, env []portainer.Pair, fromAppTemplate bool, repoSkipSSLVerify bool, sourceID portainer.SourceID) stackbuilders.StackPayload {
 	return stackbuilders.StackPayload{
 		Name: name,
 		RepositoryConfigPayload: stackbuilders.RepositoryConfigPayload{
+			SourceID:       sourceID,
 			URL:            repoUrl,
 			ReferenceName:  repoReference,
 			Authentication: repoAuthentication,
@@ -218,11 +222,14 @@ func (payload *composeStackFromGitRepositoryPayload) Validate(r *http.Request) e
 	if len(payload.Name) == 0 {
 		return errors.New("Invalid stack name")
 	}
-	if len(payload.RepositoryURL) == 0 || !validate.IsURL(payload.RepositoryURL) {
-		return errors.New("Invalid repository URL. Must correspond to a valid URL format")
-	}
-	if payload.RepositoryAuthentication && len(payload.RepositoryPassword) == 0 {
-		return errors.New("Invalid repository credentials. Password must be specified when authentication is enabled")
+
+	if payload.SourceID == 0 {
+		if len(payload.RepositoryURL) == 0 || !validate.IsURL(payload.RepositoryURL) {
+			return errors.New("Invalid repository URL. Must correspond to a valid URL format")
+		}
+		if payload.RepositoryAuthentication && len(payload.RepositoryPassword) == 0 {
+			return errors.New("Invalid repository credentials. Password must be specified when authentication is enabled")
+		}
 	}
 
 	return update.ValidateAutoUpdateSettings(payload.AutoUpdate)
@@ -271,6 +278,12 @@ func (handler *Handler) createComposeStackFromGitRepository(w http.ResponseWrite
 		}
 	}
 
+	if payload.SourceID != 0 {
+		if _, httpErr := validateSourceForStack(handler.DataStore, payload.SourceID); httpErr != nil {
+			return httpErr
+		}
+	}
+
 	securityContext, err := security.RetrieveRestrictedRequestContext(r)
 	if err != nil {
 		return httperror.InternalServerError("Unable to retrieve info from request context", err)
@@ -288,6 +301,7 @@ func (handler *Handler) createComposeStackFromGitRepository(w http.ResponseWrite
 		payload.Env,
 		payload.FromAppTemplate,
 		payload.TLSSkipVerify,
+		payload.SourceID,
 	)
 
 	composeStackBuilder := stackbuilders.CreateComposeStackGitBuilder(securityContext,

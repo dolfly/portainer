@@ -76,23 +76,27 @@ export function gitAuthValidation(
   return object({
     RepositoryAuthentication: boolean().default(false),
     RepositoryUsername: string()
-      .when(['RepositoryAuthentication'], {
-        is: (auth: boolean) => auth,
+      .when(['RepositoryAuthentication', 'SourceId'], {
+        is: (auth: boolean, sourceId?: number) => auth && !sourceId,
         then: string().required('Username is required'),
       })
       .default(''),
     RepositoryPassword: string()
-      .when(['RepositoryAuthentication'], {
-        is: (auth: boolean) =>
-          auth && !isAuthEdit && !isCreatedFromCustomTemplate,
+      .when(['RepositoryAuthentication', 'SourceId'], {
+        is: (auth: boolean, sourceId?: number) =>
+          auth && !sourceId && !isAuthEdit && !isCreatedFromCustomTemplate,
         then: string().required('Personal Access Token is required'),
       })
       .default(''),
     RepositoryAuthorizationType: mixed()
       .oneOf(Object.values(AuthTypeOption))
-      .when(['RepositoryAuthentication'], {
-        is: (auth: boolean) =>
-          isBE && auth && !isAuthEdit && !isCreatedFromCustomTemplate,
+      .when(['RepositoryAuthentication', 'SourceId'], {
+        is: (auth: boolean, sourceId?: number) =>
+          isBE &&
+          auth &&
+          !sourceId &&
+          !isAuthEdit &&
+          !isCreatedFromCustomTemplate,
         then: mixed().required('Authorization type is required'),
       })
       .default(AuthTypeOption.Basic),

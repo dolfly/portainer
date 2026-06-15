@@ -3979,11 +3979,11 @@ export type StacksSwarmStackFromGitRepositoryPayload = {
    */
   Name: string;
   /**
-   * Use basic authentication to clone the Git repository
+   * Deprecated: use SourceID instead. Use basic authentication to clone the Git repository.
    */
   RepositoryAuthentication?: boolean;
   /**
-   * Password used in basic authentication. Required when RepositoryAuthentication is true.
+   * Deprecated: use SourceID instead. Password used in basic authentication.
    */
   RepositoryPassword?: string;
   /**
@@ -3991,19 +3991,24 @@ export type StacksSwarmStackFromGitRepositoryPayload = {
    */
   RepositoryReferenceName?: string;
   /**
-   * URL of a Git repository hosting the Stack file
+   * Deprecated: use SourceID instead. URL of a Git repository hosting the Stack file.
    */
-  RepositoryURL: string;
+  RepositoryURL?: string;
   /**
-   * Username used in basic authentication. Required when RepositoryAuthentication is true.
+   * Deprecated: use SourceID instead. Username used in basic authentication.
    */
   RepositoryUsername?: string;
+  /**
+   * SourceID references an existing Source for git credentials/URL.
+   * When set, the inline URL and authentication fields are ignored.
+   */
+  SourceID?: number;
   /**
    * Swarm cluster identifier
    */
   SwarmID: string;
   /**
-   * TLSSkipVerify skips SSL verification when cloning the Git repository
+   * Deprecated: use SourceID instead. TLSSkipVerify skips SSL verification when cloning the Git repository.
    */
   TLSSkipVerify?: boolean;
 };
@@ -4031,6 +4036,329 @@ export type StacksSwarmStackFromFileContentPayload = {
   SwarmID: string;
 };
 
+export type StacksStackResponse = {
+  /**
+   * Only applies when deploying stack with multiple files
+   */
+  AdditionalFiles?: Array<string>;
+  /**
+   * The GitOps update settings of a git stack
+   */
+  AutoUpdate?: PortainerAutoUpdateSettings;
+  /**
+   * The username which created this stack
+   */
+  CreatedBy?: string;
+  /**
+   * The date in unix time when stack was created
+   */
+  CreationDate?: number;
+  /**
+   * CurrentDeploymentInfo records the git repository state at the time of the last actual deployment.
+   */
+  CurrentDeploymentInfo?: PortainerStackDeploymentInfo;
+  /**
+   * DeploymentStartStatus is the stack status captured when the current
+   * deployment starts. It is used by deployment logic during the current
+   * deployment attempt and is cleared/replaced when a new deployment begins.
+   */
+  DeploymentStartStatus?: PortainerStackStatus;
+  /**
+   * DeploymentStatus records the status progression of the current deployment.
+   * Cleared when a new deployment starts.
+   */
+  DeploymentStatus?: Array<PortainerStackDeploymentStatus>;
+  /**
+   * Environment(Endpoint) identifier. Reference the environment(endpoint) that will be used for deployment
+   */
+  EndpointId?: number;
+  /**
+   * EntryPoint is the path to the config file relative to the project root.
+   * NOTE: For git stacks this mirrors GitConfig.ConfigFilePath and the two are kept in sync
+   * by stackUpdateGit. The deploy command builder (compose_unpacker_cmd_builder) uses this
+   * field directly; Kubernetes deploy and git clone operations use GitConfig.ConfigFilePath.
+   */
+  EntryPoint?: string;
+  /**
+   * A list of environment(endpoint) variables used during stack deployment
+   */
+  Env?: Array<PortainerPair>;
+  /**
+   * Whether the stack is from a app template
+   */
+  FromAppTemplate?: boolean;
+  /**
+   * GitConfig is the git repository configuration for git-backed stacks.
+   * Deprecated: loaded from Source via WorkflowID; kept for DB backwards-compatibility only.
+   * Non-migration code must not read or write this field; use Source records instead.
+   */
+  GitConfig?: GittypesRepoConfig;
+  GitSourceId?: number;
+  /**
+   * Stack Identifier
+   */
+  Id?: number;
+  /**
+   * Stack name
+   */
+  Name?: string;
+  /**
+   * Kubernetes namespace if stack is a kube application
+   */
+  Namespace?: string;
+  /**
+   * The stack deployment option
+   */
+  Option?: PortainerStackOption;
+  /**
+   * Path on disk to the repository hosting the Stack file
+   */
+  ProjectPath?: string;
+  ResourceControl?: PortainerResourceControl;
+  /**
+   * Stack status (1 - active, 2 - inactive, 3 - deploying, 4 - error)
+   */
+  Status?: PortainerStackStatus;
+  /**
+   * Cluster identifier of the Swarm cluster where the stack is deployed
+   */
+  SwarmId?: string;
+  /**
+   * Stack type. 1 for a Swarm stack, 2 for a Compose stack
+   */
+  Type?: PortainerStackType;
+  /**
+   * The date in unix time when stack was last updated
+   */
+  UpdateDate?: number;
+  /**
+   * The username which last updated this stack
+   */
+  UpdatedBy?: string;
+  /**
+   * WorkflowID is the ID of the Workflow that owns the Source for this stack.
+   */
+  WorkflowID?: number;
+};
+
+export const PortainerStackType = {
+  /**
+   * _
+   */
+  '': 0,
+  /**
+   * DockerSwarmStack
+   */
+  DOCKER_SWARM_STACK: 1,
+  /**
+   * DockerComposeStack
+   */
+  DOCKER_COMPOSE_STACK: 2,
+  /**
+   * KubernetesStack
+   */
+  KUBERNETES_STACK: 3,
+} as const;
+
+export type PortainerStackType =
+  (typeof PortainerStackType)[keyof typeof PortainerStackType];
+
+export type PortainerUserResourceAccess = {
+  AccessLevel?: PortainerResourceAccessLevel;
+  UserId?: number;
+};
+
+export const PortainerResourceAccessLevel = {
+  /**
+   * _
+   */
+  '': 0 /**
+   * ReadWriteAccessLevel
+   */,
+  READ_WRITE_ACCESS_LEVEL: 1,
+} as const;
+
+export type PortainerResourceAccessLevel =
+  (typeof PortainerResourceAccessLevel)[keyof typeof PortainerResourceAccessLevel];
+
+export const PortainerResourceControlType = {
+  /**
+   * _
+   */
+  '': 0,
+  /**
+   * ContainerResourceControl
+   */
+  CONTAINER_RESOURCE_CONTROL: 1,
+  /**
+   * ServiceResourceControl
+   */
+  SERVICE_RESOURCE_CONTROL: 2,
+  /**
+   * VolumeResourceControl
+   */
+  VOLUME_RESOURCE_CONTROL: 3,
+  /**
+   * NetworkResourceControl
+   */
+  NETWORK_RESOURCE_CONTROL: 4,
+  /**
+   * SecretResourceControl
+   */
+  SECRET_RESOURCE_CONTROL: 5,
+  /**
+   * StackResourceControl
+   */
+  STACK_RESOURCE_CONTROL: 6,
+  /**
+   * ConfigResourceControl
+   */
+  CONFIG_RESOURCE_CONTROL: 7,
+  /**
+   * CustomTemplateResourceControl
+   */
+  CUSTOM_TEMPLATE_RESOURCE_CONTROL: 8,
+  /**
+   * ContainerGroupResourceControl
+   */
+  CONTAINER_GROUP_RESOURCE_CONTROL: 9,
+} as const;
+
+export type PortainerResourceControlType =
+  (typeof PortainerResourceControlType)[keyof typeof PortainerResourceControlType];
+
+export type PortainerTeamResourceAccess = {
+  AccessLevel?: PortainerResourceAccessLevel;
+  TeamId?: number;
+};
+
+export type PortainerResourceControl = {
+  AccessLevel?: PortainerResourceAccessLevel;
+  /**
+   * Permit access to resource only to admins
+   */
+  AdministratorsOnly?: boolean;
+  /**
+   * ResourceControl Identifier
+   */
+  Id?: number;
+  /**
+   * Deprecated fields
+   * Deprecated in DBVersion == 2
+   */
+  OwnerId?: number;
+  /**
+   * Permit access to the associated resource to any user
+   */
+  Public?: boolean;
+  /**
+   * Docker resource identifier on which access control will be applied.\
+   * In the case of a resource control applied to a stack, use the stack name as identifier
+   */
+  ResourceId?: string;
+  /**
+   * List of Docker resources that will inherit this access control
+   */
+  SubResourceIds?: Array<string>;
+  System?: boolean;
+  TeamAccesses?: Array<PortainerTeamResourceAccess>;
+  /**
+   * Type of Docker resource. Valid values are: 1- container, 2 -service
+   * 3 - volume, 4 - secret, 5 - stack, 6 - config or 7 - custom template
+   */
+  Type?: PortainerResourceControlType;
+  UserAccesses?: Array<PortainerUserResourceAccess>;
+};
+
+export type PortainerStackOption = {
+  /**
+   * Enable atomic rollback on failure (Helm --atomic flag for Kubernetes Helm stacks)
+   */
+  HelmAtomic?: boolean;
+  /**
+   * Prune services that are no longer referenced
+   */
+  Prune?: boolean;
+};
+
+export type PortainerStackDeploymentStatus = {
+  /**
+   * populated on Error entries
+   */
+  Message?: string;
+  Status?: PortainerStackStatus;
+  Time?: number;
+};
+
+export const PortainerStackStatus = {
+  /**
+   * _
+   */
+  '': 0,
+  /**
+   * StackStatusActive
+   *
+   * 1 - deployed and running
+   */
+  STACK_STATUS_ACTIVE: 1,
+  /**
+   * StackStatusInactive
+   *
+   * 2 - intentionally stopped
+   */
+  STACK_STATUS_INACTIVE: 2,
+  /**
+   * StackStatusDeploying
+   *
+   * 3 - deployment in progress
+   */
+  STACK_STATUS_DEPLOYING: 3,
+  /**
+   * StackStatusError
+   *
+   * 4 - deployment failed
+   */
+  STACK_STATUS_ERROR: 4,
+} as const;
+
+export type PortainerStackStatus =
+  (typeof PortainerStackStatus)[keyof typeof PortainerStackStatus];
+
+export type PortainerStackDeploymentInfo = {
+  /**
+   * AdditionalFiles are the additional files used for deploying the stack
+   */
+  AdditionalFiles?: Array<string>;
+  /**
+   * ConfigFilePath is the path to the config file in the git repository used for deploying the stack
+   */
+  ConfigFilePath?: string;
+  /**
+   * ConfigHash is the commit hash of the git repository used for deploying the stack
+   */
+  ConfigHash?: string;
+  /**
+   * FileVersion is the version of the stack file, used to detect changes
+   */
+  FileVersion?: number;
+  /**
+   * ReferenceName is the git reference (branch/tag) used for deploying the stack
+   */
+  ReferenceName?: string;
+  /**
+   * RepositoryURL is the git repository URL used for deploying the stack
+   */
+  RepositoryURL?: string;
+  /**
+   * SourceID is the Source used for deploying the stack
+   */
+  SourceID?: number;
+  /**
+   * Version is the version of the stack and also is the deployed version in edge agent
+   */
+  Version?: number;
+};
+
 export type StacksStackMigratePayload = {
   /**
    * Environment(Endpoint) identifier of the target environment(endpoint) where the stack will be relocated
@@ -4052,11 +4380,31 @@ export type StacksStackGitUpdatePayload = {
   ConfigFilePath?: string;
   Env?: Array<PortainerPair>;
   Prune?: boolean;
+  /**
+   * Deprecated: use SourceID instead. Use basic authentication to clone the Git repository.
+   */
   RepositoryAuthentication?: boolean;
+  /**
+   * Deprecated: use SourceID instead. Password used in basic authentication.
+   */
   RepositoryPassword?: string;
   RepositoryReferenceName?: string;
+  /**
+   * Deprecated: use SourceID instead. URL of a Git repository hosting the Stack file.
+   */
   RepositoryURL?: string;
+  /**
+   * Deprecated: use SourceID instead. Username used in basic authentication.
+   */
   RepositoryUsername?: string;
+  /**
+   * SourceID references an existing Source for git credentials/URL.
+   * When set, the inline URL and authentication fields are ignored.
+   */
+  SourceID?: number;
+  /**
+   * Deprecated: use SourceID instead. Skip TLS verification when cloning the Git repository.
+   */
   TLSSkipVerify?: boolean;
 };
 
@@ -4148,11 +4496,11 @@ export type StacksComposeStackFromGitRepositoryPayload = {
    */
   Name: string;
   /**
-   * Use basic authentication to clone the Git repository
+   * Deprecated: use SourceID instead. Use basic authentication to clone the Git repository.
    */
   RepositoryAuthentication?: boolean;
   /**
-   * Password used in basic authentication. Required when RepositoryAuthentication is true.
+   * Deprecated: use SourceID instead. Password used in basic authentication.
    */
   RepositoryPassword?: string;
   /**
@@ -4160,15 +4508,20 @@ export type StacksComposeStackFromGitRepositoryPayload = {
    */
   RepositoryReferenceName?: string;
   /**
-   * URL of a Git repository hosting the Stack file
+   * Deprecated: use SourceID instead. URL of a Git repository hosting the Stack file.
    */
-  RepositoryURL: string;
+  RepositoryURL?: string;
   /**
-   * Username used in basic authentication. Required when RepositoryAuthentication is true.
+   * Deprecated: use SourceID instead. Username used in basic authentication.
    */
   RepositoryUsername?: string;
   /**
-   * TLSSkipVerify skips SSL verification when cloning the Git repository
+   * SourceID references an existing Source for git credentials/URL.
+   * When set, the inline URL and authentication fields are ignored.
+   */
+  SourceID?: number;
+  /**
+   * Deprecated: use SourceID instead. TLSSkipVerify skips SSL verification when cloning the Git repository.
    */
   TLSSkipVerify?: boolean;
 };
@@ -4625,52 +4978,6 @@ export type ResourcecontrolsResourceControlCreatePayload = {
    */
   Users?: Array<number>;
 };
-
-export const PortainerResourceControlType = {
-  /**
-   * _
-   */
-  '': 0,
-  /**
-   * ContainerResourceControl
-   */
-  CONTAINER_RESOURCE_CONTROL: 1,
-  /**
-   * ServiceResourceControl
-   */
-  SERVICE_RESOURCE_CONTROL: 2,
-  /**
-   * VolumeResourceControl
-   */
-  VOLUME_RESOURCE_CONTROL: 3,
-  /**
-   * NetworkResourceControl
-   */
-  NETWORK_RESOURCE_CONTROL: 4,
-  /**
-   * SecretResourceControl
-   */
-  SECRET_RESOURCE_CONTROL: 5,
-  /**
-   * StackResourceControl
-   */
-  STACK_RESOURCE_CONTROL: 6,
-  /**
-   * ConfigResourceControl
-   */
-  CONFIG_RESOURCE_CONTROL: 7,
-  /**
-   * CustomTemplateResourceControl
-   */
-  CUSTOM_TEMPLATE_RESOURCE_CONTROL: 8,
-  /**
-   * ContainerGroupResourceControl
-   */
-  CONTAINER_GROUP_RESOURCE_CONTROL: 9,
-} as const;
-
-export type PortainerResourceControlType =
-  (typeof PortainerResourceControlType)[keyof typeof PortainerResourceControlType];
 
 export type ReleaseValues = {
   computedValues?: string;
@@ -5320,24 +5627,6 @@ export const PortainerUserRole = {
 export type PortainerUserRole =
   (typeof PortainerUserRole)[keyof typeof PortainerUserRole];
 
-export type PortainerUserResourceAccess = {
-  AccessLevel?: PortainerResourceAccessLevel;
-  UserId?: number;
-};
-
-export const PortainerResourceAccessLevel = {
-  /**
-   * _
-   */
-  '': 0 /**
-   * ReadWriteAccessLevel
-   */,
-  READ_WRITE_ACCESS_LEVEL: 1,
-} as const;
-
-export type PortainerResourceAccessLevel =
-  (typeof PortainerResourceAccessLevel)[keyof typeof PortainerResourceAccessLevel];
-
 export type PortainerUser = {
   /**
    * User Identifier
@@ -5351,11 +5640,6 @@ export type PortainerUser = {
   TokenIssueAt?: number;
   UseCache?: boolean;
   Username: string;
-};
-
-export type PortainerTeamResourceAccess = {
-  AccessLevel?: PortainerResourceAccessLevel;
-  TeamId?: number;
 };
 
 export type PortainerTeamMembership = {
@@ -5427,113 +5711,6 @@ export type PortainerTag = {
    * Tag name
    */
   Name?: string;
-};
-
-export const PortainerStackType = {
-  /**
-   * _
-   */
-  '': 0,
-  /**
-   * DockerSwarmStack
-   */
-  DOCKER_SWARM_STACK: 1,
-  /**
-   * DockerComposeStack
-   */
-  DOCKER_COMPOSE_STACK: 2,
-  /**
-   * KubernetesStack
-   */
-  KUBERNETES_STACK: 3,
-} as const;
-
-export type PortainerStackType =
-  (typeof PortainerStackType)[keyof typeof PortainerStackType];
-
-export const PortainerStackStatus = {
-  /**
-   * _
-   */
-  '': 0,
-  /**
-   * StackStatusActive
-   *
-   * 1 - deployed and running
-   */
-  STACK_STATUS_ACTIVE: 1,
-  /**
-   * StackStatusInactive
-   *
-   * 2 - intentionally stopped
-   */
-  STACK_STATUS_INACTIVE: 2,
-  /**
-   * StackStatusDeploying
-   *
-   * 3 - deployment in progress
-   */
-  STACK_STATUS_DEPLOYING: 3,
-  /**
-   * StackStatusError
-   *
-   * 4 - deployment failed
-   */
-  STACK_STATUS_ERROR: 4,
-} as const;
-
-export type PortainerStackStatus =
-  (typeof PortainerStackStatus)[keyof typeof PortainerStackStatus];
-
-export type PortainerStackOption = {
-  /**
-   * Enable atomic rollback on failure (Helm --atomic flag for Kubernetes Helm stacks)
-   */
-  HelmAtomic?: boolean;
-  /**
-   * Prune services that are no longer referenced
-   */
-  Prune?: boolean;
-};
-
-export type PortainerStackDeploymentStatus = {
-  /**
-   * populated on Error entries
-   */
-  Message?: string;
-  Status?: PortainerStackStatus;
-  Time?: number;
-};
-
-export type PortainerStackDeploymentInfo = {
-  /**
-   * AdditionalFiles are the additional files used for deploying the stack
-   */
-  AdditionalFiles?: Array<string>;
-  /**
-   * ConfigFilePath is the path to the config file in the git repository used for deploying the stack
-   */
-  ConfigFilePath?: string;
-  /**
-   * ConfigHash is the commit hash of the git repository used for deploying the stack
-   */
-  ConfigHash?: string;
-  /**
-   * FileVersion is the version of the stack file, used to detect changes
-   */
-  FileVersion?: number;
-  /**
-   * ReferenceName is the git reference (branch/tag) used for deploying the stack
-   */
-  ReferenceName?: string;
-  /**
-   * RepositoryURL is the git repository URL used for deploying the stack
-   */
-  RepositoryURL?: string;
-  /**
-   * Version is the version of the stack and also is the deployed version in edge agent
-   */
-  Version?: number;
 };
 
 export type PortainerStack = {
@@ -5638,44 +5815,6 @@ export type PortainerStack = {
    * WorkflowID is the ID of the Workflow that owns the Source for this stack.
    */
   WorkflowID?: number;
-};
-
-export type PortainerResourceControl = {
-  AccessLevel?: PortainerResourceAccessLevel;
-  /**
-   * Permit access to resource only to admins
-   */
-  AdministratorsOnly?: boolean;
-  /**
-   * ResourceControl Identifier
-   */
-  Id?: number;
-  /**
-   * Deprecated fields
-   * Deprecated in DBVersion == 2
-   */
-  OwnerId?: number;
-  /**
-   * Permit access to the associated resource to any user
-   */
-  Public?: boolean;
-  /**
-   * Docker resource identifier on which access control will be applied.\
-   * In the case of a resource control applied to a stack, use the stack name as identifier
-   */
-  ResourceId?: string;
-  /**
-   * List of Docker resources that will inherit this access control
-   */
-  SubResourceIds?: Array<string>;
-  System?: boolean;
-  TeamAccesses?: Array<PortainerTeamResourceAccess>;
-  /**
-   * Type of Docker resource. Valid values are: 1- container, 2 -service
-   * 3 - volume, 4 - secret, 5 - stack, 6 - config or 7 - custom template
-   */
-  Type?: PortainerResourceControlType;
-  UserAccesses?: Array<PortainerUserResourceAccess>;
 };
 
 export const PortainerSourceType = {
@@ -16177,7 +16316,7 @@ export type StackInspectResponses = {
   /**
    * Success
    */
-  200: PortainerStack;
+  200: StacksStackResponse;
 };
 
 export type StackInspectResponse =
@@ -16378,7 +16517,7 @@ export type StackUpdateGitResponses = {
   /**
    * Success
    */
-  200: PortainerStack;
+  200: StacksStackResponse;
 };
 
 export type StackUpdateGitResponse =

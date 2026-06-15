@@ -17,27 +17,10 @@ describe('GitSection', () => {
     expect(screen.getByText('Git repository')).toBeInTheDocument();
   });
 
-  it('should render authentication toggle', () => {
+  it('should render the source selector', () => {
     renderComponent();
 
-    expect(screen.getByText('Authentication')).toBeInTheDocument();
-  });
-
-  it('should render TLS skip verification toggle', () => {
-    renderComponent();
-
-    expect(screen.getByText('Skip TLS Verification')).toBeInTheDocument();
-  });
-
-  it('should render with git authentication enabled', () => {
-    renderComponent({
-      initialValues: {
-        RepositoryAuthentication: true,
-        RepositoryUsername: 'testuser',
-      },
-    });
-
-    expect(screen.getByText('Authentication')).toBeInTheDocument();
+    expect(screen.getByText('Source')).toBeInTheDocument();
   });
 
   it('should render with auto update enabled', () => {
@@ -79,13 +62,9 @@ function renderComponent({
       RepositoryURL: '',
       RepositoryReferenceName: 'refs/heads/main',
       ComposeFilePathInRepository: 'docker-compose.yml',
-      RepositoryAuthentication: false,
-      RepositoryUsername: '',
-      RepositoryPassword: '',
       TLSSkipVerify: false,
       AdditionalFiles: [],
       AutoUpdate: undefined,
-      RepositoryAuthorizationType: undefined,
       SupportRelativePath: false,
       FilesystemPath: '',
       ...initialValues,

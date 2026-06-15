@@ -3916,7 +3916,7 @@ export const gitOpsSourcesDelete = <ThrowOnError extends boolean = true>(
  * Get a GitOps source by ID
  *
  * Returns a single GitOps source with its connection settings and linked workflows.
- * **Access policy**: admin
+ * **Access policy**: authenticated
  */
 export const gitOpsSourceGet = <ThrowOnError extends boolean = true>(
   options: Options<GitOpsSourceGetData, ThrowOnError>
@@ -8001,7 +8001,7 @@ export const stackFileInspect = <ThrowOnError extends boolean = true>(
 /**
  * Update a stack's Git configs
  *
- * Update the Git settings in a stack, e.g., RepositoryReferenceName and AutoUpdate
+ * Update the Git settings in a stack, e.g., RepositoryReferenceName and AutoUpdate. When SourceID is set, URL/auth/TLS are taken from the referenced Source.
  * **Access policy**: authenticated
  */
 export const stackUpdateGit = <ThrowOnError extends boolean = true>(

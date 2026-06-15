@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function EditGitSettingsModal({ stack, onClose }: Props) {
-  const validationSchema = useValidationSchema(stack.Type);
+  const validationSchema = useValidationSchema(stack.Type, !!stack.GitSourceId);
   const [webhookId] = useState(
     () => stack.AutoUpdate?.Webhook || createWebhookId()
   );
@@ -34,6 +34,8 @@ export function EditGitSettingsModal({ stack, onClose }: Props) {
     git: {
       ...gitModel,
       AdditionalFiles: stack.AdditionalFiles || [],
+      SourceId: stack.GitSourceId,
+      RepositoryURLValid: !!gitModel.RepositoryURL,
     },
     env: stack.Env || [],
     prune: stack.Option?.Prune || false,
@@ -51,6 +53,7 @@ export function EditGitSettingsModal({ stack, onClose }: Props) {
       <InnerForm
         stackName={stack.Name}
         stackType={stack.Type}
+        gitSourceId={stack.GitSourceId}
         webhookId={webhookId}
         onDismiss={onClose}
         isSubmitting={mutation.isLoading}

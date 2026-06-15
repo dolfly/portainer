@@ -169,6 +169,7 @@ func redeployWhenChangedSecondStage(
 		ConfigFilePath:  gitConfig.ConfigFilePath,
 		AdditionalFiles: stack.AdditionalFiles,
 		ConfigHash:      gitConfig.ConfigHash,
+		SourceID:        gitSrc.ID,
 	}
 
 	registries, err := getUserRegistries(datastore, user, endpoint.ID)

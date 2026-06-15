@@ -5,7 +5,7 @@ import { buildGitValidationSchema } from '@/react/portainer/gitops/GitForm';
 import { GitFormValues } from './types';
 
 export function getGitValidationSchema(): SchemaOf<GitFormValues> {
-  return buildGitValidationSchema(false, 'compose').concat(
+  return buildGitValidationSchema(false, 'compose', false, true).concat(
     object({
       SupportRelativePath: boolean().default(false),
       FilesystemPath: string()

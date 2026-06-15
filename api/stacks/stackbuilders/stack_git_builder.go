@@ -30,16 +30,34 @@ func (b *GitMethodStackBuilder) prepare(ctx context.Context, payload *StackPaylo
 	}
 
 	var repoConfig gittypes.RepoConfig
-	if payload.Authentication {
-		repoConfig.Authentication = &gittypes.GitAuthentication{
-			Username: payload.Username,
-			Password: payload.Password,
-		}
-	}
+	var sourceID portainer.SourceID
 
-	repoConfig.URL = payload.URL
-	repoConfig.ReferenceName = payload.ReferenceName
-	repoConfig.TLSSkipVerify = payload.TLSSkipVerify
+	if payload.SourceID != 0 {
+		src, err := b.dataStore.Source().Read(payload.SourceID)
+		if err != nil {
+			return fmt.Errorf("failed to read source: %w", err)
+		}
+		if src.Git == nil {
+			return fmt.Errorf("source %d has no git configuration", payload.SourceID)
+		}
+
+		repoConfig.URL = src.Git.URL
+		repoConfig.Authentication = src.Git.Authentication
+		repoConfig.TLSSkipVerify = src.Git.TLSSkipVerify
+		repoConfig.ReferenceName = payload.ReferenceName
+		sourceID = src.ID
+	} else {
+		if payload.Authentication {
+			repoConfig.Authentication = &gittypes.GitAuthentication{
+				Username: payload.Username,
+				Password: payload.Password,
+			}
+		}
+
+		repoConfig.URL = payload.URL
+		repoConfig.ReferenceName = payload.ReferenceName
+		repoConfig.TLSSkipVerify = payload.TLSSkipVerify
+	}
 
 	repoConfig.ConfigFilePath = payload.ComposeFile
 	if payload.ComposeFile == "" {
@@ -71,27 +89,34 @@ func (b *GitMethodStackBuilder) prepare(ctx context.Context, payload *StackPaylo
 	var workflowID portainer.WorkflowID
 
 	if err := b.dataStore.UpdateTx(func(tx dataservices.DataStoreTx) error {
-		repoConfig.URL = gittypes.SanitizeURL(repoConfig.URL)
+		file := portainer.ArtifactFile{
+			Path: repoConfig.ConfigFilePath,
+			Ref:  repoConfig.ReferenceName,
+			Hash: repoConfig.ConfigHash,
+		}
 
-		src, err := workflows.FindOrCreateGitSource(tx, &portainer.Source{
-			Name: gittypes.RepoName(repoConfig.URL),
-			Type: portainer.SourceTypeGit,
-			Git:  &repoConfig,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to find or create source: %w", err)
+		if sourceID != 0 {
+			file.SourceID = sourceID
+		} else {
+			repoConfig.URL = gittypes.SanitizeURL(repoConfig.URL)
+
+			src, err := workflows.FindOrCreateGitSource(tx, &portainer.Source{
+				Name: gittypes.RepoName(repoConfig.URL),
+				Type: portainer.SourceTypeGit,
+				Git:  &repoConfig,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to find or create source: %w", err)
+			}
+
+			file.SourceID = src.ID
 		}
 
 		wf := &portainer.Workflow{
 			Name: b.stack.Name,
 			Artifacts: []portainer.Artifact{{
 				StackID: b.stack.ID,
-				Files: []portainer.ArtifactFile{{
-					SourceID: src.ID,
-					Path:     repoConfig.ConfigFilePath,
-					Ref:      repoConfig.ReferenceName,
-					Hash:     repoConfig.ConfigHash,
-				}},
+				Files:   []portainer.ArtifactFile{file},
 			}},
 		}
 		if err := tx.Workflow().Create(wf); err != nil {

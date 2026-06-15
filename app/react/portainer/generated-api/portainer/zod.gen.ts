@@ -1008,8 +1008,9 @@ export const zStacksSwarmStackFromGitRepositoryPayload = z.object({
   RepositoryAuthentication: z.boolean().optional(),
   RepositoryPassword: z.string().optional(),
   RepositoryReferenceName: z.string().optional(),
-  RepositoryURL: z.string(),
+  RepositoryURL: z.string().optional(),
   RepositoryUsername: z.string().optional(),
+  SourceID: z.int().optional(),
   SwarmID: z.string(),
   TLSSkipVerify: z.boolean().optional(),
 });
@@ -1020,6 +1021,92 @@ export const zStacksSwarmStackFromFileContentPayload = z.object({
   Name: z.string(),
   StackFileContent: z.string(),
   SwarmID: z.string(),
+});
+
+export const zPortainerStackType = z.enum(PortainerStackType);
+
+export const zPortainerResourceAccessLevel = z.enum(
+  PortainerResourceAccessLevel
+);
+
+export const zPortainerUserResourceAccess = z.object({
+  AccessLevel: zPortainerResourceAccessLevel.optional(),
+  UserId: z.int().optional(),
+});
+
+export const zPortainerResourceControlType = z.enum(
+  PortainerResourceControlType
+);
+
+export const zPortainerTeamResourceAccess = z.object({
+  AccessLevel: zPortainerResourceAccessLevel.optional(),
+  TeamId: z.int().optional(),
+});
+
+export const zPortainerResourceControl = z.object({
+  AccessLevel: zPortainerResourceAccessLevel.optional(),
+  AdministratorsOnly: z.boolean().optional(),
+  Id: z.int().optional(),
+  OwnerId: z.int().optional(),
+  Public: z.boolean().optional(),
+  ResourceId: z.string().optional(),
+  SubResourceIds: z.array(z.string()).optional(),
+  System: z.boolean().optional(),
+  TeamAccesses: z.array(zPortainerTeamResourceAccess).optional(),
+  Type: zPortainerResourceControlType.optional(),
+  UserAccesses: z.array(zPortainerUserResourceAccess).optional(),
+});
+
+export const zPortainerStackOption = z.object({
+  HelmAtomic: z.boolean().optional(),
+  Prune: z.boolean().optional(),
+});
+
+export const zPortainerStackStatus = z.enum(PortainerStackStatus);
+
+export const zPortainerStackDeploymentStatus = z.object({
+  Message: z.string().optional(),
+  Status: zPortainerStackStatus.optional(),
+  Time: z.int().optional(),
+});
+
+export const zPortainerStackDeploymentInfo = z.object({
+  AdditionalFiles: z.array(z.string()).optional(),
+  ConfigFilePath: z.string().optional(),
+  ConfigHash: z.string().optional(),
+  FileVersion: z.int().optional(),
+  ReferenceName: z.string().optional(),
+  RepositoryURL: z.string().optional(),
+  SourceID: z.int().optional(),
+  Version: z.int().optional(),
+});
+
+export const zStacksStackResponse = z.object({
+  AdditionalFiles: z.array(z.string()).optional(),
+  AutoUpdate: zPortainerAutoUpdateSettings.optional(),
+  CreatedBy: z.string().optional(),
+  CreationDate: z.int().optional(),
+  CurrentDeploymentInfo: zPortainerStackDeploymentInfo.optional(),
+  DeploymentStartStatus: zPortainerStackStatus.optional(),
+  DeploymentStatus: z.array(zPortainerStackDeploymentStatus).optional(),
+  EndpointId: z.int().optional(),
+  EntryPoint: z.string().optional(),
+  Env: z.array(zPortainerPair).optional(),
+  FromAppTemplate: z.boolean().optional(),
+  GitConfig: zGittypesRepoConfig.optional(),
+  GitSourceId: z.int().optional(),
+  Id: z.int().optional(),
+  Name: z.string().optional(),
+  Namespace: z.string().optional(),
+  Option: zPortainerStackOption.optional(),
+  ProjectPath: z.string().optional(),
+  ResourceControl: zPortainerResourceControl.optional(),
+  Status: zPortainerStackStatus.optional(),
+  SwarmId: z.string().optional(),
+  Type: zPortainerStackType.optional(),
+  UpdateDate: z.int().optional(),
+  UpdatedBy: z.string().optional(),
+  WorkflowID: z.int().optional(),
 });
 
 export const zStacksStackMigratePayload = z.object({
@@ -1039,6 +1126,7 @@ export const zStacksStackGitUpdatePayload = z.object({
   RepositoryReferenceName: z.string().optional(),
   RepositoryURL: z.string().optional(),
   RepositoryUsername: z.string().optional(),
+  SourceID: z.int().optional(),
   TLSSkipVerify: z.boolean().optional(),
 });
 
@@ -1098,8 +1186,9 @@ export const zStacksComposeStackFromGitRepositoryPayload = z.object({
   RepositoryAuthentication: z.boolean().optional(),
   RepositoryPassword: z.string().optional(),
   RepositoryReferenceName: z.string().optional(),
-  RepositoryURL: z.string(),
+  RepositoryURL: z.string().optional(),
   RepositoryUsername: z.string().optional(),
+  SourceID: z.int().optional(),
   TLSSkipVerify: z.boolean().optional(),
 });
 
@@ -1326,10 +1415,6 @@ export const zResourcecontrolsResourceControlCreatePayload = z.object({
   ]),
   Users: z.array(z.int()).optional(),
 });
-
-export const zPortainerResourceControlType = z.enum(
-  PortainerResourceControlType
-);
 
 export const zReleaseValues = z.object({
   computedValues: z.string().optional(),
@@ -1610,15 +1695,6 @@ export const zPortainerUserThemeSettings = z.object({
 
 export const zPortainerUserRole = z.enum(PortainerUserRole);
 
-export const zPortainerResourceAccessLevel = z.enum(
-  PortainerResourceAccessLevel
-);
-
-export const zPortainerUserResourceAccess = z.object({
-  AccessLevel: zPortainerResourceAccessLevel.optional(),
-  UserId: z.int().optional(),
-});
-
 export const zPortainerUser = z.object({
   Id: z.int(),
   Role: zPortainerUserRole,
@@ -1626,11 +1702,6 @@ export const zPortainerUser = z.object({
   TokenIssueAt: z.int().optional(),
   UseCache: z.boolean().optional(),
   Username: z.string(),
-});
-
-export const zPortainerTeamResourceAccess = z.object({
-  AccessLevel: zPortainerResourceAccessLevel.optional(),
-  TeamId: z.int().optional(),
 });
 
 export const zPortainerMembershipRole = z.enum(PortainerMembershipRole);
@@ -1652,45 +1723,6 @@ export const zPortainerTag = z.object({
   Endpoints: z.record(z.string(), z.boolean()).optional(),
   ID: z.int().optional(),
   Name: z.string().optional(),
-});
-
-export const zPortainerStackType = z.enum(PortainerStackType);
-
-export const zPortainerStackStatus = z.enum(PortainerStackStatus);
-
-export const zPortainerStackOption = z.object({
-  HelmAtomic: z.boolean().optional(),
-  Prune: z.boolean().optional(),
-});
-
-export const zPortainerStackDeploymentStatus = z.object({
-  Message: z.string().optional(),
-  Status: zPortainerStackStatus.optional(),
-  Time: z.int().optional(),
-});
-
-export const zPortainerStackDeploymentInfo = z.object({
-  AdditionalFiles: z.array(z.string()).optional(),
-  ConfigFilePath: z.string().optional(),
-  ConfigHash: z.string().optional(),
-  FileVersion: z.int().optional(),
-  ReferenceName: z.string().optional(),
-  RepositoryURL: z.string().optional(),
-  Version: z.int().optional(),
-});
-
-export const zPortainerResourceControl = z.object({
-  AccessLevel: zPortainerResourceAccessLevel.optional(),
-  AdministratorsOnly: z.boolean().optional(),
-  Id: z.int().optional(),
-  OwnerId: z.int().optional(),
-  Public: z.boolean().optional(),
-  ResourceId: z.string().optional(),
-  SubResourceIds: z.array(z.string()).optional(),
-  System: z.boolean().optional(),
-  TeamAccesses: z.array(zPortainerTeamResourceAccess).optional(),
-  Type: zPortainerResourceControlType.optional(),
-  UserAccesses: z.array(zPortainerUserResourceAccess).optional(),
 });
 
 export const zPortainerStack = z.object({
@@ -5351,7 +5383,7 @@ export const zStackInspectPath = z.object({
 /**
  * Success
  */
-export const zStackInspectResponse = zPortainerStack;
+export const zStackInspectResponse = zStacksStackResponse;
 
 /**
  * Stack details
@@ -5411,7 +5443,7 @@ export const zStackUpdateGitQuery = z.object({
 /**
  * Success
  */
-export const zStackUpdateGitResponse = zPortainerStack;
+export const zStackUpdateGitResponse = zStacksStackResponse;
 
 /**
  * Git configs for pull and redeploy of a stack. **StackName** may only be populated for Kuberenetes stacks, and if specified with a blank string, it will be set to blank

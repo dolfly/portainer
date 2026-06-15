@@ -790,6 +790,84 @@ func TestUpdateArtifactFileForStack_MultipleArtifactsOnlyMatchingUpdated(t *test
 	require.Equal(t, "hash-20", wf.Artifacts[1].Files[0].Hash)
 }
 
+func TestSaveWorkflowArtifact_SwitchesSourceWithoutMutatingIt(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	var workflowID portainer.WorkflowID
+	var oldSourceID, newSourceID portainer.SourceID
+
+	err := store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		// Two distinct sources sharing the same URL: the case where URL-based
+		// resolution would fail to switch.
+		old := &portainer.Source{
+			Type: portainer.SourceTypeGit,
+			Git:  &gittypes.RepoConfig{URL: "https://github.com/example/repo"},
+		}
+		err := tx.Source().Create(old)
+		require.NoError(t, err)
+		oldSourceID = old.ID
+
+		selected := &portainer.Source{
+			Type: portainer.SourceTypeGit,
+			Git: &gittypes.RepoConfig{
+				URL: "https://github.com/example/repo",
+				Authentication: &gittypes.GitAuthentication{
+					Username: "selected-user",
+					Password: "selected-pass",
+				},
+			},
+		}
+		err = tx.Source().Create(selected)
+		require.NoError(t, err)
+		newSourceID = selected.ID
+
+		wf := &portainer.Workflow{
+			Artifacts: []portainer.Artifact{{
+				StackID: 1,
+				Files: []portainer.ArtifactFile{{
+					SourceID: oldSourceID,
+					Ref:      "refs/heads/main",
+					Path:     "docker-compose.yml",
+					Hash:     "old-hash",
+				}},
+			}},
+		}
+		err = tx.Workflow().Create(wf)
+		require.NoError(t, err)
+		workflowID = wf.ID
+
+		return nil
+	})
+	require.NoError(t, err)
+
+	err = store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return SaveWorkflowArtifact(tx, workflowID, func(a portainer.Artifact) bool {
+			return a.StackID == 1
+		}, oldSourceID, portainer.ArtifactFile{
+			SourceID: newSourceID,
+			Ref:      "refs/heads/dev",
+			Path:     "compose.yml",
+			Hash:     "new-hash",
+		})
+	})
+	require.NoError(t, err)
+
+	wf, err := store.Workflow().Read(workflowID)
+	require.NoError(t, err)
+	require.Equal(t, newSourceID, wf.Artifacts[0].Files[0].SourceID)
+	require.Equal(t, "refs/heads/dev", wf.Artifacts[0].Files[0].Ref)
+	require.Equal(t, "compose.yml", wf.Artifacts[0].Files[0].Path)
+	require.Equal(t, "new-hash", wf.Artifacts[0].Files[0].Hash)
+
+	// The selected source's git config must be left untouched.
+	selected, err := store.Source().Read(newSourceID)
+	require.NoError(t, err)
+	require.Equal(t, "https://github.com/example/repo", selected.Git.URL)
+	require.Equal(t, "selected-user", selected.Git.Authentication.Username)
+	require.Equal(t, "selected-pass", selected.Git.Authentication.Password)
+}
+
 func TestUpdateArtifactFileForEdgeStack_MultipleArtifactsOnlyMatchingUpdated(t *testing.T) {
 	t.Parallel()
 	_, store := datastore.MustNewTestStore(t, false, true)
@@ -827,6 +905,60 @@ func TestUpdateArtifactFileForEdgeStack_MultipleArtifactsOnlyMatchingUpdated(t *
 	require.NoError(t, err)
 	require.Equal(t, "updated-hash-10", wf.Artifacts[0].Files[0].Hash)
 	require.Equal(t, "hash-20", wf.Artifacts[1].Files[0].Hash)
+}
+
+func TestSaveWorkflowArtifact_SameSourceUpdatesArtifactOnly(t *testing.T) {
+	t.Parallel()
+	_, store := datastore.MustNewTestStore(t, false, true)
+
+	var workflowID portainer.WorkflowID
+	var sourceID portainer.SourceID
+
+	err := store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		src := &portainer.Source{
+			Type: portainer.SourceTypeGit,
+			Git:  &gittypes.RepoConfig{URL: "https://github.com/example/repo"},
+		}
+		err := tx.Source().Create(src)
+		require.NoError(t, err)
+		sourceID = src.ID
+
+		wf := &portainer.Workflow{
+			Artifacts: []portainer.Artifact{{
+				StackID: 1,
+				Files: []portainer.ArtifactFile{{
+					SourceID: sourceID,
+					Ref:      "refs/heads/main",
+				}},
+			}},
+		}
+		err = tx.Workflow().Create(wf)
+		require.NoError(t, err)
+		workflowID = wf.ID
+
+		return nil
+	})
+	require.NoError(t, err)
+
+	err = store.UpdateTx(func(tx dataservices.DataStoreTx) error {
+		return SaveWorkflowArtifact(tx, workflowID, func(a portainer.Artifact) bool {
+			return a.StackID == 1
+		}, sourceID, portainer.ArtifactFile{
+			SourceID: sourceID,
+			Ref:      "refs/heads/dev",
+			Path:     "compose.yml",
+			Hash:     "new-hash",
+		})
+	})
+	require.NoError(t, err)
+
+	wf, err := store.Workflow().Read(workflowID)
+	require.NoError(t, err)
+	require.Len(t, wf.Artifacts[0].Files, 1)
+	require.Equal(t, sourceID, wf.Artifacts[0].Files[0].SourceID)
+	require.Equal(t, "refs/heads/dev", wf.Artifacts[0].Files[0].Ref)
+	require.Equal(t, "compose.yml", wf.Artifacts[0].Files[0].Path)
+	require.Equal(t, "new-hash", wf.Artifacts[0].Files[0].Hash)
 }
 
 func TestGitSourceAndArtifactForStack_MultipleArtifactsReturnsCorrectOne(t *testing.T) {

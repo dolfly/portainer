@@ -18,6 +18,7 @@ interface SearchPayload {
   createdFromCustomTemplateId?: number;
   stackId?: number;
   fromEdgeStack?: boolean;
+  sourceId?: number;
 }
 
 export function useSearch(payload: SearchPayload, enabled: boolean) {

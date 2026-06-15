@@ -30,6 +30,7 @@ export const gitFormModule = angular
       'webhooksDocs',
       'createdFromCustomTemplateId',
       'isAutoUpdateVisible',
+      'isSourceSelectionVisible',
     ])
   )
 
@@ -41,6 +42,7 @@ export const gitFormModule = angular
       'gitConfig',
       'autoUpdate',
       'currentDeploymentInfo',
+      'sourceId',
     ])
   )
   .component(

@@ -320,6 +320,8 @@ type (
 		ReferenceName string `json:"ReferenceName,omitempty"`
 		// AdditionalFiles are the additional files used for deploying the stack
 		AdditionalFiles []string `json:"AdditionalFiles,omitempty"`
+		// SourceID is the Source used for deploying the stack
+		SourceID SourceID `json:"SourceID,omitempty"`
 	}
 
 	// EdgeStack represents an edge stack

@@ -30,13 +30,14 @@ export function RefSelector({
     stackId,
     createdFromCustomTemplateId,
     tlsSkipVerify: model.TLSSkipVerify,
+    sourceId: model.SourceId,
     ...creds,
   };
 
   const { data: refs } = useGitRefs<Array<{ label: string; value: string }>>(
     payload,
     {
-      enabled: !!(model.RepositoryURL && isUrlValid),
+      enabled: !!((model.RepositoryURL && isUrlValid) || model.SourceId),
       select: (refs) => {
         if (refs.length === 0) {
           return [{ value: 'refs/heads/main', label: 'refs/heads/main' }];

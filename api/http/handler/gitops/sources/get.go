@@ -38,7 +38,7 @@ type SourceDetail struct {
 // @id GitOpsSourceGet
 // @summary Get a GitOps source by ID
 // @description Returns a single GitOps source with its connection settings and linked workflows.
-// @description **Access policy**: admin
+// @description **Access policy**: authenticated
 // @tags gitops
 // @security ApiKeyAuth
 // @security jwt

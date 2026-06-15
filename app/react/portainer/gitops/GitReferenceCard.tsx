@@ -13,11 +13,13 @@ import {
   RepoConfigResponse,
 } from '@/react/portainer/gitops/types';
 import { StackDeploymentInfo } from '@/react/common/stacks/types';
+import { useSource } from '@/react/portainer/gitops/sources/queries/useSource';
 
 import { CopyButton } from '@@/buttons';
 import { Card } from '@@/Card';
 import { Icon } from '@@/Icon';
 import { Alert } from '@@/Alert';
+import { Link } from '@@/Link';
 
 import { getGitValidityError } from './hooks/useGitRepoValidity';
 
@@ -27,12 +29,14 @@ export function GitReferenceCard({
   gitConfig,
   autoUpdate,
   currentDeploymentInfo,
+  sourceId,
 }: {
   stackId: number;
   stackType: 'docker' | 'helm' | 'edge' | 'edge-helm' | 'kubernetes';
   gitConfig: RepoConfigResponse;
   autoUpdate?: AutoUpdateResponse | null;
   currentDeploymentInfo?: StackDeploymentInfo | null;
+  sourceId?: number;
 }) {
   const hasDivergence = isGitConfigDiverged(gitConfig, currentDeploymentInfo);
 
@@ -41,6 +45,7 @@ export function GitReferenceCard({
   const configFilePath = deployed?.ConfigFilePath ?? gitConfig.ConfigFilePath;
   const reference = deployed?.ReferenceName ?? gitConfig.ReferenceName;
   const commitId = deployed?.ConfigHash ?? gitConfig.ConfigHash;
+  const sourceIdToShow = deployed?.SourceID ?? sourceId;
 
   const fromEdgeStack = stackType === 'edge' || stackType === 'edge-helm';
 
@@ -49,6 +54,7 @@ export function GitReferenceCard({
       repository: url || '',
       stackId,
       fromEdgeStack,
+      sourceId: sourceIdToShow,
     },
     { enabled: !!url, suppressError: true }
   );
@@ -75,6 +81,7 @@ export function GitReferenceCard({
       stackId,
       fromEdgeStack,
       reference,
+      sourceId: sourceIdToShow,
     },
     enableFileCheck &&
       !!url &&
@@ -179,6 +186,7 @@ export function GitReferenceCard({
             data-cy="git-file-path"
           />
         )}
+        {!!sourceIdToShow && <SourceLineItem sourceId={sourceIdToShow} />}
         {!!commitId && (
           <LineItem
             label="Commit"
@@ -230,6 +238,37 @@ export function GitReferenceCard({
         />
       )}
     </Card>
+  );
+}
+
+function SourceLineItem({ sourceId }: { sourceId: number }) {
+  const sourceQuery = useSource(sourceId);
+  const sourceName = sourceQuery.data?.name;
+
+  return (
+    <LineItem
+      label="Source"
+      value={
+        sourceName ? (
+          <Link
+            to="portainer.gitops.sources.item"
+            params={{ sourceId }}
+            data-cy="git-source-link"
+          >
+            {sourceName}
+          </Link>
+        ) : sourceQuery.isLoading ? (
+          ''
+        ) : (
+          'not found'
+        )
+      }
+      title={sourceName ?? ''}
+      isLoading={sourceQuery.isLoading}
+      isError={sourceQuery.isError || (!sourceQuery.isLoading && !sourceName)}
+      isValid={!!sourceName}
+      data-cy="git-source"
+    />
   );
 }
 

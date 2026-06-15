@@ -57,6 +57,10 @@ export interface StackDeploymentInfo {
   ReferenceName?: string;
   ConfigFilePath?: string;
   AdditionalFiles?: string[];
+  /**
+   * Source used for deploying the stack
+   */
+  SourceID?: number;
 }
 
 export interface Stack {
@@ -82,6 +86,7 @@ export interface Stack {
     Force: boolean;
   };
   GitConfig?: RepoConfigResponse;
+  GitSourceId?: number;
   FromAppTemplate: boolean;
   Namespace?: string;
   IsComposeFormat: boolean;

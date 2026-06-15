@@ -111,7 +111,7 @@ func (handler *Handler) updateKubernetesStack(tx dataservices.DataStoreTx, r *ht
 			stack.AutoUpdate.JobID = jobID
 		}
 
-		if err := saveStackGitConfig(tx, stack.WorkflowID, stack.ID, sourceID, gitConfig); err != nil {
+		if err := saveStackGitConfig(tx, stack.WorkflowID, stack.ID, sourceID, 0, gitConfig); err != nil {
 			return httperror.InternalServerError("Unable to update source git config", err)
 		}
 

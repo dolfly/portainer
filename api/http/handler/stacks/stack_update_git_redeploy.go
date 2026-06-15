@@ -211,6 +211,7 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 		ConfigFilePath:  gitConfig.ConfigFilePath,
 		AdditionalFiles: stack.AdditionalFiles,
 		ConfigHash:      newHash,
+		SourceID:        sourceID,
 	}
 
 	stack.UpdatedBy = user.Username
@@ -253,7 +254,7 @@ func (handler *Handler) stackGitRedeploy(w http.ResponseWriter, r *http.Request)
 		if err := tx.Stack().Update(stack.ID, stack); err != nil {
 			return err
 		}
-		if err := saveStackGitConfig(tx, stack.WorkflowID, stack.ID, sourceID, gitConfig); err != nil {
+		if err := saveStackGitConfig(tx, stack.WorkflowID, stack.ID, sourceID, 0, gitConfig); err != nil {
 			return err
 		}
 

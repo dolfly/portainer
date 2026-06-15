@@ -238,6 +238,19 @@ func SaveWorkflowGitConfig(tx gitSourceStore, workflowID portainer.WorkflowID, m
 		}
 	}
 
+	return SaveWorkflowArtifact(tx, workflowID, matchArtifact, oldSourceID, portainer.ArtifactFile{
+		SourceID: newSourceID,
+		Ref:      cfg.ReferenceName,
+		Path:     cfg.ConfigFilePath,
+		Hash:     cfg.ConfigHash,
+	})
+}
+
+// SaveWorkflowArtifact replaces the ArtifactFile referencing oldSourceID on the Artifact matched by
+// matchArtifact with update (its SourceID may repoint the Artifact to a different Source). It does not
+// modify any Source's git config — the caller is responsible for ensuring update.SourceID
+// references a valid existing Source.
+func SaveWorkflowArtifact(tx gitSourceStore, workflowID portainer.WorkflowID, matchArtifact func(portainer.Artifact) bool, oldSourceID portainer.SourceID, update portainer.ArtifactFile) error {
 	wf, err := tx.Workflow().Read(workflowID)
 	if err != nil {
 		return fmt.Errorf("failed to read workflow: %w", err)
@@ -253,13 +266,11 @@ func SaveWorkflowGitConfig(tx gitSourceStore, workflowID portainer.WorkflowID, m
 				continue
 			}
 
-			wf.Artifacts[i].Files[j].Ref = cfg.ReferenceName
-			wf.Artifacts[i].Files[j].Path = cfg.ConfigFilePath
-			wf.Artifacts[i].Files[j].Hash = cfg.ConfigHash
-
-			if newSourceID != oldSourceID {
-				wf.Artifacts[i].Files[j].SourceID = newSourceID
-			}
+			f := &wf.Artifacts[i].Files[j]
+			f.SourceID = update.SourceID
+			f.Ref = update.Ref
+			f.Path = update.Path
+			f.Hash = update.Hash
 
 			break
 		}

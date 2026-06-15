@@ -42,6 +42,8 @@ export type SwarmGitRepositoryPayload = {
   filesystemPath?: string;
   /** TLSSkipVerify skips SSL verification when cloning the Git repository */
   tlsSkipVerify?: boolean;
+  /** ID of an existing Source. When set, repositoryUrl and authentication fields are ignored. */
+  sourceId?: number;
   environmentId: EnvironmentId;
   registries?: Array<RegistryId>;
 };

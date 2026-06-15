@@ -17,6 +17,7 @@ interface RefsPayload {
   createdFromCustomTemplateID?: number;
   tlsSkipVerify?: boolean;
   force?: boolean;
+  sourceId?: number;
 }
 
 export function useGitRefs<T = string[]>(

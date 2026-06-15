@@ -15,6 +15,7 @@ export type PathSelectorGitModel = Pick<
   | 'RepositoryReferenceName'
   | 'TLSSkipVerify'
   | 'RepositoryURLValid'
+  | 'SourceId'
 >;
 
 export function PathSelector({
@@ -44,10 +45,13 @@ export function PathSelector({
     tlsSkipVerify: model.TLSSkipVerify,
     dirOnly,
     createdFromCustomTemplateId,
+    sourceId: model.SourceId,
     ...creds,
   };
+
   const enabled = Boolean(
-    model.RepositoryURL && model.RepositoryURLValid && value
+    ((model.RepositoryURL && model.RepositoryURLValid) || model.SourceId) &&
+    value
   );
   const { data: searchResults } = useSearch(payload, enabled);
 
