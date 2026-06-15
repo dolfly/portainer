@@ -6,6 +6,7 @@ describe('Git validation', () => {
     const schema = getGitValidationSchema();
 
     const validData: GitFormValues = {
+      SourceId: 1,
       RepositoryURL: 'https://github.com/user/repo',
       RepositoryReferenceName: 'refs/heads/main',
       ComposeFilePathInRepository: 'docker-compose.yml',
@@ -18,7 +19,6 @@ describe('Git validation', () => {
       RepositoryAuthorizationType: undefined,
       SupportRelativePath: false,
       FilesystemPath: '',
-      SourceId: 1,
     };
 
     await expect(schema.validate(validData)).resolves.toBeDefined();

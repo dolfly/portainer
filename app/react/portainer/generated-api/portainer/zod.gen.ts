@@ -1172,6 +1172,7 @@ export const zStacksKubernetesGitDeploymentPayload = z.object({
   RepositoryReferenceName: z.string().optional(),
   RepositoryURL: z.string().optional(),
   RepositoryUsername: z.string().optional(),
+  SourceID: z.int().optional(),
   StackName: z.string().optional(),
   TLSSkipVerify: z.boolean().optional(),
 });
@@ -2711,11 +2712,12 @@ export const zHelmInstallChartPayload = z.object({
 });
 
 export const zGitopsRepositoryFilePreviewPayload = z.object({
-  TLSSkipVerify: z.boolean().optional(),
   password: z.string().optional(),
   reference: z.string().optional(),
-  repository: z.string(),
+  repository: z.string().optional(),
+  sourceID: z.int().optional(),
   targetFile: z.string().optional(),
+  tlsSkipVerify: z.boolean().optional(),
   username: z.string().optional(),
 });
 

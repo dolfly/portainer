@@ -293,6 +293,7 @@ function createKubernetesStack({ method, payload }: KubernetesCreatePayload) {
       return createKubernetesStackFromGit({
         stackName: payload.name,
 
+        sourceId: payload.git.SourceId,
         repositoryUrl: payload.git.RepositoryURL,
         repositoryReferenceName: payload.git.RepositoryReferenceName,
         manifestFile: payload.git.ComposeFilePathInRepository,

@@ -10,6 +10,7 @@ import (
 	"github.com/portainer/portainer/api/dataservices"
 	gittypes "github.com/portainer/portainer/api/git/types"
 	"github.com/portainer/portainer/api/git/update"
+	"github.com/portainer/portainer/api/gitops/sources"
 	httperrors "github.com/portainer/portainer/api/http/errors"
 	"github.com/portainer/portainer/api/http/security"
 	"github.com/portainer/portainer/api/stacks/deployments"
@@ -193,7 +194,7 @@ func (handler *Handler) stackUpdateGit(w http.ResponseWriter, r *http.Request) *
 	}
 
 	if payload.SourceID != 0 {
-		src, httpErr := validateSourceForStack(handler.DataStore, payload.SourceID)
+		src, httpErr := sources.ValidateGitSourceAccess(handler.DataStore, payload.SourceID)
 		if httpErr != nil {
 			return httpErr
 		}

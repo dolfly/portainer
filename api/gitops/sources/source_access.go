@@ -1,4 +1,4 @@
-package stacks
+package sources
 
 import (
 	"fmt"
@@ -8,9 +8,16 @@ import (
 	httperror "github.com/portainer/portainer/pkg/libhttp/error"
 )
 
-// validateSourceForStack checks that the given Source exists and is a git Source, and returns it.
+// gitSourceStore is the minimal intersection of CE and EE DataStoreTx that these functions need.
+// Both EE and CE DataStoreTx satisfy it, even though they are incompatible as full interface types.
+type gitSourceStore interface {
+	Source() dataservices.SourceService
+	IsErrObjectNotFound(err error) bool
+}
+
+// ValidateGitSourceAccess checks that the given Source exists and is a git Source, and returns it.
 // TODO(BE-12905): enforce per-user access policies once Source ownership is introduced.
-func validateSourceForStack(tx dataservices.DataStoreTx, sourceID portainer.SourceID) (*portainer.Source, *httperror.HandlerError) {
+func ValidateGitSourceAccess(tx gitSourceStore, sourceID portainer.SourceID) (*portainer.Source, *httperror.HandlerError) {
 	src, err := tx.Source().Read(sourceID)
 	if err != nil {
 		if tx.IsErrObjectNotFound(err) {
@@ -21,6 +28,10 @@ func validateSourceForStack(tx dataservices.DataStoreTx, sourceID portainer.Sour
 
 	if src.Type != portainer.SourceTypeGit {
 		return nil, httperror.BadRequest(fmt.Sprintf("source %d is not a git source", sourceID), nil)
+	}
+
+	if src.Git == nil {
+		return nil, httperror.BadRequest("Source has no git configuration", nil)
 	}
 
 	return src, nil

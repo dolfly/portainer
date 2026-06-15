@@ -4458,14 +4458,34 @@ export type StacksKubernetesGitDeploymentPayload = {
   ComposeFormat?: boolean;
   ManifestFile?: string;
   Namespace?: string;
+  /**
+   * Deprecated: use SourceID instead. Use basic authentication to clone the Git repository.
+   */
   RepositoryAuthentication?: boolean;
+  /**
+   * Deprecated: use SourceID instead. Password used in basic authentication.
+   */
   RepositoryPassword?: string;
+  /**
+   * Deprecated: use SourceID instead. Reference name of a Git repository hosting the Stack file.
+   */
   RepositoryReferenceName?: string;
+  /**
+   * Deprecated: use SourceID instead. URL of a Git repository hosting the Stack file.
+   */
   RepositoryURL?: string;
+  /**
+   * Deprecated: use SourceID instead. Username used in basic authentication.
+   */
   RepositoryUsername?: string;
+  /**
+   * SourceID references an existing Source for git credentials/URL.
+   * When set, the inline URL and authentication fields are ignored.
+   */
+  SourceID?: number;
   StackName?: string;
   /**
-   * TLSSkipVerify skips SSL verification when cloning the Git repository
+   * Deprecated: use SourceID instead. TLSSkipVerify skips SSL verification when cloning the Git repository.
    */
   TLSSkipVerify?: boolean;
 };
@@ -7449,16 +7469,34 @@ export type HelmInstallChartPayload = {
 
 export type GitopsRepositoryFilePreviewPayload = {
   /**
-   * TLSSkipVerify skips SSL verification when cloning the Git repository
+   * Password for git authentication.
+   * Deprecated: use SourceID instead
    */
-  TLSSkipVerify?: boolean;
   password?: string;
   reference?: string;
-  repository: string;
+  /**
+   * URL of a Git repository to preview.
+   * Deprecated: use SourceID instead
+   */
+  repository?: string;
+  /**
+   * SourceID resolves URL and auth from the stored Source record.
+   * When set, the inline Repository/Username/Password/TLSSkipVerify fields are ignored.
+   */
+  sourceID?: number;
   /**
    * Path to file whose content will be read
    */
   targetFile?: string;
+  /**
+   * TLSSkipVerify skips SSL verification when cloning the Git repository.
+   * Deprecated: use SourceID instead
+   */
+  tlsSkipVerify?: boolean;
+  /**
+   * Username for git authentication.
+   * Deprecated: use SourceID instead
+   */
   username?: string;
 };
 
@@ -11217,6 +11255,10 @@ export type GitOperationRepoFilePreviewErrors = {
    * Invalid request
    */
   400: unknown;
+  /**
+   * Source not found
+   */
+  404: unknown;
   /**
    * Server error
    */

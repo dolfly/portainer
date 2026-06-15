@@ -6,6 +6,7 @@ import (
 
 	portainer "github.com/portainer/portainer/api"
 	"github.com/portainer/portainer/api/git/update"
+	"github.com/portainer/portainer/api/gitops/sources"
 	"github.com/portainer/portainer/api/internal/endpointutils"
 	"github.com/portainer/portainer/api/internal/registryutils"
 	"github.com/portainer/portainer/api/stacks/stackbuilders"
@@ -37,25 +38,34 @@ func createStackPayloadFromK8sFileContentPayload(name, namespace, fileContent st
 }
 
 type kubernetesGitDeploymentPayload struct {
-	StackName                string
-	ComposeFormat            bool
-	Namespace                string
-	RepositoryURL            string
-	RepositoryReferenceName  string
+	StackName     string
+	ComposeFormat bool
+	Namespace     string
+	// SourceID references an existing Source for git credentials/URL.
+	// When set, the inline URL and authentication fields are ignored.
+	SourceID portainer.SourceID `example:"1"`
+	// Deprecated: use SourceID instead. URL of a Git repository hosting the Stack file.
+	RepositoryURL string
+	// Deprecated: use SourceID instead. Reference name of a Git repository hosting the Stack file.
+	RepositoryReferenceName string
+	// Deprecated: use SourceID instead. Use basic authentication to clone the Git repository.
 	RepositoryAuthentication bool
-	RepositoryUsername       string
-	RepositoryPassword       string
-	ManifestFile             string
-	AdditionalFiles          []string
-	AutoUpdate               *portainer.AutoUpdateSettings
-	// TLSSkipVerify skips SSL verification when cloning the Git repository
+	// Deprecated: use SourceID instead. Username used in basic authentication.
+	RepositoryUsername string
+	// Deprecated: use SourceID instead. Password used in basic authentication.
+	RepositoryPassword string
+	ManifestFile       string
+	AdditionalFiles    []string
+	AutoUpdate         *portainer.AutoUpdateSettings
+	// Deprecated: use SourceID instead. TLSSkipVerify skips SSL verification when cloning the Git repository.
 	TLSSkipVerify bool `example:"false"`
 }
 
-func createStackPayloadFromK8sGitPayload(name, repoUrl, repoReference, repoUsername, repoPassword string, repoAuthentication, composeFormat bool, namespace, manifest string, additionalFiles []string, autoUpdate *portainer.AutoUpdateSettings, repoSkipSSLVerify bool) stackbuilders.StackPayload {
+func createStackPayloadFromK8sGitPayload(name, repoUrl, repoReference, repoUsername, repoPassword string, repoAuthentication, composeFormat bool, namespace, manifest string, additionalFiles []string, autoUpdate *portainer.AutoUpdateSettings, repoSkipSSLVerify bool, sourceID portainer.SourceID) stackbuilders.StackPayload {
 	return stackbuilders.StackPayload{
 		StackName: name,
 		RepositoryConfigPayload: stackbuilders.RepositoryConfigPayload{
+			SourceID:       sourceID,
 			URL:            repoUrl,
 			ReferenceName:  repoReference,
 			Authentication: repoAuthentication,
@@ -94,12 +104,13 @@ func (payload *kubernetesStringDeploymentPayload) Validate(r *http.Request) erro
 }
 
 func (payload *kubernetesGitDeploymentPayload) Validate(r *http.Request) error {
-	if len(payload.RepositoryURL) == 0 || !validate.IsURL(payload.RepositoryURL) {
-		return errors.New("Invalid repository URL. Must correspond to a valid URL format")
-	}
-
-	if payload.RepositoryAuthentication && len(payload.RepositoryPassword) == 0 {
-		return errors.New("Invalid repository credentials. Password must be specified when authentication is enabled")
+	if payload.SourceID == 0 {
+		if len(payload.RepositoryURL) == 0 || !validate.IsURL(payload.RepositoryURL) {
+			return errors.New("Invalid repository URL. Must correspond to a valid URL format")
+		}
+		if payload.RepositoryAuthentication && len(payload.RepositoryPassword) == 0 {
+			return errors.New("Invalid repository credentials. Password must be specified when authentication is enabled")
+		}
 	}
 
 	if len(payload.ManifestFile) == 0 {
@@ -218,6 +229,12 @@ func (handler *Handler) createKubernetesStackFromGitRepository(w http.ResponseWr
 		}
 	}
 
+	if payload.SourceID != 0 {
+		if _, httpErr := sources.ValidateGitSourceAccess(handler.DataStore, payload.SourceID); httpErr != nil {
+			return httpErr
+		}
+	}
+
 	stackPayload := createStackPayloadFromK8sGitPayload(payload.StackName,
 		payload.RepositoryURL,
 		payload.RepositoryReferenceName,
@@ -230,6 +247,7 @@ func (handler *Handler) createKubernetesStackFromGitRepository(w http.ResponseWr
 		payload.AdditionalFiles,
 		payload.AutoUpdate,
 		payload.TLSSkipVerify,
+		payload.SourceID,
 	)
 
 	k8sStackBuilder := stackbuilders.CreateKubernetesStackGitBuilder(handler.DataStore,

@@ -12,6 +12,9 @@ export type KubernetesGitRepositoryPayload = {
   composeFormat: boolean;
   namespace: string;
 
+  /** When set, URL and auth are resolved from the stored Source record */
+  sourceId?: number;
+
   /** URL of a Git repository hosting the Stack file */
   repositoryUrl: string;
   /** Reference name of a Git repository hosting the Stack file */

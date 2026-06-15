@@ -8,6 +8,7 @@ import (
 	portainer "github.com/portainer/portainer/api"
 	"github.com/portainer/portainer/api/filesystem"
 	"github.com/portainer/portainer/api/git/update"
+	"github.com/portainer/portainer/api/gitops/sources"
 	"github.com/portainer/portainer/api/http/security"
 	"github.com/portainer/portainer/api/stacks/deployments"
 	"github.com/portainer/portainer/api/stacks/stackbuilders"
@@ -279,7 +280,7 @@ func (handler *Handler) createComposeStackFromGitRepository(w http.ResponseWrite
 	}
 
 	if payload.SourceID != 0 {
-		if _, httpErr := validateSourceForStack(handler.DataStore, payload.SourceID); httpErr != nil {
+		if _, httpErr := sources.ValidateGitSourceAccess(handler.DataStore, payload.SourceID); httpErr != nil {
 			return httpErr
 		}
 	}

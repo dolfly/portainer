@@ -13,6 +13,8 @@ export interface GitFilePreviewParams {
   password?: string;
   authorizationType?: AuthTypeOption;
   tlsSkipVerify?: boolean;
+  /** When set, resolves URL and auth from the stored Source record */
+  sourceId?: number;
 }
 
 async function getFilePreview(params: GitFilePreviewParams): Promise<string> {
@@ -35,7 +37,10 @@ export function useGitFilePreview<TData = string>(
   return useQuery({
     queryKey: ['gitops', 'file-preview', omitPassword(params)],
     queryFn: () => getFilePreview(params),
-    enabled: enabled && !!params.repository && !!params.targetFile,
+    enabled:
+      enabled &&
+      (!!params.repository || !!params.sourceId) &&
+      !!params.targetFile,
     select,
     retry: false,
   });

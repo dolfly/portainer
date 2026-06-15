@@ -18,6 +18,8 @@ interface Params {
   createdFromCustomTemplateId?: number;
   fromEdgeStack?: boolean;
   stackId?: number;
+  /** When set, the refs check will use credentials from the stored Source record */
+  sourceId?: number;
   enabled?: boolean;
   onSettled?(isValid?: boolean): void;
   // run after onSettled, useful for clearing local flags like force
@@ -32,6 +34,7 @@ export function useGitRepoValidity({
   fromEdgeStack,
   createdFromCustomTemplateId,
   stackId,
+  sourceId,
   enabled,
   onSettled,
   onAfterSettle,
@@ -45,9 +48,10 @@ export function useGitRepoValidity({
       stackId,
       force,
       fromEdgeStack,
+      sourceId,
     },
     {
-      enabled: !!url && enabled,
+      enabled: (!!url || !!sourceId) && enabled,
       select: () => true,
       suppressError: true,
       onSettled(isValid) {
@@ -61,7 +65,7 @@ export function useGitRepoValidity({
     }
   );
 
-  const hasCreds = !!(creds?.username && creds?.password);
+  const hasCreds = !!(creds?.username && creds?.password) || !!sourceId;
 
   const errorMessage = getGitValidityError(query.error, hasCreds);
 
