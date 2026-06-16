@@ -79,7 +79,7 @@
     "angular-ui-bootstrap": "~2.5.0",
     "angularjs-scroll-glue": "^2.2.0",
     "angularjs-slider": "^6.4.0",
-    "axios": "^1.16.1",
+    "axios": "^1.18.0",
     "axios-cache-interceptor": "^1.11.2",
     "axios-progress-bar": "git://github.com/portainer/progress-bar-4-axios",
     "babel-plugin-angularjs-annotate": "^0.10.0",

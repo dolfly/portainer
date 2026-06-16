@@ -153,14 +153,14 @@ importers:
         specifier: ^6.4.0
         version: 6.7.0(angular@1.8.2)
       axios:
-        specifier: ^1.16.1
-        version: 1.16.1
+        specifier: ^1.18.0
+        version: 1.18.0
       axios-cache-interceptor:
         specifier: ^1.11.2
-        version: 1.11.2(axios@1.16.1)
+        version: 1.11.2(axios@1.18.0)
       axios-progress-bar:
         specifier: git://github.com/portainer/progress-bar-4-axios
-        version: https://codeload.github.com/portainer/progress-bar-4-axios/tar.gz/d424cd29f5b629af9ffc5c3d6db8d92d11d82f0f(axios@1.16.1)
+        version: https://codeload.github.com/portainer/progress-bar-4-axios/tar.gz/d424cd29f5b629af9ffc5c3d6db8d92d11d82f0f(axios@1.18.0)
       babel-plugin-angularjs-annotate:
         specifier: ^0.10.0
         version: 0.10.0
@@ -4039,8 +4039,8 @@ packages:
     peerDependencies:
       axios: ^1.6.2
 
-  axios@1.16.1:
-    resolution: {integrity: sha512-caYkukvroVPO8KrzuJEb50Hm07KwfBZPEC3VeFHTsqWHvKTsy54hjJz9BS/cdaypROE2rH6xvm9mHX4fgWkr3A==}
+  axios@1.18.0:
+    resolution: {integrity: sha512-E32NzpYKp++W7XRe52rHiXV2ehxmh3wbdgO7MHeFM+vqxLBYHzt0ElkiImtOBxtOmyp0yoC8C6uESVV84Y2/hw==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -12425,20 +12425,20 @@ snapshots:
 
   axe-core@4.11.2: {}
 
-  axios-cache-interceptor@1.11.2(axios@1.16.1):
+  axios-cache-interceptor@1.11.2(axios@1.18.0):
     dependencies:
-      axios: 1.16.1
+      axios: 1.18.0
       cache-parser: 1.2.6
       fast-defer: 1.1.9
       http-vary: 1.0.3
       object-code: 2.0.0
       try: 1.0.3
 
-  axios-progress-bar@https://codeload.github.com/portainer/progress-bar-4-axios/tar.gz/d424cd29f5b629af9ffc5c3d6db8d92d11d82f0f(axios@1.16.1):
+  axios-progress-bar@https://codeload.github.com/portainer/progress-bar-4-axios/tar.gz/d424cd29f5b629af9ffc5c3d6db8d92d11d82f0f(axios@1.18.0):
     dependencies:
-      axios: 1.16.1
+      axios: 1.18.0
 
-  axios@1.16.1:
+  axios@1.18.0:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.5
