@@ -259,7 +259,8 @@
       "@types/react-dom": "^17.0.11",
       "@types/node": "^25",
       "ngtemplate-loader>loader-utils": "^1.4.2",
-      "braces": "^3.0.3"
+      "braces": "^3.0.3",
+      "shell-quote": "^1.8.4"
     },
     "configDependencies": {
       "@pnpm/plugin-types-fixer": "0.1.0+sha512-bLww63gRHi7siYTqFJb5qNdcXadU0jv20Et6z5AryMZ7FlLolbEJOrXLpg8+amQZNHHNW1dfFUBGVw/9ezQbFg=="
