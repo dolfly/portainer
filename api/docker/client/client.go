@@ -194,11 +194,11 @@ func httpClient(endpoint *portainer.Endpoint, timeout *time.Duration) (*http.Cli
 		}
 
 		transport = &NodeNameTransport{
-			Transport: ssrf.WrapTransport(&http.Transport{TLSClientConfig: tlsConfig}),
+			Transport: ssrf.NewTransport(tlsConfig),
 		}
 	} else {
 		transport = &NodeNameTransport{
-			Transport: ssrf.WrapTransport(&http.Transport{}),
+			Transport: ssrf.NewTransport(nil),
 		}
 	}
 

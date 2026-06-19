@@ -25,9 +25,7 @@ func NewAgentTransport(signatureService portainer.DigitalSignatureService, token
 
 	transport := &agentTransport{
 		baseTransport: newBaseTransport(
-			ssrf.WrapTransport(&http.Transport{
-				TLSClientConfig: tlsConfig,
-			}),
+			ssrf.NewTransport(tlsConfig),
 			tokenManager,
 			endpoint,
 			k8sClientFactory,

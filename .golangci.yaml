@@ -108,6 +108,9 @@ linters:
         linters:
           - gocritic
         text: ruleguard
+      - path: pkg/libhttp/ssrf/builder\.go
+        linters:
+          - forbidigo
     paths:
       - third_party$
       - builtin$
