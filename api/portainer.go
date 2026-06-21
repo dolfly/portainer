@@ -830,6 +830,7 @@ type (
 		IsServerMetricsDetected      bool `json:"IsServerMetricsDetected" validate:"required"`
 		IsServerIngressClassDetected bool `json:"IsServerIngressClassDetected" validate:"required"`
 		IsServerStorageDetected      bool `json:"IsServerStorageDetected" validate:"required"`
+		GPUOperator                  bool `json:"GPUOperator,omitempty"`
 	}
 
 	// KubernetesSnapshot represents a snapshot of a specific Kubernetes environment(endpoint) at a specific time
@@ -840,6 +841,8 @@ type (
 		TotalCPU           int64               `json:"TotalCPU" validate:"required"`
 		TotalMemory        int64               `json:"TotalMemory" validate:"required"`
 		ClusterType        string              `json:"ClusterType,omitempty"`
+		GPUNodeCount       int                 `json:"GPUNodeCount,omitempty"`
+		TotalGPU           map[string]int64    `json:"TotalGPU,omitempty"`
 		DiagnosticsData    *DiagnosticsData    `json:"DiagnosticsData,omitempty"`
 		PerformanceMetrics *PerformanceMetrics `json:"PerformanceMetrics,omitempty"`
 	}
@@ -2078,6 +2081,8 @@ const (
 	PortainerAgentKubernetesSATokenHeader = "X-PortainerAgent-SA-Token"
 	// HTTPAlertStateHeaderName is the name of the header used to transmit edge alert evaluation state
 	HTTPAlertStateHeaderName = "X-PortainerAgent-AlertState"
+	// HTTPResponseAgentGPUOperator represents the name of the header indicating whether the GPU operator is enabled on the agent
+	HTTPResponseAgentGPUOperator = "Portainer-Agent-GPU-Operator"
 	// PortainerAgentSignatureMessage represents the message used to create a digital signature
 	// to be used when communicating with an agent
 	PortainerAgentSignatureMessage = "Portainer-App"
