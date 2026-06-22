@@ -55,6 +55,7 @@ func (factory *ProxyFactory) NewAgentProxy(endpoint *portainer.Endpoint) (*Proxy
 			innerTransport = ssrf.NewInternalTransport(tlsConfig)
 		} else {
 			innerTransport = ssrf.NewTransport(tlsConfig)
+			innerTransport.Protocols = ssrf.HTTP1Only()
 		}
 	} else if endpointutils.IsEdgeEndpoint(endpoint) {
 		innerTransport = ssrf.NewInternalTransport(nil)

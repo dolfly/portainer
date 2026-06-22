@@ -44,6 +44,15 @@ func WrapDefaultTransport() bool {
 	return true
 }
 
+// HTTP1Only returns a Protocols value that enables HTTP/1.x and disables HTTP/2.
+// Use this to assign to Transport.Protocols — a nil Protocols defaults to both
+// HTTP/1 and HTTP/2, so the field must be non-nil to restrict to HTTP/1 only.
+func HTTP1Only() *http.Protocols {
+	p := new(http.Protocols)
+	p.SetHTTP1(true)
+	return p
+}
+
 // applySSRF sets the SSRF-filtering DialContext on t when the global dialer is active.
 func applySSRF(t *http.Transport) {
 	d := globalDialer.Load()
