@@ -1328,6 +1328,12 @@ type (
 		Git      *gittypes.RepoConfig `json:"git,omitempty"`
 		Registry *Registry            `json:"registry,omitempty"`
 		Helm     *HelmConfig          `json:"helm,omitempty"`
+
+		Public             bool     `json:"public"`
+		AdministratorsOnly bool     `json:"administratorsOnly"`
+		UserAccesses       []UserID `json:"userAccesses"`
+		TeamAccesses       []TeamID `json:"teamAccesses"`
+		OwnerID            UserID   `json:"ownerID,omitempty"`
 	}
 
 	// SourceID represents a source identifier
