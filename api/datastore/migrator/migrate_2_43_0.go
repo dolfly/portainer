@@ -69,7 +69,13 @@ type sourceDedupeKey struct {
 }
 
 func gitSourceKey(cfg *gittypes.RepoConfig) sourceDedupeKey {
-	key := sourceDedupeKey{url: cfg.URL}
+	url, err := gittypes.NormalizeURL(gittypes.SanitizeURL(cfg.URL))
+	if err != nil {
+		log.Warn().Err(err).Str("url", cfg.URL).Msg("failed to normalize git URL for deduplication, using raw URL")
+		url = cfg.URL
+	}
+
+	key := sourceDedupeKey{url: url}
 	if cfg.Authentication != nil {
 		key.username = cfg.Authentication.Username
 		key.password = cfg.Authentication.Password
