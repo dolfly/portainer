@@ -22,7 +22,7 @@ var adminUserContext = source.InsecureNewAdminContext()
 
 // createGitWorkflow creates a Source and Workflow for the given config and
 // wires them up by setting stack.WorkflowID before creating the stack.
-func createGitWorkflow(t *testing.T, tx dataservices.DataStoreTx, stack *portainer.Stack, cfg *gittypes.RepoConfig) portainer.SourceID {
+func createGitWorkflow(t *testing.T, tx dataservices.DataStoreTx, stack *portainer.Stack, cfg *gittypes.GitSource) portainer.SourceID {
 	t.Helper()
 
 	src := &portainer.Source{
@@ -35,11 +35,7 @@ func createGitWorkflow(t *testing.T, tx dataservices.DataStoreTx, stack *portain
 	wf := &portainer.Workflow{
 		Artifacts: []portainer.Artifact{{
 			StackID: stack.ID,
-			Files: []portainer.ArtifactFile{{
-				SourceID: src.ID,
-				Path:     cfg.ConfigFilePath,
-				Ref:      cfg.ReferenceName,
-			}},
+			Files:   []portainer.ArtifactFile{{SourceID: src.ID}},
 		}},
 	}
 	require.NoError(t, tx.Workflow().Create(wf))
@@ -94,12 +90,8 @@ func decodeSourceDetail(t *testing.T, rr *httptest.ResponseRecorder) SourceDetai
 	return item
 }
 
-func gitCfg(url string) *gittypes.RepoConfig {
-	return &gittypes.RepoConfig{
-		URL:            url,
-		ConfigFilePath: "docker-compose.yml",
-		ReferenceName:  "refs/heads/main",
-	}
+func gitCfg(url string) *gittypes.GitSource {
+	return &gittypes.GitSource{URL: url}
 }
 
 func buildCreateReq(t *testing.T, userID portainer.UserID, body []byte) *http.Request {

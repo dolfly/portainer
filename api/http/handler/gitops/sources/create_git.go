@@ -89,7 +89,7 @@ func (h *Handler) gitSourceCreate(w http.ResponseWriter, r *http.Request) *httpe
 		return httperror.InternalServerError("Unable to create source", err)
 	}
 
-	src.Git = gittypes.SanitizeRepoConfig(src.Git)
+	src.Git = gittypes.SanitizeGitSource(src.Git)
 
 	return response.JSONWithStatus(w, src, http.StatusCreated)
 }
@@ -112,7 +112,7 @@ func BuildBaseGitSource(payload GitSourceCreatePayload) *portainer.Source {
 	return &portainer.Source{
 		Name: name,
 		Type: portainer.SourceTypeGit,
-		Git: &gittypes.RepoConfig{
+		Git: &gittypes.GitSource{
 			URL:           payload.URL,
 			TLSSkipVerify: payload.TLSSkipVerify,
 		},
